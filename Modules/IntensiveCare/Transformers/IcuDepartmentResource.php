@@ -17,7 +17,11 @@ class IcuDepartmentResource extends JsonResource
                 ];
             }),
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
+            'name_en' => $this->name_en,
             'description' => $this->description,
+            'description_ar' => $this->description_ar,
+            'description_en' => $this->description_en,
             'specialty_type' => $this->specialty_type,
             'total_beds' => $this->total_beds,
             'available_beds' => $this->available_beds,

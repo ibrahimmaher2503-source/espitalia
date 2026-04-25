@@ -42,8 +42,9 @@ class PharmacyCategory extends BaseModel
     public function getNameAttribute()
     {
         $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
 
-        return $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
     }
 
     // Scopes

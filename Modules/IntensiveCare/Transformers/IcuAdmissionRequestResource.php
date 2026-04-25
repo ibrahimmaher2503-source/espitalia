@@ -28,7 +28,11 @@ class IcuAdmissionRequestResource extends JsonResource
                 ];
             }),
             'medical_condition' => $this->medical_condition,
+            'medical_condition_ar' => $this->medical_condition_ar,
+            'medical_condition_en' => $this->medical_condition_en,
             'diagnosis' => $this->diagnosis,
+            'diagnosis_ar' => $this->diagnosis_ar,
+            'diagnosis_en' => $this->diagnosis_en,
             'case_type' => $this->case_type,
             'urgency' => $this->urgency,
             'needs_ventilator' => $this->needs_ventilator,
@@ -43,7 +47,11 @@ class IcuAdmissionRequestResource extends JsonResource
             'status_badge' => $this->status_badge,
             'urgency_badge' => $this->urgency_badge,
             'admin_notes' => $this->admin_notes,
+            'admin_notes_ar' => $this->admin_notes_ar,
+            'admin_notes_en' => $this->admin_notes_en,
             'rejection_reason' => $this->rejection_reason,
+            'rejection_reason_ar' => $this->rejection_reason_ar,
+            'rejection_reason_en' => $this->rejection_reason_en,
             'response_date' => $this->response_date ? $this->response_date->toISOString() : null,
             'medical_reports' => $this->when($this->relationLoaded('media'), function () {
                 return $this->getMedia('medical_reports')->map(function ($media) {

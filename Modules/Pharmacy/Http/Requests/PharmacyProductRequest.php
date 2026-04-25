@@ -21,6 +21,8 @@ class PharmacyProductRequest extends FormRequest
             'brand_id' => 'nullable|exists:pharmacy_brands,id',
             'product_type_id' => 'nullable|exists:pharmacy_product_types,id',
             'description' => 'nullable|string',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
             'requires_prescription' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ];

@@ -11,6 +11,8 @@ class HomeHealthcareResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
+            'name_en' => $this->name_en,
             'service_type' => $this->service_type,
             'governorate' => [
                 'id' => optional($this->governorate)->id,

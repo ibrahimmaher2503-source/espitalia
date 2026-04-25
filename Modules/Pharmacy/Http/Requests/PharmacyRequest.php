@@ -14,7 +14,11 @@ class PharmacyRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'name_ar' => 'required_without:name_en|nullable|string|max:255',
+            'name_en' => 'required_without:name_ar|nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'latitude' => 'nullable|numeric|between:-90,90',

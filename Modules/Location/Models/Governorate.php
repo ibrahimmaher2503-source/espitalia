@@ -12,7 +12,10 @@ class Governorate extends BaseModel
 
     public function getNameAttribute()
     {
-        return app()->getLocale() === 'ar' ? $this->name_ar : $this->name_en;
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
     }
 
     public function cities()

@@ -12,6 +12,8 @@ class PharmacyProductDetailResource extends JsonResource
 
         return array_merge($base, [
             'description' => $this->description,
+            'description_ar' => $this->description_ar,
+            'description_en' => $this->description_en,
             'category' => $this->category ? [
                 'id' => $this->category->id,
                 'name' => $this->category->getNameAttribute(),

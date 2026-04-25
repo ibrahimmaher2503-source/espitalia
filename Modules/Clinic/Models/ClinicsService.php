@@ -52,7 +52,7 @@ class ClinicsService extends BaseModel
 
     const CUSTOM_FIELD_MODEL = 'Modules\Clinic\Models\ClinicsService';
 
-    public function getLocalizedNameAttribute()
+    public function getNameAttribute()
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
@@ -60,12 +60,22 @@ class ClinicsService extends BaseModel
         return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: $this->attributes['name'] ?? '';
     }
 
-    public function getLocalizedDescriptionAttribute()
+    public function getDescriptionAttribute()
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
 
         return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: $this->attributes['description'] ?? '';
+    }
+
+    public function getLocalizedNameAttribute()
+    {
+        return $this->getNameAttribute();
+    }
+
+    public function getLocalizedDescriptionAttribute()
+    {
+        return $this->getDescriptionAttribute();
     }
 
     protected static function newFactory(): ClinicsServiceFactory
