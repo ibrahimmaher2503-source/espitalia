@@ -16,9 +16,15 @@ class Product extends BaseModel
 
     protected $fillable = [
         'name',
+        'name_ar',
+        'name_en',
         'slug',
         'short_description',
+        'short_description_ar',
+        'short_description_en',
         'description',
+        'description_ar',
+        'description_en',
         'brand_id',
         'unit_id',
         'product_tags',
@@ -44,6 +50,27 @@ class Product extends BaseModel
     ];
 
     protected $appends = ['file_url'];
+
+    public function getNameAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+    }
+
+    public function getShortDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->short_description_ar : $this->short_description_en;
+        return $localized ?: ($locale === 'ar' ? $this->short_description_en : $this->short_description_ar) ?: '';
+    }
+
+    public function getDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
+    }
 
     protected $casts = [
         'min_purchase_qty' => 'integer',

@@ -80,5 +80,11 @@ return [
     'lbl_user_name' => 'User Name',
     'rating' => 'Rating',
     'review_msg' => 'Review Message',
+    'lbl_name_ar' => 'Name (Arabic)',
+    'lbl_name_en' => 'Name (English)',
+    'lbl_short_description_ar' => 'Short Description (Arabic)',
+    'lbl_short_description_en' => 'Short Description (English)',
+    'lbl_description_ar' => 'Description (Arabic)',
+    'lbl_description_en' => 'Description (English)',
 
 ];

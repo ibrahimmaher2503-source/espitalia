@@ -353,14 +353,20 @@ class ProductsController extends Controller
         }
 
         $product = new Product;
-        $product->name = $request->name;
-        $product->slug = Str::slug($request->name, '-').'-'.strtolower(Str::random(5));
+        $product->name_ar = $request->name_ar;
+        $product->name_en = $request->name_en;
+        $product->name = $request->name_en ?? $request->name_ar;
+        $product->slug = Str::slug($product->name, '-').'-'.strtolower(Str::random(5));
         $product->brand_id = $request->brand_id;
         $product->unit_id = $request->unit_id;
         $product->sell_target = $request->sell_target ?? 0;
 
-        $product->description = $request->description;
-        $product->short_description = $request->short_description;
+        $product->short_description_ar = $request->short_description_ar;
+        $product->short_description_en = $request->short_description_en;
+        $product->short_description = $request->short_description_en ?? $request->short_description_ar;
+        $product->description_ar = $request->description_ar;
+        $product->description_en = $request->description_en;
+        $product->description = $request->description_en ?? $request->description_ar;
 
         if ($request->has('has_variation') && $request->has('combinations') && $request->has_variation && $request->combinations != 'undefined') {
             $request->combinations = json_decode($request->combinations, true);
@@ -562,13 +568,19 @@ class ProductsController extends Controller
 
         $oldProduct = clone $product;
 
-        $product->name = $request->name;
-        $product->slug = (! is_null($request->slug)) ? Str::slug($request->slug, '-') : Str::slug($request->name, '-').'-'.strtolower(Str::random(5));
-        $product->description = $request->description;
+        $product->name_ar = $request->name_ar;
+        $product->name_en = $request->name_en;
+        $product->name = $request->name_en ?? $request->name_ar;
+        $product->slug = (! is_null($request->slug)) ? Str::slug($request->slug, '-') : Str::slug($product->name, '-').'-'.strtolower(Str::random(5));
+        $product->short_description_ar = $request->short_description_ar;
+        $product->short_description_en = $request->short_description_en;
+        $product->short_description = $request->short_description_en ?? $request->short_description_ar;
+        $product->description_ar = $request->description_ar;
+        $product->description_en = $request->description_en;
+        $product->description = $request->description_en ?? $request->description_ar;
         $product->sell_target = $request->sell_target;
         $product->brand_id = $request->brand_id;
         $product->unit_id = $request->unit_id;
-        $product->short_description = $request->short_description;
 
         if ($request->has('has_variation') && $request->has('combinations') && $request->has_variation && $request->combinations != 'undefined') {
             $request->combinations = json_decode($request->combinations, true);
