@@ -247,8 +247,8 @@ class ServicesController extends Controller
             })
             ->filterColumn('name', function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
-                    $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%'.$keyword.'%'])
-                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) LIKE ?", ['%'.$keyword.'%']);
+                    $q->where('name_en', 'like', '%'.$keyword.'%')
+                      ->orWhere('name_ar', 'like', '%'.$keyword.'%');
                 });
             })
             ->filterColumn('category', function ($query, $keyword) {
@@ -326,6 +326,8 @@ class ServicesController extends Controller
     public function store(ServiceRequest $request)
     {
         $data = $request->except('file_url');
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
 
         $query = Service::create($data);
 
@@ -376,9 +378,6 @@ class ServicesController extends Controller
                 ->toArray();
         }
 
-        $data['name'] = $data->getTranslations('name');
-        $data['description'] = $data->getTranslations('description');
-
         return response()->json(['data' => $data, 'status' => true]);
     }
 
@@ -394,6 +393,8 @@ class ServicesController extends Controller
         $data = Service::findOrFail($id);
 
         $request_data = $request->except('file_url');
+        $request_data['name'] = $request->name_en ?? $request->name_ar;
+        $request_data['description'] = $request->description_en ?? $request->description_ar;
 
         if ($data->default_price !== floatval($request_data['default_price'])) {
             ServiceProviderServices::where('service_id', $id)->update(['service_price' => $data->default_price]);

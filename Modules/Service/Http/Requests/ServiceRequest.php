@@ -18,7 +18,10 @@ class ServiceRequest extends FormRequest
         switch (strtolower($this->getMethod())) {
             case 'post':
                 return [
-                    'name' => 'required|string|max:255',
+                    'name_ar' => 'nullable|string|max:255|required_without:name_en',
+                    'name_en' => 'nullable|string|max:255|required_without:name_ar',
+                    'description_ar' => 'nullable|string',
+                    'description_en' => 'nullable|string',
                     'duration_min' => 'required|integer',
                     'category_id' => 'required|integer',
                     'default_price' => 'required',
@@ -28,8 +31,10 @@ class ServiceRequest extends FormRequest
             case 'put':
             case 'patch':
                 return [
-                    'name' => 'required|string|max:255',
-
+                    'name_ar' => 'nullable|string|max:255|required_without:name_en',
+                    'name_en' => 'nullable|string|max:255|required_without:name_ar',
+                    'description_ar' => 'nullable|string',
+                    'description_en' => 'nullable|string',
                     'duration_min' => 'required|integer',
                     'category_id' => 'required|integer',
                     'default_price' => 'required',

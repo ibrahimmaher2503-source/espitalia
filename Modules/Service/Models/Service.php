@@ -4,7 +4,6 @@ namespace Modules\Service\Models;
 
 use App\Models\BaseModel;
 use App\Models\Traits\HasSlug;
-use Spatie\Translatable\HasTranslations;
 use App\Trait\CustomFieldsTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,13 +15,10 @@ class Service extends BaseModel
     use SoftDeletes;
     use HasSlug;
     use CustomFieldsTrait;
-    use HasTranslations;
-
-    public array $translatable = ['name', 'description'];
 
     protected $table = 'services';
 
-    protected $fillable = ['slug', 'name', 'description', 'duration_min', 'default_price', 'category_id', 'sub_category_id', 'status'];
+    protected $fillable = ['slug', 'name', 'name_ar', 'name_en', 'description', 'description_ar', 'description_en', 'duration_min', 'default_price', 'category_id', 'sub_category_id', 'status'];
 
     protected $appends = ['file_url'];
 
@@ -101,6 +97,20 @@ class Service extends BaseModel
         $media = $this->getFirstMediaUrl('file_url');
 
         return isset($media) && ! empty($media) ? $media : default_file_url();
+    }
+
+    public function getNameAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+    }
+
+    public function getDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
     }
 
     public function scopeActive($query)
