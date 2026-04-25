@@ -23,6 +23,10 @@ return [
     'lbl_role' => 'Role',
     'lbl_import' => 'Import From Role',
     'lbl_page'=>'Page',
-    'lbl_page_url'=>'Copy Page Url'
+    'lbl_page_url'=>'Copy Page Url',
+    'lbl_name_ar' => 'Name (Arabic)',
+    'lbl_name_en' => 'Name (English)',
+    'lbl_description_ar' => 'Description (Arabic)',
+    'lbl_description_en' => 'Description (English)',
 
 ];

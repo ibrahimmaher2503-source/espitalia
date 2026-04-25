@@ -17,7 +17,21 @@ class Page extends BaseModel
 
     protected $table = 'pages';
 
-    protected $fillable = ['slug', 'name', 'description', 'sequence', 'status'];
+    protected $fillable = ['slug', 'name', 'name_ar', 'name_en', 'description', 'description_ar', 'description_en', 'sequence', 'status'];
+
+    public function getNameAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+    }
+
+    public function getDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
+    }
 
     /**
      * Create a new factory instance for the model.

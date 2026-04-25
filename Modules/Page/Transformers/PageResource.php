@@ -18,7 +18,12 @@ class PageResource extends JsonResource
             'id'   => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
-            'url'  => route('pages', ['slug' =>  $this->slug])
+            'name_ar' => $this->name_ar,
+            'name_en' => $this->name_en,
+            'description' => $this->description,
+            'description_ar' => $this->description_ar,
+            'description_en' => $this->description_en,
+            'url'  => route('pages', ['slug' => $this->slug]),
         ];
     }
 }

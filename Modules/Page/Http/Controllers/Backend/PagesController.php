@@ -184,7 +184,16 @@ class PagesController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'name_ar' => 'nullable|string|max:255|required_without:name_en',
+            'name_en' => 'nullable|string|max:255|required_without:name_ar',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
+        ]);
+
         $data = $request->all();
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
 
         Page::create($data);
 
@@ -229,9 +238,20 @@ class PagesController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'name_ar' => 'nullable|string|max:255|required_without:name_en',
+            'name_en' => 'nullable|string|max:255|required_without:name_ar',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
+        ]);
+
         $data = Page::findOrFail($id);
 
-        $data->update($request->all());
+        $updateData = $request->all();
+        $updateData['name'] = $request->name_en ?? $request->name_ar;
+        $updateData['description'] = $request->description_en ?? $request->description_ar;
+
+        $data->update($updateData);
 
         $message = __('messages.update_form', ['form' => __($this->module_title)]);
 
