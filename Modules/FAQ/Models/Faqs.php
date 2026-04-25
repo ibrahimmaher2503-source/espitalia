@@ -15,8 +15,22 @@ class faqs extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = ['question', 'answer', 'status']; // Ensure all relevant attributes are included
-    
+    protected $fillable = ['question', 'question_ar', 'question_en', 'answer', 'answer_ar', 'answer_en', 'status'];
+
+    public function getQuestionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->question_ar : $this->question_en;
+        return $localized ?: ($locale === 'ar' ? $this->question_en : $this->question_ar) ?: '';
+    }
+
+    public function getAnswerAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->answer_ar : $this->answer_en;
+        return $localized ?: ($locale === 'ar' ? $this->answer_en : $this->answer_ar) ?: '';
+    }
+
     protected static function newFactory(): FaqsFactory
     {
         return \Modules\FAQ\database\factories\FAQFactory::new();

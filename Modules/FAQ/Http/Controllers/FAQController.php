@@ -147,7 +147,14 @@ class FAQController extends Controller
     public function store(FAQRequest $request)
     {
         $data = $request->all();
-        $data['answer'] = strip_tags($data['answer']);
+        if (isset($data['answer_ar'])) {
+            $data['answer_ar'] = strip_tags($data['answer_ar']);
+        }
+        if (isset($data['answer_en'])) {
+            $data['answer_en'] = strip_tags($data['answer_en']);
+        }
+        $data['question'] = $request->question_en ?? $request->question_ar;
+        $data['answer'] = $request->answer_en ?? $request->answer_ar;
         $faq = faqs::create($data);
 
         $message = __('messages.create_form', ['form' => __('faq')]);
@@ -179,7 +186,14 @@ class FAQController extends Controller
     public function update(FAQRequest $request, faqs $faq)
     {
         $requestData = $request->all();
-        $requestData['answer'] = strip_tags($requestData['answer']);
+        if (isset($requestData['answer_ar'])) {
+            $requestData['answer_ar'] = strip_tags($requestData['answer_ar']);
+        }
+        if (isset($requestData['answer_en'])) {
+            $requestData['answer_en'] = strip_tags($requestData['answer_en']);
+        }
+        $requestData['question'] = $request->question_en ?? $request->question_ar;
+        $requestData['answer'] = $request->answer_en ?? $request->answer_ar;
         $faq->update($requestData);
 
         $message = __('messages.update_form', ['form' => __('FAQ')]);

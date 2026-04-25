@@ -26,31 +26,54 @@
 <div class="card">
     <div class="card-body">
         <div class="row gy-3">
-            <!-- Question Field -->
+            <!-- Question Arabic Field -->
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ html()->label(__('messages.lbl_question') . ' <span class="text-danger">*</span>', 'question')->class('form-label') }}
-                    {{ html()->text('question')
-                            ->attribute('value', $data->question)
-                            ->placeholder(__('messages.enter_question'))
-                            ->class('form-control')
-                            ->required() }}
-                    @error('question')
+                    {{ html()->label(__('faq.lbl_question_ar'), 'question_ar')->class('form-label') }}
+                    {{ html()->text('question_ar')
+                            ->attribute('value', old('question_ar', $data->question_ar))
+                            ->attribute('dir', 'rtl')
+                            ->placeholder(__('faq.lbl_question_ar'))
+                            ->class('form-control') }}
+                    @error('question_ar')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
-                    <div class="invalid-feedback" id="question-error">Question field is required</div>
                 </div>
             </div>
 
-            <!-- Answer Field -->
-            <div class="col-md-12">
+            <!-- Question English Field -->
+            <div class="col-md-6">
                 <div class="form-group">
-                    <label for="answer" class="form-label">{{ __('messages.lbl_answer') }} <span class="text-danger">*</span></label>
-                    <textarea name="answer" id="answer" class="form-control tinymce-template" placeholder="{{ __('messages.enter_answer') }}" required>{{ old('answer', $data->answer) }}</textarea>
-                    @error('answer')
+                    {{ html()->label(__('faq.lbl_question_en'), 'question_en')->class('form-label') }}
+                    {{ html()->text('question_en')
+                            ->attribute('value', old('question_en', $data->question_en))
+                            ->placeholder(__('faq.lbl_question_en'))
+                            ->class('form-control') }}
+                    @error('question_en')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
-                    <div class="invalid-feedback" id="answer-error">Answer field is required</div>
+                </div>
+            </div>
+
+            <!-- Answer Arabic Field -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ html()->label(__('faq.lbl_answer_ar'), 'answer_ar')->class('form-label') }}
+                    <textarea name="answer_ar" id="answer_ar" class="form-control tinymce-template" dir="rtl" placeholder="{{ __('faq.lbl_answer_ar') }}">{{ old('answer_ar', $data->answer_ar) }}</textarea>
+                    @error('answer_ar')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Answer English Field -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ html()->label(__('faq.lbl_answer_en'), 'answer_en')->class('form-label') }}
+                    <textarea name="answer_en" id="answer_en" class="form-control tinymce-template" placeholder="{{ __('faq.lbl_answer_en') }}">{{ old('answer_en', $data->answer_en) }}</textarea>
+                    @error('answer_en')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 

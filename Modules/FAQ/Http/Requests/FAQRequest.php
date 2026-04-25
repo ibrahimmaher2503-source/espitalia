@@ -12,7 +12,10 @@ class FAQRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'question_ar' => 'nullable|string|max:255|required_without:question_en',
+            'question_en' => 'nullable|string|max:255|required_without:question_ar',
+            'answer_ar' => 'nullable|string|required_without:answer_en',
+            'answer_en' => 'nullable|string|required_without:answer_ar',
         ];
     }
 
