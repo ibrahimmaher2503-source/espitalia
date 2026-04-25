@@ -22,11 +22,30 @@
                         {{ html()->hidden('id', $blogdata->id ?? null) }}
 
                         <div class="row  align-items-center">
-                            <!-- Title -->
+                            <!-- Title AR -->
                             <div class="form-group col-md-4">
                                 <div class="form-group">
-                                    {{ html()->label(trans('messages.title') . ' <span class="text-danger">*</span>', 'title')->class('form-label') }}
-                                    {{ html()->text('title', $blogdata->title)->placeholder(trans('messages.title'))->class('form-control')->required() }}
+                                    {{ html()->label(__('blog.lbl_title_ar') . ' <span class="text-danger">*</span>', 'title_ar')->class('form-label') }}
+                                    {{ html()->text('title_ar', $blogdata->title_ar ?? old('title_ar'))
+                                        ->placeholder(__('blog.lbl_title_ar'))
+                                        ->class('form-control')
+                                        ->attribute('dir', 'rtl') }}
+                                    @error('title_ar')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Title EN -->
+                            <div class="form-group col-md-4">
+                                <div class="form-group">
+                                    {{ html()->label(__('blog.lbl_title_en') . ' <span class="text-danger">*</span>', 'title_en')->class('form-label') }}
+                                    {{ html()->text('title_en', $blogdata->title_en ?? old('title_en'))
+                                        ->placeholder(__('blog.lbl_title_en'))
+                                        ->class('form-control') }}
+                                    @error('title_en')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -108,11 +127,30 @@
                             </div>
                         </div>
 
-                            <!-- Description -->
-                        <div class="col-md-12">
-                            <div class="form-group col-md-12">
-                                {{ html()->label(__('messages.description'), 'description')->class('form-control-label') }}
-                                {{ html()->textarea('description',$blogdata->description)->class('form-control tinymce-template')->placeholder(__('messages.description')) }}
+                            <!-- Description AR -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ html()->label(__('blog.lbl_description_ar'), 'description_ar')->class('form-control-label') }}
+                                {{ html()->textarea('description_ar', $blogdata->description_ar ?? old('description_ar'))
+                                    ->class('form-control tinymce-template')
+                                    ->attribute('dir', 'rtl')
+                                    ->placeholder(__('blog.lbl_description_ar')) }}
+                                @error('description_ar')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                            <!-- Description EN -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ html()->label(__('blog.lbl_description_en'), 'description_en')->class('form-control-label') }}
+                                {{ html()->textarea('description_en', $blogdata->description_en ?? old('description_en'))
+                                    ->class('form-control tinymce-template')
+                                    ->placeholder(__('blog.lbl_description_en')) }}
+                                @error('description_en')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
                         </div>

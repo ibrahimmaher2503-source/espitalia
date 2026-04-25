@@ -13,7 +13,10 @@ class BlogRequest extends FormRequest
     {
         $id = request()->id;
         return [
-            'title'              => 'required|unique:blogs,title,'.$id,
+            'title_ar' => 'nullable|string|max:255|required_without:title_en',
+            'title_en' => 'nullable|string|max:255|required_without:title_ar',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
         ];
     }
 

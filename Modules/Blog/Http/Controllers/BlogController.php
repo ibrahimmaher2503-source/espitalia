@@ -152,20 +152,21 @@ class BlogController extends Controller
         // if(demoUserPermission()){
         //     return  redirect()->back()->withErrors(trans('messages.demo_permission_denied'));
         // }
-    
-        $data = $request->all();
+
         $data = $request->except('blog_attachment');
-        if ($request->has('description')) {
-            $data['description'] = strip_tags($request->description);
+        if ($request->has('description_en')) {
+            $data['description_en'] = strip_tags($request->description_en);
         }
+        if ($request->has('description_ar')) {
+            $data['description_ar'] = strip_tags($request->description_ar);
+        }
+        $data['title'] = $request->title_en ?? $request->title_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
         $data['tags'] = isset($request->tags) ? json_encode($request->tags) : null;
         $data['author_id'] = !empty($request->author_id) ? $request->author_id : auth()->user()->id;
-        $data['is_featured'] = 0;
-        if ($request->has('is_featured')) {
-            $data['is_featured'] = 1;
-        }
-        
-        $blog = Blog::updateOrCreate(['id' => $data['id']], $data);
+        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
+
+        $blog = Blog::updateOrCreate(['id' => $data['id'] ?? null], $data);
         
     
         // Handle media files
