@@ -18,7 +18,7 @@ class ClinicRequest extends FormRequest
             'name_en' => 'nullable|string|max:255|required_without:name_ar',
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
-            'email' => 'required|string|unique:clinic,email',
+            'email' => 'required|string|unique:clinic,email,'.$id,
             // 'address' => 'required|string',
             // 'pincode' => 'required',
             // 'contact_number' => 'required|string',

@@ -75,11 +75,8 @@ class PharmacyProduct extends BaseModel
         return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
     }
 
-    public function getDescriptionAttribute($value)
+    public function getDescriptionAttribute()
     {
-        if ($value) {
-            return $value;
-        }
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
 

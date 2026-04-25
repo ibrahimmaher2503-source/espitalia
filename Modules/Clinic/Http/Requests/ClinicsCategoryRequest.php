@@ -17,7 +17,6 @@ class ClinicsCategoryRequest extends FormRequest
         switch (strtolower($this->getMethod())) {
             case 'post':
                 return [
-                    'name' => 'unique:clinics_categories,name,'.$id,
                     'name_ar' => 'nullable|string|max:255|required_without:name_en',
                     'name_en' => 'nullable|string|max:255|required_without:name_ar',
                     'description_ar' => 'nullable|string',
@@ -29,7 +28,6 @@ class ClinicsCategoryRequest extends FormRequest
             case 'patch':
                 return [
                     // 'system_service_id' => 'required|integer',
-                    'name' => 'unique:clinics_categories,name,'.$id,
                     'name_ar' => 'nullable|string|max:255|required_without:name_en',
                     'name_en' => 'nullable|string|max:255|required_without:name_ar',
                     'description_ar' => 'nullable|string',

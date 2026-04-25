@@ -12,7 +12,7 @@ class Pharmacy extends BaseModel
     protected $table = 'pharmacies';
 
     protected $fillable = [
-        'name', 'name_ar', 'name_en', 'description_ar', 'description_en',
+        'name', 'name_ar', 'name_en', 'description', 'description_ar', 'description_en',
         'phone', 'email', 'phone_secondary', 'address', 'latitude', 'longitude',
         'delivery_fee', 'minimum_order_amount', 'max_delivery_radius_km',
         'is_active', 'is_delivery_enabled', 'is_pickup_enabled', 'avg_preparation_time_min',
@@ -41,11 +41,8 @@ class Pharmacy extends BaseModel
     ];
 
     // Bilingual Accessors
-    public function getNameAttribute($value)
+    public function getNameAttribute()
     {
-        if ($value) {
-            return $value;
-        }
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
 

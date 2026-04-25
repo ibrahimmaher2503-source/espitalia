@@ -68,6 +68,8 @@ class PharmacyController extends Controller
     public function store(PharmacyRequest $request)
     {
         $data = $request->validated();
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
         $pharmacy = Pharmacy::create($data);
 
         if ($request->hasFile('logo')) {
@@ -100,6 +102,8 @@ class PharmacyController extends Controller
     {
         $pharmacy = Pharmacy::findOrFail($id);
         $data = $request->validated();
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
         $pharmacy->update($data);
 
         if ($request->hasFile('logo')) {

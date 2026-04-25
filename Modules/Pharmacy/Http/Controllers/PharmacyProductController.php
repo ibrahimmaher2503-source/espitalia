@@ -78,6 +78,7 @@ class PharmacyProductController extends Controller
     public function store(PharmacyProductRequest $request)
     {
         $data = $request->validated();
+        $data['description'] = $request->description_en ?? $request->description_ar;
         $product = PharmacyProduct::create($data);
 
         if ($request->hasFile('image')) {
@@ -114,6 +115,7 @@ class PharmacyProductController extends Controller
     {
         $product = PharmacyProduct::findOrFail($id);
         $data = $request->validated();
+        $data['description'] = $request->description_en ?? $request->description_ar;
         $product->update($data);
 
         if ($request->hasFile('image')) {
