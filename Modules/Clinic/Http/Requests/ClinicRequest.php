@@ -14,7 +14,10 @@ class ClinicRequest extends FormRequest
         $id = request()->id;
 
         return [
-            'name' => 'required|unique:clinic,name,'.$id,
+            'name_ar' => 'nullable|string|max:255|required_without:name_en',
+            'name_en' => 'nullable|string|max:255|required_without:name_ar',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
             'email' => 'required|string|unique:clinic,email',
             // 'address' => 'required|string',
             // 'pincode' => 'required',

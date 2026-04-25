@@ -11,7 +11,6 @@ use App\Models\User;
 use Auth;
 use Modules\Service\Models\SystemServiceCategory;
 use App\Models\Traits\HasSlug;
-use Spatie\Translatable\HasTranslations;
 use Modules\World\Models\City;
 use Modules\World\Models\Country;
 use Modules\World\Models\State;
@@ -32,9 +31,6 @@ class Clinics extends BaseModel
     use HasFactory;
     use CustomFieldsTrait;
     use HasSlug;
-    use HasTranslations;
-
-    public array $translatable = ['name', 'description'];
 
     const CUSTOM_FIELD_MODEL = 'Modules\Clinic\Models\Clinics';
 
@@ -44,10 +40,23 @@ class Clinics extends BaseModel
     protected $table = 'clinic';
 
 
-    protected $fillable = ['slug','name','email','time_slot','system_service_category','description', 'address', 'city','state', 'country', 'pincode','vendor_id', 'contact_number', 'latitude','longitude','status', 'governorate_id', 'city_id', 'branch_id'];
+    protected $fillable = ['slug','name','name_ar','name_en','email','time_slot','system_service_category','description','description_ar','description_en', 'address', 'city','state', 'country', 'pincode','vendor_id', 'contact_number', 'latitude','longitude','status', 'governorate_id', 'city_id', 'branch_id'];
 
     protected $appends = ['file_url'];
 
+    public function getNameAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+    }
+
+    public function getDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
+    }
 
     protected static function newFactory(): ClinicFactory
     {

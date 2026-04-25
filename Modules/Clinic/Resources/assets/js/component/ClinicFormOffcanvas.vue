@@ -37,8 +37,18 @@
 
 
           <div class="col-md-6">
-            <TranslatableInput :is-required="true" :label="$t('clinic.lbl_name')" field-id="clinic-name" v-model="name" :error-message="errors['name'] || errors['name.en']" :error-messages="errorMessages['name']" />
-            <TranslatableTextarea :label="$t('clinic.lbl_description')" field-id="clinic-description" v-model="description" :error-message="errors['description']" :error-messages="errorMessages['description']" />
+            <InputField class="col-md-12" type="text" :is-required="true" :label="`${$t('clinic.lbl_name')} (EN)`" placeholder="" v-model="name_en" :error-message="errors['name_en']" :error-messages="errorMessages['name_en']"></InputField>
+            <InputField class="col-md-12" type="text" :label="`${$t('clinic.lbl_name')} (AR)`" placeholder="" v-model="name_ar" :error-message="errors['name_ar']" :error-messages="errorMessages['name_ar']"></InputField>
+            <div class="form-group col-md-12">
+              <label class="form-label">{{ $t('clinic.lbl_description') }} (EN)</label>
+              <textarea class="form-control" v-model="description_en" rows="3"></textarea>
+              <span class="text-danger" v-if="errors['description_en']">{{ errors['description_en'] }}</span>
+            </div>
+            <div class="form-group col-md-12">
+              <label class="form-label">{{ $t('clinic.lbl_description') }} (AR)</label>
+              <textarea class="form-control" v-model="description_ar" rows="3" dir="rtl"></textarea>
+              <span class="text-danger" v-if="errors['description_ar']">{{ errors['description_ar'] }}</span>
+            </div>
           </div>
           <div class="col-md-6">
             <label class="form-label">{{ $t('clinic.lbl_Email') }} <span class="text-danger">*</span></label>
@@ -169,8 +179,6 @@ import { useModuleId, useRequest } from '@/helpers/hooks/useCrudOpration'
 import { VueTelInput } from 'vue3-tel-input'
 import { useSelect } from '@/helpers/hooks/useSelect'
 import InputField from '@/vue/components/form-elements/InputField.vue'
-import TranslatableInput from '@/vue/components/form-elements/TranslatableInput.vue'
-import TranslatableTextarea from '@/vue/components/form-elements/TranslatableTextarea.vue'
 import FormHeader from '@/vue/components/form-elements/FormHeader.vue'
 import FormFooter from '@/vue/components/form-elements/FormFooter.vue'
 import imageComponent from '@/vue/components/form-elements/imageComponent.vue'
@@ -293,8 +301,10 @@ const getClinicCategory = (value) => {
 const defaultData = () => {
   errorMessages.value = {}
   return {
-    name: { en: '', ar: '' },
-    description: { en: '', ar: '' },
+    name_en: '',
+    name_ar: '',
+    description_en: '',
+    description_ar: '',
     address: '',
     city: '',
     country: '',
@@ -342,8 +352,10 @@ const setFormData = (data) => {
   image_url.value = data.file_url
   resetForm({
     values: {
-      name: typeof data.name === 'object' ? data.name : { en: data.name || '', ar: '' },
-      description: typeof data.description === 'object' ? data.description : { en: data.description || '', ar: '' },
+      name_en: data.name_en || '',
+      name_ar: data.name_ar || '',
+      description_en: data.description_en || '',
+      description_ar: data.description_ar || '',
       address: data.address,
       city: data.city,
       state: data.state,
@@ -380,10 +392,8 @@ const numberRegex = /^\d+$/
 
 // Validations
 const validationSchema = yup.object({
-  name: yup.object({
-    en: yup.string().required('Name (English) is required'),
-    ar: yup.string().nullable()
-  }),
+  name_en: yup.string().required('Name (English) is required'),
+  name_ar: yup.string().nullable(),
   address: yup.string().required('Address is required'),
   contact_number: yup
     .string()
@@ -425,8 +435,10 @@ const { handleSubmit, errors, resetForm } = useForm({
   validationSchema
 })
 
-const { value: name } = useField('name')
-const { value: description } = useField('description')
+const { value: name_en } = useField('name_en')
+const { value: name_ar } = useField('name_ar')
+const { value: description_en } = useField('description_en')
+const { value: description_ar } = useField('description_ar')
 const { value: address } = useField('address')
 const { value: city } = useField('city')
 const { value: state } = useField('state')

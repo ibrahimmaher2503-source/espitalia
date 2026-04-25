@@ -273,13 +273,10 @@ class ClinicesController extends Controller
             })
 
             ->filterColumn('clinic_name', function ($query, $keyword) {
-                if (!empty($keyword)) {
-                    $query->where(function ($q) use ($keyword) {
-                        $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ['%' . $keyword . '%'])
-                          ->orWhereRaw("JSON_EXTRACT(name, '$.ar') LIKE ?", ['%' . $keyword . '%'])
-                          ->orWhere('email', 'like', '%' . $keyword . '%');
-                    });
-                }
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name_en', 'LIKE', '%' . $keyword . '%')
+                      ->orWhere('name_ar', 'LIKE', '%' . $keyword . '%');
+                });
             })
             ->orderColumn('clinic_name', function ($query, $order) {
                 $query->orderBy('name', $order);
@@ -321,7 +318,9 @@ class ClinicesController extends Controller
         ]);
         // $uploadedFiles = $request->file('file_url');
         $data = $request->except('file_url');
-        $data['slug'] = strtolower(Str::slug($request->input('name.en'), '-'));
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
+        $data['slug'] = strtolower(Str::slug($request->input('name_en'), '-'));
         if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('demo_admin')) {
             $data['vendor_id'] = $request->filled('vendor_id') ? $request->vendor_id : auth()->user()->id;
         } else {
@@ -388,8 +387,6 @@ class ClinicesController extends Controller
 
         $data = Clinics::with('specialty')->findOrFail($id); // Assuming the relationship name is specialty
         $data['system_service_category'] = optional($data->specialty)->name;
-        $data['name'] = $data->getTranslations('name');
-        $data['description'] = $data->getTranslations('description');
         return response()->json(['data' => $data, 'status' => true]);
     }
 
@@ -407,6 +404,8 @@ class ClinicesController extends Controller
         $data = Clinics::findOrFail($id);
 
         $request_data = $request->except('file_url');
+        $request_data['name'] = $request->name_en ?? $request->name_ar;
+        $request_data['description'] = $request->description_en ?? $request->description_ar;
         if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('demo_admin')) {
             $request_data['vendor_id'] = $request->has('vendor_id') ? $request->vendor_id : auth()->user()->id;
         }
