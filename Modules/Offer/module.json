@@ -1,0 +1,13 @@
+{
+    "name": "Offer",
+    "alias": "offer",
+    "description": "Service Offers & Promotions engine",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Offer\\Providers\\OfferServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

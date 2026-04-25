@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Modules\IntensiveCare\Http\Controllers\Backend\API\HospitalsApiController;
+use Modules\IntensiveCare\Http\Controllers\Backend\API\IcuAdmissionRequestsApiController;
+use Modules\IntensiveCare\Http\Controllers\Backend\API\IcuCommissionsApiController;
+use Modules\IntensiveCare\Http\Controllers\Backend\API\IcuEarningsApiController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+    // Hospitals (catalog)
+    Route::get('/hospitals', [HospitalsApiController::class, 'index']);
+    Route::get('/hospitals/{id}', [HospitalsApiController::class, 'show']);
+    Route::get('/icu-departments', [HospitalsApiController::class, 'departments']);
+
+    // ICU Admission Requests
+    Route::get('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'index']);
+    Route::post('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'store']);
+    Route::get('/icu-admission-requests/{id}', [IcuAdmissionRequestsApiController::class, 'show']);
+    Route::post('/icu-admission-requests/{id}/cancel', [IcuAdmissionRequestsApiController::class, 'cancel']);
+
+    // ICU Commissions (admin only)
+    Route::get('/icu-commissions', [IcuCommissionsApiController::class, 'index']);
+
+    // ICU Earnings (admin + hospital coordinator)
+    Route::get('/icu-earnings', [IcuEarningsApiController::class, 'index']);
+});

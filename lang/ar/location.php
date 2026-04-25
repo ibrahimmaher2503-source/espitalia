@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'title' => 'الموقع',
+    'lbl_governorates' => 'المحافظات',
+    'lbl_cities' => 'المدن',
+    'lbl_governorate' => 'المحافظة',
+    'lbl_city' => 'المدينة',
+    'lbl_governorate_required' => 'حقل المحافظة مطلوب.',
+    'lbl_invalid_governorate' => 'المحافظة المحددة غير صالحة.',
+    'lbl_invalid_city' => 'المدينة المحددة غير صالحة.',
+    'lbl_governorates_list' => 'قائمة المحافظات',
+    'lbl_cities_list' => 'قائمة المدن',
+    'lbl_no_results' => 'لا توجد نتائج.',
+    'lbl_search_doctors' => 'البحث عن أطباء',
+    'lbl_search_clinics' => 'البحث عن عيادات',
+    'lbl_search_nurses' => 'البحث عن ممرضات',
+    'lbl_search_home_healthcare' => 'البحث عن رعاية صحية منزلية',
+    'lbl_search_labs' => 'البحث عن معامل',
+    'lbl_search_radiology' => 'البحث عن مراكز أشعة',
+
+    // Home Healthcare admin
+    'home_healthcare_singular' => 'رعاية صحية منزلية',
+    'home_healthcare_plural' => 'خدمات الرعاية الصحية المنزلية',
+    'home_healthcare_save_success' => 'تم إنشاء خدمة الرعاية الصحية المنزلية بنجاح.',
+    'home_healthcare_update_success' => 'تم تحديث خدمة الرعاية الصحية المنزلية بنجاح.',
+    'home_healthcare_delete_success' => 'تم حذف خدمة الرعاية الصحية المنزلية بنجاح.',
+    'lbl_service_type' => 'نوع الخدمة',
+    'lbl_name_ar' => 'الاسم (بالعربية)',
+    'lbl_name_en' => 'الاسم (بالإنجليزية)',
+    'lbl_status' => 'الحالة',
+    'lbl_action' => 'الإجراء',
+
+    // Governorate/City admin
+    'lbl_select_governorate' => 'اختر المحافظة',
+    'lbl_select_city' => 'اختر المدينة',
+    'lbl_add_governorate' => 'إضافة محافظة',
+    'lbl_edit_governorate' => 'تعديل محافظة',
+    'lbl_add_city' => 'إضافة مدينة',
+    'lbl_edit_city' => 'تعديل مدينة',
+    'governorate_save_success' => 'تم إنشاء المحافظة بنجاح.',
+    'governorate_update_success' => 'تم تحديث المحافظة بنجاح.',
+    'governorate_delete_success' => 'تم حذف المحافظة بنجاح.',
+    'city_save_success' => 'تم إنشاء المدينة بنجاح.',
+    'city_update_success' => 'تم تحديث المدينة بنجاح.',
+    'city_delete_success' => 'تم حذف المدينة بنجاح.',
+];

@@ -1,0 +1,31 @@
+{
+    "name": "nwidart/homehealthcare",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\HomeHealthcare\\": "",
+            "Modules\\HomeHealthcare\\App\\": "app/",
+            "Modules\\HomeHealthcare\\Database\\Factories\\": "database/factories/",
+            "Modules\\HomeHealthcare\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\HomeHealthcare\\Tests\\": "tests/"
+        }
+    }
+}

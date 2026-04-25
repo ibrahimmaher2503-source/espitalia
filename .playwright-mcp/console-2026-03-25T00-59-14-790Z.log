@@ -1,0 +1,4 @@
+[   35136ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Kalam:wght@300;400;700&display=swap:0
+[   35347ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js:0
+[   35484ms] TypeError: $(...).select2 is not a function
+    at HTMLDocument.<anonymous> (http://127.0.0.1:8000/:2083:35)

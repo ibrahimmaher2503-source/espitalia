@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'title' => 'Location',
+    'lbl_governorates' => 'Governorates',
+    'lbl_cities' => 'Cities',
+    'lbl_governorate' => 'Governorate',
+    'lbl_city' => 'City',
+    'lbl_governorate_required' => 'The governorate field is required.',
+    'lbl_invalid_governorate' => 'The selected governorate is invalid.',
+    'lbl_invalid_city' => 'The selected city is invalid.',
+    'lbl_governorates_list' => 'Governorates list',
+    'lbl_cities_list' => 'Cities list',
+    'lbl_no_results' => 'No results found.',
+    'lbl_search_doctors' => 'Search Doctors',
+    'lbl_search_clinics' => 'Search Clinics',
+    'lbl_search_nurses' => 'Search Nurses',
+    'lbl_search_home_healthcare' => 'Search Home Healthcare',
+    'lbl_search_labs' => 'Search Labs',
+    'lbl_search_radiology' => 'Search Radiology Centers',
+
+    // Home Healthcare admin
+    'home_healthcare_singular' => 'Home Healthcare',
+    'home_healthcare_plural' => 'Home Healthcare Services',
+    'home_healthcare_save_success' => 'Home healthcare service created successfully.',
+    'home_healthcare_update_success' => 'Home healthcare service updated successfully.',
+    'home_healthcare_delete_success' => 'Home healthcare service deleted successfully.',
+    'lbl_service_type' => 'Service Type',
+    'lbl_name_ar' => 'Name (Arabic)',
+    'lbl_name_en' => 'Name (English)',
+    'lbl_status' => 'Status',
+    'lbl_action' => 'Action',
+
+    // Governorate/City admin
+    'lbl_select_governorate' => 'Select Governorate',
+    'lbl_select_city' => 'Select City',
+    'lbl_add_governorate' => 'Add Governorate',
+    'lbl_edit_governorate' => 'Edit Governorate',
+    'lbl_add_city' => 'Add City',
+    'lbl_edit_city' => 'Edit City',
+    'governorate_save_success' => 'Governorate created successfully.',
+    'governorate_update_success' => 'Governorate updated successfully.',
+    'governorate_delete_success' => 'Governorate deleted successfully.',
+    'city_save_success' => 'City created successfully.',
+    'city_update_success' => 'City updated successfully.',
+    'city_delete_success' => 'City deleted successfully.',
+];

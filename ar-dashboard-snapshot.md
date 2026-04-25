@@ -1,0 +1,393 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Espitalia Espitalia Espitalia Espitalia" [ref=e5] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/app
+        - img "Espitalia" [ref=e6]
+        - img "Espitalia" [ref=e7]
+        - img "Espitalia" [ref=e8]
+        - img "Espitalia" [ref=e9]
+      - img [ref=e12] [cursor=pointer]
+    - list [ref=e17]:
+      - listitem [ref=e18]:
+        - link "الرئيسية":
+          - /url: http://127.0.0.1:8000/#
+          - generic: الرئيسية
+      - listitem [ref=e19]:
+        - link "لوحة التحكم لوحة التحكم" [ref=e20] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app
+          - generic "لوحة التحكم" [ref=e21]: 
+          - generic [ref=e22]: لوحة التحكم
+      - listitem [ref=e23]:
+        - link "قائمة المواعيد قائمة المواعيد" [ref=e24] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/appointments
+          - generic "قائمة المواعيد" [ref=e25]: 
+          - generic [ref=e26]: قائمة المواعيد
+      - listitem [ref=e27]:
+        - button "لقاء لقاء" [ref=e28] [cursor=pointer]:
+          - generic "لقاء" [ref=e29]: 
+          - generic [ref=e30]: لقاء
+          - img [ref=e32]
+        - text:    
+      - listitem [ref=e34]:
+        - button "الأطباء الأطباء" [ref=e35] [cursor=pointer]:
+          - generic "الأطباء" [ref=e36]: 
+          - generic [ref=e37]: الأطباء
+          - img [ref=e39]
+        - text:    
+      - listitem [ref=e41]:
+        - link "التخصص التخصص" [ref=e42] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/specializations
+          - generic "التخصص" [ref=e43]: 
+          - generic [ref=e44]: التخصص
+      - listitem [ref=e45]:
+        - link "مراكز العيادات":
+          - /url: http://127.0.0.1:8000/#
+          - generic: مراكز العيادات
+      - listitem [ref=e46]:
+        - link "العيادات العيادات" [ref=e47] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/clinics
+          - generic "العيادات" [ref=e48]: 
+          - generic [ref=e49]: العيادات
+      - listitem [ref=e50]:
+        - link "الفئات الفئات" [ref=e51] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/category
+          - generic "الفئات" [ref=e52]: 
+          - generic [ref=e53]: الفئات
+      - listitem [ref=e54]:
+        - link "الخدمات الخدمات" [ref=e55] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/services
+          - generic "الخدمات" [ref=e56]: 
+          - generic [ref=e57]: الخدمات
+      - listitem [ref=e58]:
+        - link "التقييمات التقييمات" [ref=e59] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/doctors-review
+          - generic "التقييمات" [ref=e60]: 
+          - generic [ref=e61]: التقييمات
+      - listitem [ref=e62]:
+        - link "المستخدمين":
+          - /url: http://127.0.0.1:8000/#
+          - generic: المستخدمين
+      - listitem [ref=e63]:
+        - link "مريض مريض" [ref=e64] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/customers
+          - generic "مريض" [ref=e65]: 
+          - generic [ref=e66]: مريض
+      - listitem [ref=e67]:
+        - link "موظف الاستقبال موظف الاستقبال" [ref=e68] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/receptionist
+          - generic "موظف الاستقبال" [ref=e69]: 
+          - generic [ref=e70]: موظف الاستقبال
+      - listitem [ref=e71]:
+        - link "المالية":
+          - /url: http://127.0.0.1:8000/#
+          - generic: المالية
+      - listitem [ref=e72]:
+        - link "الضرائب الضرائب" [ref=e73] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/tax
+          - generic "الضرائب" [ref=e74]: 
+          - generic [ref=e75]: الضرائب
+      - listitem [ref=e76]:
+        - link "سجل الفواتير سجل الفواتير" [ref=e77] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/billing-record
+          - generic "سجل الفواتير" [ref=e78]: 
+          - generic [ref=e79]: سجل الفواتير
+      - listitem [ref=e80]:
+        - link "أرباح الطبيب أرباح الطبيب" [ref=e81] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/earnings
+          - generic "أرباح الطبيب" [ref=e82]: 
+          - generic [ref=e83]: أرباح الطبيب
+      - listitem [ref=e84]:
+        - link "نظرة عامة على المواعيد نظرة عامة على المواعيد" [ref=e85] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/appointment-overview
+          - generic "نظرة عامة على المواعيد" [ref=e86]: 
+          - generic [ref=e87]: نظرة عامة على المواعيد
+      - listitem [ref=e88]:
+        - link "نظرة عامة على العيادة نظرة عامة على العيادة" [ref=e89] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/clinic-overview
+          - generic "نظرة عامة على العيادة" [ref=e90]: 
+          - generic [ref=e91]: نظرة عامة على العيادة
+      - listitem [ref=e92]:
+        - link "التمريض":
+          - /url: http://127.0.0.1:8000/#
+          - generic: التمريض
+      - listitem [ref=e93]:
+        - button "طلب ممرض طلب ممرض" [ref=e94] [cursor=pointer]:
+          - generic "طلب ممرض" [ref=e95]: 
+          - generic [ref=e96]: طلب ممرض
+          - img [ref=e98]
+        - text:  
+      - listitem [ref=e100]:
+        - link "التشخيصات":
+          - /url: http://127.0.0.1:8000/#
+          - generic: التشخيصات
+      - listitem [ref=e101]:
+        - button "التشخيصات التشخيصات" [ref=e102] [cursor=pointer]:
+          - generic "التشخيصات" [ref=e103]: 
+          - generic [ref=e104]: التشخيصات
+          - img [ref=e106]
+        - text:   
+      - listitem [ref=e108]:
+        - link "العناية المركزة":
+          - /url: http://127.0.0.1:8000/#
+          - generic: العناية المركزة
+      - listitem [ref=e109]:
+        - button "العناية المركزة العناية المركزة" [ref=e110] [cursor=pointer]:
+          - generic "العناية المركزة" [ref=e111]: 
+          - generic [ref=e112]: العناية المركزة
+          - img [ref=e114]
+        - text:   
+      - listitem [ref=e116]:
+        - link "مدفوعات الطبيب مدفوعات الطبيب" [ref=e117] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/doctor-payout-report
+          - generic "مدفوعات الطبيب" [ref=e118]: 
+          - generic [ref=e119]: مدفوعات الطبيب
+      - listitem [ref=e120]:
+        - link "النظام":
+          - /url: http://127.0.0.1:8000/#
+          - generic: النظام
+      - listitem [ref=e121]:
+        - link "تقرير الحادث تقرير الحادث" [ref=e122] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/incidence
+          - generic "تقرير الحادث" [ref=e123]: 
+          - generic [ref=e124]: تقرير الحادث
+      - listitem [ref=e125]:
+        - button "المواقع المواقع" [ref=e126] [cursor=pointer]:
+          - generic "المواقع" [ref=e127]: 
+          - generic [ref=e128]: المواقع
+          - img [ref=e130]
+        - text:   
+      - listitem [ref=e132]:
+        - link "الصفحات الصفحات" [ref=e133] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/pages
+          - generic "الصفحات" [ref=e134]: 
+          - generic [ref=e135]: الصفحات
+      - listitem [ref=e136]:
+        - link "شريط التطبيق شريط التطبيق" [ref=e137] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/app-banners
+          - generic "شريط التطبيق" [ref=e138]: 
+          - generic [ref=e139]: شريط التطبيق
+      - listitem [ref=e140]:
+        - button "نماذج مخصصة نماذج مخصصة" [ref=e141] [cursor=pointer]:
+          - generic "نماذج مخصصة" [ref=e142]: 
+          - generic [ref=e143]: نماذج مخصصة
+          - img [ref=e145]
+        - text: 
+      - listitem [ref=e147]:
+        - button "الإشعارات الإشعارات" [ref=e148] [cursor=pointer]:
+          - generic "الإشعارات" [ref=e149]: 
+          - generic [ref=e150]: الإشعارات
+          - img [ref=e152]
+        - text:  
+      - listitem [ref=e154]:
+        - link "الإعدادات الإعدادات" [ref=e155] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/settings
+          - generic "الإعدادات" [ref=e156]: 
+          - generic [ref=e157]: الإعدادات
+      - listitem [ref=e158]:
+        - button "السجلات / النسخ الاحتياطية السجلات / النسخ الاحتياطية" [ref=e159] [cursor=pointer]:
+          - generic "السجلات / النسخ الاحتياطية" [ref=e160]: 
+          - generic [ref=e161]: السجلات / النسخ الاحتياطية
+          - img [ref=e163]
+        - text:  
+  - generic [ref=e167]:
+    - navigation [ref=e169]:
+      - generic [ref=e170]:
+        - link "Espitalia" [ref=e171] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/dashboard
+          - img "Espitalia" [ref=e174]
+        - img [ref=e177] [cursor=pointer]
+        - button "Toggle navigation" [ref=e180] [cursor=pointer]
+        - text:     
+    - generic [ref=e186]:
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - heading "تصبح على خير Mr.عمر المالكي" [level=1] [ref=e190]
+          - paragraph [ref=e191]: الأداء
+        - generic [ref=e193]:
+          - textbox "اختر التاريخ" [ref=e194] [cursor=pointer]
+          - text: 
+          - button "" [disabled]:
+            - generic: 
+      - generic [ref=e195]:
+        - link " إجمالي المواعيد 8" [ref=e197] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/appointments
+          - generic [ref=e199]:
+            - generic [ref=e201]: 
+            - generic [ref=e202]:
+              - paragraph [ref=e203]: إجمالي المواعيد
+              - heading "8" [level=3] [ref=e204]
+        - link " إجمالي الخدمات النشطة 41" [ref=e396] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/services
+          - generic [ref=e208]:
+            - generic [ref=e210]: 
+            - generic [ref=e211]:
+              - paragraph [ref=e212]: إجمالي الخدمات النشطة
+              - heading "41" [level=3] [ref=e397]
+        - link " إجمالي العيادات 3" [ref=e215] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/clinics
+          - generic [ref=e217]:
+            - generic [ref=e219]: 
+            - generic [ref=e220]:
+              - paragraph [ref=e221]: إجمالي العيادات
+              - heading "3" [level=3] [ref=e222]
+        - link " إجمالي المرضى 9" [ref=e224] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/customers
+          - generic [ref=e226]:
+            - generic [ref=e228]: 
+            - generic [ref=e229]:
+              - paragraph [ref=e230]: إجمالي المرضى
+              - heading "9" [level=3] [ref=e231]
+        - generic [ref=e234]:
+          - generic [ref=e236]: 
+          - generic [ref=e237]:
+            - paragraph [ref=e238]: إجمالي الإيرادات
+            - heading "$450" [level=3] [ref=e239]
+      - generic [ref=e240]:
+        - link " طلبات التمريض 6" [ref=e242] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/nurse-requests
+          - generic [ref=e244]:
+            - generic [ref=e246]: 
+            - generic [ref=e247]:
+              - paragraph [ref=e248]: طلبات التمريض
+              - heading "6" [level=3] [ref=e249]
+        - link " طلبات المختبر 0" [ref=e251] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/test-orders
+          - generic [ref=e253]:
+            - generic [ref=e255]: 
+            - generic [ref=e256]:
+              - paragraph [ref=e257]: طلبات المختبر
+              - heading "0" [level=3] [ref=e258]
+        - link " حالات دخول العناية المركزة 0" [ref=e260] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app/icu-admission-requests
+          - generic [ref=e262]:
+            - generic [ref=e264]: 
+            - generic [ref=e265]:
+              - paragraph [ref=e266]: حالات دخول العناية المركزة
+              - heading "0" [level=3] [ref=e267]
+        - generic [ref=e270]:
+          - generic [ref=e272]: 
+          - generic [ref=e273]:
+            - paragraph [ref=e274]: الحجوزات المستقلة
+            - heading "0" [level=3] [ref=e275]
+      - generic [ref=e276]:
+        - generic [ref=e278]:
+          - generic [ref=e279]:
+            - heading "إجمالي الإيرادات" [level=5] [ref=e280]
+            - link "Year" [ref=e398] [cursor=pointer]:
+              - /url: "#"
+          - img [ref=e432]:
+            - generic [ref=e435]:
+              - generic "‏320.00 US$" [ref=e436]
+              - generic "‏240.00 US$" [ref=e437]
+              - generic "‏160.00 US$" [ref=e438]
+              - generic "‏80.00 US$" [ref=e439]
+              - generic "‏0.00 US$" [ref=e440]
+            - generic [ref=e449]:
+              - generic "يناير" [ref=e450]
+              - generic "فبراير" [ref=e451]
+              - generic "مارس" [ref=e452]
+              - generic "أبريل" [ref=e453]
+              - generic "مايو" [ref=e454]
+              - generic "يونيو" [ref=e455]
+              - generic "يوليو" [ref=e456]
+              - generic "أغسطس" [ref=e457]
+              - generic "سبتمبر" [ref=e458]
+              - generic "أكتوبر" [ref=e459]
+              - generic "نوفمبر" [ref=e460]
+              - generic "ديسمبر" [ref=e461]
+        - generic [ref=e287]:
+          - heading "المرضى الذين تمت زيارتهم حسب العمر" [level=5] [ref=e289]
+          - generic [ref=e291]:
+            - generic [ref=e292]:
+              - img "age-0-25" [ref=e293]
+              - heading "عمر 0-25" [level=6] [ref=e294]
+              - heading "0" [level=4] [ref=e296]
+            - generic [ref=e297]:
+              - img "age-26-50" [ref=e298]
+              - heading "عمر 26-50" [level=6] [ref=e299]
+              - heading "8" [level=4] [ref=e430]
+            - generic [ref=e302]:
+              - img "age-50+" [ref=e303]
+              - heading "عمر 50+" [level=6] [ref=e304]
+              - heading "0" [level=4] [ref=e306]
+      - generic [ref=e307]:
+        - generic [ref=e309]:
+          - heading "المواعيد القادمة" [level=5] [ref=e311]
+          - list [ref=e315]:
+            - listitem [ref=e316]:
+              - generic [ref=e318]:
+                - generic [ref=e320]:
+                  - paragraph [ref=e321]: 2026-05-23
+                  - text: 9:53 AM
+                - generic [ref=e323]:
+                  - heading "محمد الأحمدي" [level=6] [ref=e324]
+                  - paragraph [ref=e325]: "اسم العيادة: مركز رعاية القلب والعظام"
+                  - generic [ref=e326]: Cardiac Consultation By أحمد الخالدي
+                - link "" [ref=e328] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/app/appointments/clinicAppointmentDetail/9
+                  - generic [ref=e329]: 
+        - generic [ref=e331]:
+          - heading "سجل الدفع" [level=5] [ref=e333]
+          - table [ref=e336]:
+            - rowgroup [ref=e337]:
+              - row "مريض التاريخ والوقت عيادة الخدمة السعر طريقة الدفع حالة الدفع" [ref=e338]:
+                - columnheader "مريض" [ref=e339]
+                - columnheader "التاريخ والوقت" [ref=e340]
+                - columnheader "عيادة" [ref=e341]
+                - columnheader "الخدمة" [ref=e342]
+                - columnheader "السعر" [ref=e343]
+                - columnheader "طريقة الدفع" [ref=e344]
+                - columnheader "حالة الدفع" [ref=e345]
+            - rowgroup [ref=e346]:
+              - row "علي الزهراني 2026-01-23 At 6:53 AM عيادة العافية لطب الأسنان Dental Implant Surgery $150 Cash مدفوع" [ref=e347]:
+                - cell "علي الزهراني" [ref=e348]
+                - cell "2026-01-23 At 6:53 AM" [ref=e349]
+                - cell "عيادة العافية لطب الأسنان" [ref=e350]
+                - cell "Dental Implant Surgery" [ref=e351]
+                - cell "$150" [ref=e352]
+                - cell "Cash" [ref=e353]
+                - cell "مدفوع" [ref=e354]:
+                  - generic [ref=e355]: مدفوع
+              - row "محمد الأحمدي 2026-05-23 At 6:53 AM مركز رعاية القلب والعظام Cardiac Consultation $150 Cash معلق" [ref=e356]:
+                - cell "محمد الأحمدي" [ref=e357]
+                - cell "2026-05-23 At 6:53 AM" [ref=e358]
+                - cell "مركز رعاية القلب والعظام" [ref=e359]
+                - cell "Cardiac Consultation" [ref=e360]
+                - cell "$150" [ref=e361]
+                - cell "Cash" [ref=e362]
+                - cell "معلق" [ref=e363]:
+                  - generic [ref=e364]: معلق
+              - row "سعد القرني 2026-02-23 At 6:53 AM مركز الوئام الطبي Routine Check-ups and Physical Examinations $150 Cash معلق" [ref=e365]:
+                - cell "سعد القرني" [ref=e366]
+                - cell "2026-02-23 At 6:53 AM" [ref=e367]
+                - cell "مركز الوئام الطبي" [ref=e368]
+                - cell "Routine Check-ups and Physical Examinations" [ref=e369]
+                - cell "$150" [ref=e370]
+                - cell "Cash" [ref=e371]
+                - cell "معلق" [ref=e372]:
+                  - generic [ref=e373]: معلق
+              - row "ريم العنزي 2026-02-23 At 6:53 AM مركز الوئام الطبي Acupuncture $150 Cash مدفوع" [ref=e374]:
+                - cell "ريم العنزي" [ref=e375]
+                - cell "2026-02-23 At 6:53 AM" [ref=e376]
+                - cell "مركز الوئام الطبي" [ref=e377]
+                - cell "Acupuncture" [ref=e378]
+                - cell "$150" [ref=e379]
+                - cell "Cash" [ref=e380]
+                - cell "مدفوع" [ref=e381]:
+                  - generic [ref=e382]: مدفوع
+              - row "محمد الأحمدي 2026-01-23 At 6:53 AM مركز رعاية القلب والعظام Cardiac Consultation $150 Cash مدفوع" [ref=e383]:
+                - cell "محمد الأحمدي" [ref=e384]
+                - cell "2026-01-23 At 6:53 AM" [ref=e385]
+                - cell "مركز رعاية القلب والعظام" [ref=e386]
+                - cell "Cardiac Consultation" [ref=e387]
+                - cell "$150" [ref=e388]
+                - cell "Cash" [ref=e389]
+                - cell "مدفوع" [ref=e390]:
+                  - generic [ref=e391]: مدفوع
+    - contentinfo [ref=e392]:
+      - generic [ref=e394]:
+        - link "Espitalia" [ref=e395] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/app
+        - text: .
+  - img

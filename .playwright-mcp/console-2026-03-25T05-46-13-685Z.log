@@ -1,0 +1,38 @@
+[    3524ms] [WARNING] Feature flag __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ is not explicitly defined. You are running the esm-bundler build of Vue, which expects these compile-time feature flags to be globally injected via the bundler config in order to get better tree-shaking in the production bundle.
+
+For more details, see https://link.vuejs.org/feature-flags. @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4732
+[    3538ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "userId". Expected Number with value 0, got String with value "". 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3558ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3572ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3582ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "modelValue". Expected String | Number | Date | Array | Null, got Undefined  
+  at <FlatPickr modelValue=undefined onUpdate:modelValue=fn config= {dateFormat: Y-m-d, maxDate: today, enableTime: false, altInput: true, altFormat: F j, Y}  ... > 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3613ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3617ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3732ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    3738ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    7515ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    7520ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201

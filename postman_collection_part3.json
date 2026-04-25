@@ -1,0 +1,376 @@
+{
+  "appointments": {
+    "name": "Appointments",
+    "description": "Appointment booking and management endpoints",
+    "item": [
+      {
+        "name": "Save Booking",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"doctor_id\": 1,\n  \"clinic_id\": 1,\n  \"service_id\": 1,\n  \"appointment_date\": \"2026-04-20\",\n  \"appointment_time\": \"10:00\",\n  \"patient_id\": 1,\n  \"note\": \"First visit\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-booking", "host": ["{{base_url}}"], "path": ["save-booking"]},
+          "description": "Create a new appointment booking"
+        }
+      },
+      {
+        "name": "Update Booking",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"appointment_date\": \"2026-04-21\",\n  \"appointment_time\": \"11:00\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/update-booking/1", "host": ["{{base_url}}"], "path": ["update-booking", "1"]},
+          "description": "Update an existing appointment"
+        }
+      },
+      {
+        "name": "Get Appointment List",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/appointment-list?page=1&per_page=15",
+            "host": ["{{base_url}}"],
+            "path": ["appointment-list"],
+            "query": [
+              {"key": "page", "value": "1"},
+              {"key": "per_page", "value": "15"},
+              {"key": "status", "value": "", "disabled": true}
+            ]
+          },
+          "description": "Get list of appointments"
+        }
+      },
+      {
+        "name": "Get Appointment Detail",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/appointment-detail?id=1",
+            "host": ["{{base_url}}"],
+            "path": ["appointment-detail"],
+            "query": [{"key": "id", "value": "1"}]
+          },
+          "description": "Get appointment details"
+        }
+      },
+      {
+        "name": "Update Appointment Status",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"status\": \"confirmed\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/update-status/1", "host": ["{{base_url}}"], "path": ["update-status", "1"]},
+          "description": "Update appointment status"
+        }
+      },
+      {
+        "name": "Reschedule Booking",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"appointment_id\": 1,\n  \"new_date\": \"2026-04-25\",\n  \"new_time\": \"14:00\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/reschedule-booking", "host": ["{{base_url}}"], "path": ["reschedule-booking"]},
+          "description": "Reschedule an appointment"
+        }
+      },
+      {
+        "name": "Cancel Appointment",
+        "request": {
+          "method": "POST",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {"raw": "{{base_url}}/cancel-appointment/1", "host": ["{{base_url}}"], "path": ["cancel-appointment", "1"]},
+          "description": "Cancel an appointment"
+        }
+      },
+      {
+        "name": "Save Payment",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"appointment_id\": 1,\n  \"payment_method\": \"cash\",\n  \"amount\": 100,\n  \"transaction_id\": \"\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-payment", "host": ["{{base_url}}"], "path": ["save-payment"]},
+          "description": "Save appointment payment"
+        }
+      },
+      {
+        "name": "Download Invoice",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/download_invoice?appointment_id=1",
+            "host": ["{{base_url}}"],
+            "path": ["download_invoice"],
+            "query": [{"key": "appointment_id", "value": "1"}]
+          },
+          "description": "Download appointment invoice PDF"
+        }
+      },
+      {
+        "name": "Get Revenue Chart Data",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {"raw": "{{base_url}}/get-revenue-chart-data", "host": ["{{base_url}}"], "path": ["get-revenue-chart-data"]},
+          "description": "Get revenue chart data"
+        }
+      }
+    ]
+  },
+  "encounters": {
+    "name": "Patient Encounters",
+    "description": "Patient encounter and medical record management",
+    "item": [
+      {
+        "name": "Get Encounter List",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {"raw": "{{base_url}}/encounter-list", "host": ["{{base_url}}"], "path": ["encounter-list"]},
+          "description": "Get list of patient encounters"
+        }
+      },
+      {
+        "name": "Save Encounter",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"appointment_id\": 1,\n  \"patient_id\": 1,\n  \"doctor_id\": 1,\n  \"encounter_date\": \"2026-04-20\",\n  \"notes\": \"Patient encounter notes\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-encounter", "host": ["{{base_url}}"], "path": ["save-encounter"]},
+          "description": "Create a new patient encounter"
+        }
+      },
+      {
+        "name": "Update Encounter",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"notes\": \"Updated encounter notes\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/update-encounter/1", "host": ["{{base_url}}"], "path": ["update-encounter", "1"]},
+          "description": "Update patient encounter"
+        }
+      },
+      {
+        "name": "Delete Encounter",
+        "request": {
+          "method": "POST",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {"raw": "{{base_url}}/delete-encounter/1", "host": ["{{base_url}}"], "path": ["delete-encounter", "1"]},
+          "description": "Delete patient encounter"
+        }
+      },
+      {
+        "name": "Get Encounter Details",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/encounter-details?id=1",
+            "host": ["{{base_url}}"],
+            "path": ["encounter-details"],
+            "query": [{"key": "id", "value": "1"}]
+          },
+          "description": "Get encounter details"
+        }
+      },
+      {
+        "name": "Download Encounter Invoice",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/download-encounter-invoice?id=1",
+            "host": ["{{base_url}}"],
+            "path": ["download-encounter-invoice"],
+            "query": [{"key": "id", "value": "1"}]
+          },
+          "description": "Download encounter invoice"
+        }
+      },
+      {
+        "name": "Download Prescription",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/download-prescription?id=1",
+            "host": ["{{base_url}}"],
+            "path": ["download-prescription"],
+            "query": [{"key": "id", "value": "1"}]
+          },
+          "description": "Download prescription PDF"
+        }
+      },
+      {
+        "name": "Get Medical Report",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/get-medical-report?encounter_id=1",
+            "host": ["{{base_url}}"],
+            "path": ["get-medical-report"],
+            "query": [{"key": "encounter_id", "value": "1"}]
+          },
+          "description": "Get medical report"
+        }
+      },
+      {
+        "name": "Save Medical Report",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"encounter_id\": 1,\n  \"report_type\": \"diagnosis\",\n  \"content\": \"Medical report content\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-medical-report", "host": ["{{base_url}}"], "path": ["save-medical-report"]},
+          "description": "Save medical report"
+        }
+      },
+      {
+        "name": "Get Prescription",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/get-prescription?encounter_id=1",
+            "host": ["{{base_url}}"],
+            "path": ["get-prescription"],
+            "query": [{"key": "encounter_id", "value": "1"}]
+          },
+          "description": "Get prescription details"
+        }
+      },
+      {
+        "name": "Save Prescription",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"encounter_id\": 1,\n  \"medicines\": [\n    {\"name\": \"Medicine A\", \"dosage\": \"10mg\", \"frequency\": \"Twice daily\"}\n  ]\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-prescription", "host": ["{{base_url}}"], "path": ["save-prescription"]},
+          "description": "Save prescription"
+        }
+      },
+      {
+        "name": "Get Body Chart List",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {
+            "raw": "{{base_url}}/bodychart-list?encounter_id=1",
+            "host": ["{{base_url}}"],
+            "path": ["bodychart-list"],
+            "query": [{"key": "encounter_id", "value": "1"}]
+          },
+          "description": "Get body chart list"
+        }
+      },
+      {
+        "name": "Save Body Chart",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"encounter_id\": 1,\n  \"chart_data\": {}\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-bodychart", "host": ["{{base_url}}"], "path": ["save-bodychart"]},
+          "description": "Save body chart"
+        }
+      },
+      {
+        "name": "Save SOAP",
+        "request": {
+          "method": "POST",
+          "header": [
+            {"key": "Accept", "value": "application/json"},
+            {"key": "Content-Type", "value": "application/json"}
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"subjective\": \"Patient complaints\",\n  \"objective\": \"Physical examination findings\",\n  \"assessment\": \"Diagnosis\",\n  \"plan\": \"Treatment plan\"\n}",
+            "options": {"raw": {"language": "json"}}
+          },
+          "url": {"raw": "{{base_url}}/save-soap/1", "host": ["{{base_url}}"], "path": ["save-soap", "1"]},
+          "description": "Save SOAP notes"
+        }
+      },
+      {
+        "name": "Get SOAP",
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Accept", "value": "application/json"}],
+          "url": {"raw": "{{base_url}}/get-soap/1", "host": ["{{base_url}}"], "path": ["get-soap", "1"]},
+          "description": "Get SOAP notes"
+        }
+      }
+    ]
+  }
+}

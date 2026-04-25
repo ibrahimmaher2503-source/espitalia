@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/intensivecare",
+    "description": "",
+    "authors": [
+        {
+            "name": "Development Team"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\IntensiveCare\\": "",
+            "Modules\\IntensiveCare\\App\\": "app/",
+            "Modules\\IntensiveCare\\Database\\Factories\\": "database/factories/",
+            "Modules\\IntensiveCare\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\IntensiveCare\\Tests\\": "tests/"
+        }
+    }
+}

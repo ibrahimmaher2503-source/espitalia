@@ -1,0 +1,138 @@
+[    5316ms] [WARNING] Feature flag __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ is not explicitly defined. You are running the esm-bundler build of Vue, which expects these compile-time feature flags to be globally injected via the bundler config in order to get better tree-shaking in the production bundle.
+
+For more details, see https://link.vuejs.org/feature-flags. @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4732
+[    5329ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "userId". Expected Number with value 0, got String with value "". 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5346ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5358ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5371ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "modelValue". Expected String | Number | Date | Array | Null, got Undefined  
+  at <FlatPickr modelValue=undefined onUpdate:modelValue=fn config= {dateFormat: Y-m-d, maxDate: today, enableTime: false, altInput: true, altFormat: F j, Y}  ... > 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5404ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5412ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5644ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5649ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5970ms] [WARNING] [Vue warn]: Failed to resolve component: employee-slot-mapping-form-offcanvas
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5970ms] [WARNING] [Vue warn]: Failed to resolve component: send-push-notification
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5996ms] [WARNING] [Vue warn]: Property "defaultImage" was accessed during render but is not defined on instance. 
+  at <DoctorOffcanvas type="staff" default-image="http://127.0.0.1:8000/img/default.webp" create-title="إنشاء الطبيب"  ... > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    5998ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[    6086ms] [WARNING] [Vue warn]: Property "currentId" was accessed during render but is not defined on instance. 
+  at <Doctordetail> 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    6086ms] [WARNING] [Vue warn]: Property "editTitle" was accessed during render but is not defined on instance. 
+  at <Doctordetail> 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[    6088ms] [WARNING] [intlify] Not found 'clinic.lbl_commission' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[    6089ms] [WARNING] [intlify] Not found 'clinic.expertize_in' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[    6227ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[    6309ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[    6780ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js:0
+[    6789ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/modules/clinic/script.js:6036:29)
+    at http://127.0.0.1:8000/modules/clinic/script.js:5896:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/modules/clinic/script.js:5895:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Modules/Clinic/Resources/assets/js/component/DoctorOffcanvas.vue?vue&type=script&setup=true&lang=js:582:74)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[    6790ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/modules/clinic/script.js:6036:29)
+    at http://127.0.0.1:8000/modules/clinic/script.js:5896:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/modules/clinic/script.js:5895:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Modules/Clinic/Resources/assets/js/component/DoctorOffcanvas.vue?vue&type=script&setup=true&lang=js:582:74)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[    6790ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/modules/clinic/script.js:6036:29)
+    at http://127.0.0.1:8000/modules/clinic/script.js:5896:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/modules/clinic/script.js:5895:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Modules/Clinic/Resources/assets/js/component/DoctorOffcanvas.vue?vue&type=script&setup=true&lang=js:582:74)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[    6790ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/modules/clinic/script.js:6036:29)
+    at http://127.0.0.1:8000/modules/clinic/script.js:5896:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/modules/clinic/script.js:5895:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Modules/Clinic/Resources/assets/js/component/DoctorOffcanvas.vue?vue&type=script&setup=true&lang=js:582:74)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[    6791ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/js/import-export.min.js:2589:29)
+    at http://127.0.0.1:8000/js/import-export.min.js:2449:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/js/import-export.min.js:2448:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/import-export/ExportModal.vue?vue&type=script&setup=true&lang=js:64:73)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[    6791ms] ChunkLoadError: Loading chunk node_modules_vee-validate_node_modules_vue_devtools-api_dist_index_js failed.
+(error: http://127.0.0.1:8000/health_wellnessjs/profile-vue-map.min.js)
+    at __webpack_require__.f.j (http://127.0.0.1:8000/js/booking-form.min.js:4494:29)
+    at http://127.0.0.1:8000/js/booking-form.min.js:4354:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (http://127.0.0.1:8000/js/booking-form.min.js:4353:67)
+    at installDevtoolsPlugin (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1262:52)
+    at registerFormWithDevTools (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:1384:9)
+    at useForm (webpack-internal:///./node_modules/vee-validate/dist/vee-validate.mjs:2946:9)
+    at setup (webpack-internal:///./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Modules/Appointment/Resources/assets/js/components/GlobalAppointmentOffcanvas.vue?vue&type=script&setup=true&lang=js:219:74)
+    at callWithErrorHandling (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:350:19)
+    at setupStatefulComponent (webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:8018:25)
+[   10885ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[   10888ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[   11391ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   11410ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   11589ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   14746ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   16281ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   17781ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197
+[   20640ms] [WARNING] [intlify] Not found 'clinic.upload' key in 'en' locale messages. @ webpack-internal:///./node_modules/@intlify/shared/dist/shared.mjs:197

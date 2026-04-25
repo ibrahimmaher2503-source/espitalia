@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/radiologylab",
+    "description": "",
+    "authors": [
+        {
+            "name": "Development Team"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\RadiologyLab\\": "",
+            "Modules\\RadiologyLab\\App\\": "app/",
+            "Modules\\RadiologyLab\\Database\\Factories\\": "database/factories/",
+            "Modules\\RadiologyLab\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\RadiologyLab\\Tests\\": "tests/"
+        }
+    }
+}

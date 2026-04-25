@@ -1,0 +1,279 @@
+{
+  "name": "Clinics & Doctors",
+  "description": "Clinic and doctor management endpoints",
+  "item": [
+    {
+      "name": "Get Service List (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-service-list", "host": ["{{base_url}}"], "path": ["get-service-list"]},
+        "description": "Get list of services (public)"
+      }
+    },
+    {
+      "name": "Get Doctor List (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-doctor-list", "host": ["{{base_url}}"], "path": ["get-doctor-list"]},
+        "description": "Get list of doctors (public)"
+      }
+    },
+    {
+      "name": "Get Category List (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-category-list", "host": ["{{base_url}}"], "path": ["get-category-list"]},
+        "description": "Get list of categories (public)"
+      }
+    },
+    {
+      "name": "Get Clinic List (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-clinic-list", "host": ["{{base_url}}"], "path": ["get-clinic-list"]},
+        "description": "Get list of clinics (public)"
+      }
+    },
+    {
+      "name": "Get Clinic Gallery (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {
+          "raw": "{{base_url}}/get-clinic-gallery?clinic_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["get-clinic-gallery"],
+          "query": [{"key": "clinic_id", "value": "1"}]
+        },
+        "description": "Get clinic gallery images (public)"
+      }
+    },
+    {
+      "name": "Get Time Slots (Public)",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {
+          "raw": "{{base_url}}/get-time-slots?doctor_id=1&date=2026-04-20&clinic_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["get-time-slots"],
+          "query": [
+            {"key": "doctor_id", "value": "1"},
+            {"key": "date", "value": "2026-04-20"},
+            {"key": "clinic_id", "value": "1"}
+          ]
+        },
+        "description": "Get available time slots for booking (public)"
+      }
+    },
+    {
+      "name": "Search Doctors by Location",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {
+          "raw": "{{base_url}}/doctors/search?governorate_id=1&city_id=1&specialization_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["doctors", "search"],
+          "query": [
+            {"key": "governorate_id", "value": "1"},
+            {"key": "city_id", "value": "1"},
+            {"key": "specialization_id", "value": "1", "disabled": true}
+          ]
+        },
+        "description": "Search doctors by location (public)"
+      }
+    },
+    {
+      "name": "Search Clinics by Location",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {
+          "raw": "{{base_url}}/clinics/search?governorate_id=1&city_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["clinics", "search"],
+          "query": [
+            {"key": "governorate_id", "value": "1"},
+            {"key": "city_id", "value": "1"}
+          ]
+        },
+        "description": "Search clinics by location (public)"
+      }
+    },
+    {
+      "name": "Get Rating",
+      "request": {
+        "auth": {"type": "noauth"},
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {
+          "raw": "{{base_url}}/get-rating?doctor_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["get-rating"],
+          "query": [{"key": "doctor_id", "value": "1"}]
+        },
+        "description": "Get doctor ratings (public)"
+      }
+    },
+    {
+      "name": "Save Clinic",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"My Clinic\",\n  \"email\": \"clinic@example.com\",\n  \"mobile\": \"+201234567890\",\n  \"address\": \"123 Medical Street\",\n  \"governorate_id\": 1,\n  \"city_id\": 1,\n  \"status\": 1\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/save-clinic", "host": ["{{base_url}}"], "path": ["save-clinic"]},
+        "description": "Create a new clinic"
+      }
+    },
+    {
+      "name": "Update Clinic",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Clinic Name\",\n  \"status\": 1\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/update-clinic/1", "host": ["{{base_url}}"], "path": ["update-clinic", "1"]},
+        "description": "Update an existing clinic"
+      }
+    },
+    {
+      "name": "Delete Clinic",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/delete-clinic/1", "host": ["{{base_url}}"], "path": ["delete-clinic", "1"]},
+        "description": "Delete a clinic"
+      }
+    },
+    {
+      "name": "Save Doctor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"Dr. John\",\n  \"last_name\": \"Smith\",\n  \"email\": \"doctor@example.com\",\n  \"mobile\": \"+201234567890\",\n  \"specialization_id\": 1,\n  \"clinic_id\": 1,\n  \"status\": 1\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/save-doctor", "host": ["{{base_url}}"], "path": ["save-doctor"]},
+        "description": "Create a new doctor"
+      }
+    },
+    {
+      "name": "Update Doctor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"Dr. John\",\n  \"last_name\": \"Smith Updated\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/update-doctor/1", "host": ["{{base_url}}"], "path": ["update-doctor", "1"]},
+        "description": "Update doctor details"
+      }
+    },
+    {
+      "name": "Get Doctors",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-doctors", "host": ["{{base_url}}"], "path": ["get-doctors"]},
+        "description": "Get list of doctors (authenticated)"
+      }
+    },
+    {
+      "name": "Get Specialization List",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/specialization-list", "host": ["{{base_url}}"], "path": ["specialization-list"]},
+        "description": "Get list of specializations"
+      }
+    },
+    {
+      "name": "Get Patients",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-patients", "host": ["{{base_url}}"], "path": ["get-patients"]},
+        "description": "Get list of patients"
+      }
+    },
+    {
+      "name": "Save Rating",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctor_id\": 1,\n  \"rating\": 5,\n  \"review\": \"Excellent doctor!\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/save-rating", "host": ["{{base_url}}"], "path": ["save-rating"]},
+        "description": "Submit a doctor rating"
+      }
+    },
+    {
+      "name": "Save Receptionist",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Doe\",\n  \"email\": \"receptionist@example.com\",\n  \"mobile\": \"+201234567890\",\n  \"clinic_id\": 1\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {"raw": "{{base_url}}/save-receptionist", "host": ["{{base_url}}"], "path": ["save-receptionist"]},
+        "description": "Create a new receptionist"
+      }
+    },
+    {
+      "name": "Get Receptionists",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Accept", "value": "application/json"}],
+        "url": {"raw": "{{base_url}}/get-receptionists", "host": ["{{base_url}}"], "path": ["get-receptionists"]},
+        "description": "Get list of receptionists"
+      }
+    }
+  ]
+}

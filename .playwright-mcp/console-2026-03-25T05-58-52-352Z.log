@@ -1,0 +1,56 @@
+[   18748ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/admin/img/logo/mini_logo.webp:0
+[  129445ms] [ERROR] Pattern attribute value [a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$ is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/v: Invalid character in character class @ http://127.0.0.1:8000/admin/login:0
+[  162939ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css:0
+[  162939ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.40.0/apexcharts.min.css:0
+[  162940ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js:0
+[  162940ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.40.0/apexcharts.min.js:0
+[  163310ms] [WARNING] Feature flag __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ is not explicitly defined. You are running the esm-bundler build of Vue, which expects these compile-time feature flags to be globally injected via the bundler config in order to get better tree-shaking in the production bundle.
+
+For more details, see https://link.vuejs.org/feature-flags. @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4732
+[  163330ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "userId". Expected Number with value 0, got String with value "". 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163348ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163359ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163373ms] [WARNING] [Vue warn]: Invalid prop: type check failed for prop "modelValue". Expected String | Number | Date | Array | Null, got Undefined  
+  at <FlatPickr modelValue=undefined onUpdate:modelValue=fn config= {dateFormat: Y-m-d, maxDate: today, enableTime: false, altInput: true, altFormat: F j, Y}  ... > 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163413ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163419ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163501ms] [WARNING] [Vue warn]: Failed to resolve component: FormElement
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  163507ms] [WARNING] [Vue warn]: Extraneous non-props attributes (booking-type) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <GlobalAppointmentOffcanvas booking-type="GLOBAL_BOOKING" > 
+  at <App> @ webpack-internal:///./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:201
+[  164516ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/services/index_list?doctorId=&clinicId=undefined:0
+[  164523ms] TypeError: arr.map is not a function
+    at buildMultiSelectObject (webpack-internal:///./resources/js/helpers/utilities.js:142:14)
+    at eval (webpack-internal:///./resources/js/helpers/hooks/useSelect.js:28:97)
+[  165547ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/clinics/index_list:0
+[  165551ms] TypeError: arr.map is not a function
+    at buildMultiSelectObject (webpack-internal:///./resources/js/helpers/utilities.js:142:14)
+    at eval (webpack-internal:///./resources/js/helpers/hooks/useSelect.js:28:97)
+[  166605ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/customers/index_list?filter=all:0
+[  166607ms] TypeError: arr.map is not a function
+    at buildMultiSelectObject (webpack-internal:///./resources/js/helpers/utilities.js:142:14)
+    at eval (webpack-internal:///./resources/js/helpers/hooks/useSelect.js:28:97)
+[  167737ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/tax/index_list?module_type=services&tax_type=exclusive:0
+[  168826ms] ReferenceError: ApexCharts is not defined
+    at Object.success (http://127.0.0.1:8000/app:1909:25)
+    at fire (webpack-internal:///./node_modules/jquery/dist/jquery.js:3223:31)
+    at Object.fireWith [as resolveWith] (webpack-internal:///./node_modules/jquery/dist/jquery.js:3353:7)
+    at done (webpack-internal:///./node_modules/jquery/dist/jquery.js:9627:14)
+    at XMLHttpRequest.eval (webpack-internal:///./node_modules/jquery/dist/jquery.js:9888:9)

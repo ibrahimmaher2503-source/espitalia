@@ -1,0 +1,11 @@
+{
+    "name": "RadiologyLab",
+    "alias": "radiologylab",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RadiologyLab\\Providers\\RadiologyLabServiceProvider"
+    ],
+    "files": []
+}

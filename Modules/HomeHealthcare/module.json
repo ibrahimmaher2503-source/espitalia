@@ -1,0 +1,11 @@
+{
+    "name": "HomeHealthcare",
+    "alias": "homehealthcare",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\HomeHealthcare\\Providers\\HomeHealthcareServiceProvider"
+    ],
+    "files": []
+}

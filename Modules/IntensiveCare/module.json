@@ -1,0 +1,11 @@
+{
+    "name": "IntensiveCare",
+    "alias": "intensivecare",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\IntensiveCare\\Providers\\IntensiveCareServiceProvider"
+    ],
+    "files": []
+}

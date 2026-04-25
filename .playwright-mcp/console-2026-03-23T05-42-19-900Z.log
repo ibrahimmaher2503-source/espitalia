@@ -1,0 +1,4 @@
+[  180570ms] TypeError: window.tooltipInit is not a function
+    at Object.initialize (webpack-internal:///./resources/js/backend-custom.js:601:14)
+    at eval (webpack-internal:///./Modules/Frontend/Resources/assets/js/app.js:216:26)
+[  195988ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/admin/img/logo/mini_logo.webp:0
