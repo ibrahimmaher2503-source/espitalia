@@ -37,6 +37,10 @@ return [
     'clinic_category_list' => 'Clinic Category List',
     'lbl_featured'=>'Set As Featured',
     'parent_category'=>'Parent Category',
+    'lbl_name_ar' => 'Name (Arabic)',
+    'lbl_name_en' => 'Name (English)',
+    'lbl_description_ar' => 'Description (Arabic)',
+    'lbl_description_en' => 'Description (English)',
 
 
 ];

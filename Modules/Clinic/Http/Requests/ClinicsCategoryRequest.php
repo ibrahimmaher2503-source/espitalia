@@ -18,6 +18,10 @@ class ClinicsCategoryRequest extends FormRequest
             case 'post':
                 return [
                     'name' => 'unique:clinics_categories,name,'.$id,
+                    'name_ar' => 'nullable|string|max:255|required_without:name_en',
+                    'name_en' => 'nullable|string|max:255|required_without:name_ar',
+                    'description_ar' => 'nullable|string',
+                    'description_en' => 'nullable|string',
                     'status' => 'boolean',
                 ];
                 break;
@@ -26,6 +30,10 @@ class ClinicsCategoryRequest extends FormRequest
                 return [
                     // 'system_service_id' => 'required|integer',
                     'name' => 'unique:clinics_categories,name,'.$id,
+                    'name_ar' => 'nullable|string|max:255|required_without:name_en',
+                    'name_en' => 'nullable|string|max:255|required_without:name_ar',
+                    'description_ar' => 'nullable|string',
+                    'description_en' => 'nullable|string',
                     'status' => 'boolean',
                 ];
                 break;

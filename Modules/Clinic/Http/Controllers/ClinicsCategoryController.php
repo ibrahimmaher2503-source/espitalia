@@ -399,7 +399,9 @@ class ClinicsCategoryController extends Controller
     public function store(ClinicsCategoryRequest $request)
     {
         $data = $request->except('file_url');
-        $data['slug'] = strtolower(Str::slug($request->name, '-'));
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
+        $data['slug'] = strtolower(Str::slug($data['name'], '-'));
         $query = ClinicsCategory::create($data);
         $RequestService = RequestService::where('name', $query->name)->first();
         if ($RequestService !== null) {
@@ -461,6 +463,8 @@ class ClinicsCategoryController extends Controller
         $query = ClinicsCategory::findOrFail($id);
 
         $data = $request->except('file_url');
+        $data['name'] = $request->name_en ?? $request->name_ar;
+        $data['description'] = $request->description_en ?? $request->description_ar;
 
         $query->update($data);
 

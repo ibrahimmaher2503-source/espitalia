@@ -25,7 +25,7 @@ class ClinicsCategory extends BaseModel
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = ['slug','name','parent_id','description','vendor_id','featured','status'];
+    protected $fillable = ['slug','name','name_ar','name_en','parent_id','description','description_ar','description_en','vendor_id','featured','status'];
 
     protected $appends = ['file_url'];
 
@@ -69,6 +69,20 @@ class ClinicsCategory extends BaseModel
         static::updating(function ($table) {
             //
         });
+    }
+
+    public function getNameAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+    }
+
+    public function getDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
     }
 
     protected function getFileUrlAttribute()
