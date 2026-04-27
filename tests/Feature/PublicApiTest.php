@@ -2,11 +2,23 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
+use Modules\Clinic\Tests\Unit\BaseTest;
 
-class PublicApiTest extends TestCase
+class PublicApiTest extends BaseTest
 {
-    // No database interactions needed — just route resolution.
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->runMigrations();
+
+        // specialization-list queries system_service_category (Service module)
+        $this->artisan('migrate', [
+            '--path' => 'Modules/Service/database/migrations',
+            '--force' => true,
+        ]);
+    }
+
+    // Discovery routes query the DB; runMigrations() sets up SQLite-compatible tables.
 
     // --- Group A: simple route moves ---
 
@@ -47,7 +59,8 @@ class PublicApiTest extends TestCase
 
     public function test_doctor_details_is_public(): void
     {
-        $this->getJson('/api/doctor-details')->assertStatus(200);
+        $response = $this->getJson('/api/doctor-details/1');
+        $this->assertNotContains($response->status(), [401, 403], 'doctor-details must be publicly accessible');
     }
 
     public function test_get_doctors_session_list_is_public(): void

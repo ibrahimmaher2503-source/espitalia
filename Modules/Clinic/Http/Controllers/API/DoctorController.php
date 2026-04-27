@@ -138,11 +138,30 @@ class DoctorController extends Controller
     }
 
 
+    public function doctorDetails($id)
+    {
+        $doctor = Doctor::with('user', 'doctorCommission', 'doctorService', 'doctorclinic', 'doctorReviews', 'doctorDocuments')
+            ->find($id);
+
+        if (! $doctor || (! auth()->user() && (int) $doctor->status !== 1)) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.not_found'),
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => new DoctorDetailsResource($doctor),
+            'message' => __('clinic.doctor_details'),
+        ], 200);
+    }
+
      public function DoctorSessionList(Request $request){
 
         $perPage = $request->input('per_page', 10);
 
-        if(auth()->user()->hasRole('doctor')){
+        if(auth()->check() && auth()->user()->hasRole('doctor')){
             $doctor_session_list=DoctorClinicMapping::CheckMultivendor()->with('doctorsession')->where('doctor_id', auth()->user()->id);
         }
         else{
