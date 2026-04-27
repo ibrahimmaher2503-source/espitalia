@@ -15,7 +15,7 @@ class HospitalsApiController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Hospital::with(['governorate', 'city', 'icuDepartments'])
+            $query = Hospital::with(['governorate', 'governorateCity', 'icuDepartments'])
                 ->withCount('icuDepartments')
                 ->active();
 
@@ -96,7 +96,7 @@ class HospitalsApiController extends Controller
     public function show($id)
     {
         try {
-            $hospital = Hospital::with(['governorate', 'city', 'icuDepartments', 'commission', 'media'])
+            $hospital = Hospital::with(['governorate', 'governorateCity', 'icuDepartments', 'commission', 'media'])
                 ->withCount('icuDepartments')
                 ->active()
                 ->findOrFail($id);

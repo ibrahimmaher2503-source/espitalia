@@ -12,12 +12,15 @@ use Modules\IntensiveCare\Http\Controllers\Backend\API\IcuEarningsApiController;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    // Hospitals (catalog)
+// Public — hospital catalogue browseable without auth
+Route::prefix('v1')->group(function () {
     Route::get('/hospitals', [HospitalsApiController::class, 'index']);
     Route::get('/hospitals/{id}', [HospitalsApiController::class, 'show']);
     Route::get('/icu-departments', [HospitalsApiController::class, 'departments']);
+});
 
+// Protected — require authentication
+Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // ICU Admission Requests
     Route::get('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'index']);
     Route::post('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'store']);

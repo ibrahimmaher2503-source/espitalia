@@ -52,10 +52,10 @@ class HospitalResource extends JsonResource
                     'name' => $this->governorate->name,
                 ] : null;
             }),
-            'city' => $this->whenLoaded('city', function () {
-                return $this->getRelation('city') ? [
-                    'id' => $this->getRelation('city')->id,
-                    'name' => $this->getRelation('city')->name,
+            'city' => $this->whenLoaded('governorateCity', function () {
+                return $this->getRelation('governorateCity') ? [
+                    'id' => $this->getRelation('governorateCity')->id,
+                    'name' => $this->getRelation('governorateCity')->name,
                 ] : null;
             }),
             'logo_url' => $this->getFirstMediaUrl('logo') ?: null,

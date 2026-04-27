@@ -13,6 +13,30 @@ use Modules\Service\Transformers\ServiceResource;
 
 class ServiceController extends Controller
 {
+    /**
+     * Public resource index — returns paginated services (alias of serviceList).
+     */
+    public function index(Request $request)
+    {
+        return $this->serviceList($request);
+    }
+
+    /**
+     * Public resource show — returns a single active service.
+     */
+    public function show(Request $request, $id)
+    {
+        $service = Service::where('status', 1)
+            ->with(['category', 'sub_category', 'service_providers', 'media'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'status' => true,
+            'data'    => new ServiceResource($service),
+            'message' => __('service.service_detail'),
+        ], 200);
+    }
+
     public function assign_employee_list($id)
     {
         $service_user = ServiceEmployee::with('staff')->where('service_id', $id)->get();
