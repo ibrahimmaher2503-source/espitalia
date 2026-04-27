@@ -46,6 +46,41 @@ class PublicApiTest extends BaseTest
             '--path' => 'Modules/IntensiveCare/database/migrations',
             '--force' => true,
         ]);
+
+        // Seed minimal fixtures for show-route tests that assert HTTP 200
+        $this->seedTestFixtures();
+    }
+
+    protected function seedTestFixtures(): void
+    {
+        // Branch show route (GET /api/v1/branches/1) expects 200 — seed one branch
+        \Illuminate\Support\Facades\DB::table('branches')->insertOrIgnore([
+            'id'        => 1,
+            'name'      => json_encode(['ar' => 'فرع تجريبي', 'en' => 'Test Branch']),
+            'slug'      => 'test-branch',
+            'vendor_id' => 1,
+            'type'      => 'clinic',
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Hospital show route (GET /api/v1/hospitals/1) expects 200 — seed one hospital
+        \Illuminate\Support\Facades\DB::table('hospitals')->insertOrIgnore([
+            'id'         => 1,
+            'name_ar'    => 'مستشفى تجريبي',
+            'name_en'    => 'Test Hospital',
+            'slug'       => 'test-hospital',
+            'hospital_type' => 'private',
+            'address_ar' => 'عنوان تجريبي',
+            'address_en' => 'Test Address',
+            'city'       => 'Cairo',
+            'phone'      => '0000000000',
+            'status'     => 1,
+            'rating'     => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     // Discovery routes query the DB; runMigrations() sets up SQLite-compatible tables.

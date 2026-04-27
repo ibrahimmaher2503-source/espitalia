@@ -117,6 +117,11 @@ class Branch extends BaseModel
     {
         $user = $user ?? auth()->user();
 
+        // Unauthenticated (public) requests: return all active branches
+        if (! $user) {
+            return $query->where('is_active', 1);
+        }
+
         if ($user->hasRole('admin') || $user->hasRole('demo_admin')) {
             return $query;
         }
