@@ -19,13 +19,12 @@ use Modules\Pharmacy\Http\Controllers\API\RefundApiController;
 |
 | Routes registered here are wrapped by RouteServiceProvider with:
 | - Prefix: v1/pharmacy
-| - Middleware: auth:sanctum
 | - Name prefix: api.
 |
 */
 
-Route::prefix('v1/pharmacy')->middleware('auth:sanctum')->name('api.')->group(function () {
-
+// Public — catalogue browseable without auth
+Route::prefix('v1/pharmacy')->name('api.')->group(function () {
     // Categories
     Route::get('categories', [CategoryApiController::class, 'index'])->name('categories.index');
     Route::get('categories/{id}/children', [CategoryApiController::class, 'children'])->name('categories.children');
@@ -37,6 +36,10 @@ Route::prefix('v1/pharmacy')->middleware('auth:sanctum')->name('api.')->group(fu
     // Filters
     Route::get('filters/brands', [FilterApiController::class, 'brands'])->name('filters.brands');
     Route::get('filters/product-types', [FilterApiController::class, 'productTypes'])->name('filters.product-types');
+});
+
+// Protected — require authentication
+Route::prefix('v1/pharmacy')->middleware('auth:sanctum')->name('api.')->group(function () {
 
     // Cart
     Route::get('cart', [CartApiController::class, 'index'])->name('cart.index');

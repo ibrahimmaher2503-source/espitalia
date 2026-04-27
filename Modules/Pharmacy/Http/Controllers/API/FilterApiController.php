@@ -12,18 +12,20 @@ use Modules\Pharmacy\Transformers\PharmacyProductTypeResource;
 class FilterApiController extends Controller
 {
     /**
-     * Get brands with products in a subcategory
+     * Get brands with products in a subcategory (or all brands when no subcategory given)
      */
     public function brands(Request $request)
     {
         $request->validate([
-            'sub_category_id' => 'required|exists:pharmacy_categories,id',
+            'sub_category_id' => 'nullable|exists:pharmacy_categories,id',
         ]);
 
         $brands = PharmacyBrand::where('is_active', true)
             ->whereHas('products', function ($q) use ($request) {
-                $q->where('sub_category_id', $request->sub_category_id)
-                    ->where('is_active', true)
+                if ($request->filled('sub_category_id')) {
+                    $q->where('sub_category_id', $request->sub_category_id);
+                }
+                $q->where('is_active', true)
                     ->whereHas('inventories', function ($inv) {
                         $inv->where('stock_qty', '>', 0)
                             ->where('is_available', true);
@@ -38,26 +40,28 @@ class FilterApiController extends Controller
     }
 
     /**
-     * Get product types with products in a subcategory
+     * Get product types with products in a subcategory (or all types when no subcategory given)
      */
     public function productTypes(Request $request)
     {
         $request->validate([
-            'sub_category_id' => 'required|exists:pharmacy_categories,id',
+            'sub_category_id' => 'nullable|exists:pharmacy_categories,id',
         ]);
 
-        $types = PharmacyProductType::whereHas('products', function ($q) use ($request) {
-            $q->where('sub_category_id', $request->sub_category_id)
-                ->where('is_active', true)
+        $query = PharmacyProductType::whereHas('products', function ($q) use ($request) {
+            if ($request->filled('sub_category_id')) {
+                $q->where('sub_category_id', $request->sub_category_id);
+            }
+            $q->where('is_active', true)
                 ->whereHas('inventories', function ($inv) {
                     $inv->where('stock_qty', '>', 0)
                         ->where('is_available', true);
                 });
-        })->get();
+        });
 
         return response()->json([
             'status' => true,
-            'data' => PharmacyProductTypeResource::collection($types),
+            'data' => PharmacyProductTypeResource::collection($query->get()),
         ]);
     }
 }
