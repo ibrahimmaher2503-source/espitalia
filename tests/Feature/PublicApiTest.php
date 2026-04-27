@@ -16,6 +16,36 @@ class PublicApiTest extends BaseTest
             '--path' => 'Modules/Service/database/migrations',
             '--force' => true,
         ]);
+
+        // World: country/state/city list routes
+        $this->artisan('migrate', [
+            '--path' => 'Modules/World/database/migrations',
+            '--force' => true,
+        ]);
+
+        // Location: governorates/cities tables required by Branch and IntensiveCare FKs
+        $this->artisan('migrate', [
+            '--path' => 'Modules/Location/database/migrations',
+            '--force' => true,
+        ]);
+
+        // Branch: public list/show routes
+        $this->artisan('migrate', [
+            '--path' => 'Modules/Branch/database/migrations',
+            '--force' => true,
+        ]);
+
+        // Pharmacy: public catalogue routes
+        $this->artisan('migrate', [
+            '--path' => 'Modules/Pharmacy/database/migrations',
+            '--force' => true,
+        ]);
+
+        // IntensiveCare: public hospital/department routes
+        $this->artisan('migrate', [
+            '--path' => 'Modules/IntensiveCare/database/migrations',
+            '--force' => true,
+        ]);
     }
 
     // Discovery routes query the DB; runMigrations() sets up SQLite-compatible tables.
