@@ -5,7 +5,6 @@ namespace Modules\Customer\Http\Controllers\Backend\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Http\Resources\UserResource;
 use Modules\Customer\Models\OtherPatient;
 use Illuminate\Support\Facades\Auth;
@@ -63,42 +62,8 @@ class CustomersController extends Controller
     public function getOtherMembersList(Request $request)
     {
         try {
-            // Get the authenticated user ID or fallback to request user_id
-
-            if ($request->has('patient_id')) {
-                $otherMember = OtherPatient::where('user_id', $request->patient_id)
-                    ->get();
-    
-                if (!$otherMember) {
-                    return response()->json([
-                        'status'  => false,
-                        'code'    => 404,
-                        'message' => __('messages.patient_not_found'),
-                    ], 404);
-                }
-    
-                return response()->json([
-                    'status'  => true,
-                    'code'    => 200,
-                    'message' => __('messages.record_fetched_successfully'),
-                    'data'    => $otherMember,
-                ], 200);
-            }
-            $userId = auth()->id() ?? $request->user_id;
-
-            // Fetch the user and ensure it exists
-            $user = User::find($userId);
-            if (!$user) {
-                return response()->json([
-                    'status'  => false,
-                    'code'    => 404,
-                    'message' => __('messages.user_not_found'),
-                ], 404);
-            }
-
-            // Fetch other members for the given user, ordered by latest first
-            $otherMembers = OtherPatient::where('user_id', $userId)
-                ->latest()  // This orders by created_at DESC
+            $otherMembers = OtherPatient::where('user_id', auth()->id())
+                ->latest()
                 ->get();
 
             // Return success response
@@ -114,38 +79,22 @@ class CustomersController extends Controller
                 'status'  => false,
                 'code'    => 500,
                 'message' => __('messages.something_went_wrong'),
-                'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function addOtherMember(Request $request)
+    public function addOtherMember(OtherRequest $request)
     {
-        // Retrieve all input data
-        $data = $request->all();
-
-        // Set the user ID, either from the authenticated user or from the request
-        $data['user_id'] = auth()->id() ?? $request->user_id;
-
-        // Check if the user ID is null
-        if (is_null($data['user_id'])) {
-            return response()->json([
-                'status' => false,
-                'code' => 404,
-                'message' => __('messages.user_not_found'),
-            ], 404);
-        }
-        $user = User::where('id',$data['user_id'])->first();
-        if (is_null($user)) {
-            return response()->json([
-                'status' => false,
-                'code' => 404,
-                'message' => __('messages.user_not_found'),
-            ], 404);
-        }
+        $data = $request->validated();
+        $userId = auth()->id();
+        $memberId = $data['id'] ?? null;
+        unset($data['id'], $data['profile_image']);
+        $data['user_id'] = $userId;
         // Determine if it's an update or a new record
-        if (!empty($data['id'])) {
-            $otherMemberList = OtherPatient::find($data['id']);
+        if (!empty($memberId)) {
+            $otherMemberList = OtherPatient::whereKey($memberId)
+                ->where('user_id', $userId)
+                ->first();
             if (!$otherMemberList) {
                 return response()->json([
                     'status' => false,
@@ -153,6 +102,7 @@ class CustomersController extends Controller
                     'message' => __('messages.record_not_found'),
                 ], 404);
             }
+            unset($data['user_id']);
             $otherMemberList->update($data);
             $message = __('messages.member_updated');
         } else {
@@ -176,7 +126,9 @@ class CustomersController extends Controller
     {
         
         // Retrieve the record by ID
-        $otherMember = OtherPatient::find($id);
+        $otherMember = OtherPatient::whereKey($id)
+            ->where('user_id', auth()->id())
+            ->first();
 
         // Check if the record exists
         if (!$otherMember) {

@@ -4,6 +4,7 @@ namespace Modules\Clinic\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Modules\Clinic\Models\Doctor;
 use Modules\Clinic\Models\DoctorIndependentService;
 use Modules\Clinic\Models\DoctorIndependentSession;
@@ -27,13 +28,22 @@ class IndependentBookingApiController extends Controller
     public function doctors(Request $request)
     {
         $query = Doctor::where('status', 1)
-            ->with(['user', 'doctorService', 'doctorclinic', 'doctorReviews']);
+            ->where('is_independent', true)
+            ->with(['user.profile', 'doctorService', 'doctorclinic', 'doctorReviews']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
                 $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
             });
+        }
+
+        if ($request->filled('governorate_id')) {
+            $query->where('governorate_id', $request->governorate_id);
+        }
+
+        if ($request->filled('city_id')) {
+            $query->where('city_id', $request->city_id);
         }
 
         $perPage = min((int) ($request->per_page ?? 15), 50);
@@ -47,7 +57,10 @@ class IndependentBookingApiController extends Controller
      */
     public function services($doctorId)
     {
-        $doctor = Doctor::where('id', $doctorId)->where('status', 1)->firstOrFail();
+        $doctor = Doctor::where('id', $doctorId)
+            ->where('status', 1)
+            ->where('is_independent', true)
+            ->firstOrFail();
 
         $services = DoctorIndependentService::where('doctor_id', $doctor->doctor_id)
             ->where('status', 1)
@@ -69,13 +82,19 @@ class IndependentBookingApiController extends Controller
             'independent_service_id' => 'required|exists:doctor_independent_services,id',
         ]);
 
-        $doctor = Doctor::where('id', $doctorId)->where('status', 1)->firstOrFail();
+        $doctor = Doctor::where('id', $doctorId)
+            ->where('status', 1)
+            ->where('is_independent', true)
+            ->firstOrFail();
         $doctor_user_id = $doctor->doctor_id;
         $timezone = new \DateTimeZone(setting('default_time_zone') ?? 'UTC');
         $carbonDate = Carbon::parse($request->appointment_date);
         $dayOfWeek = $carbonDate->locale('en')->dayName;
 
-        $service = DoctorIndependentService::find($request->independent_service_id);
+        $service = DoctorIndependentService::where('id', $request->independent_service_id)
+            ->where('doctor_id', $doctor_user_id)
+            ->where('status', 1)
+            ->firstOrFail();
         $time_slot_duration = $service ? (int) $service->time_slot : 10;
 
         $doctorSession = DoctorIndependentSession::where('doctor_id', $doctor_user_id)
@@ -175,9 +194,14 @@ class IndependentBookingApiController extends Controller
 
         $doctor = Doctor::where('id', $request->doctor_id)
             ->where('status', 1)
+            ->where('is_independent', true)
             ->firstOrFail();
 
-        $serviceData = $this->getIndependentServiceAmount($request->independent_service_id);
+        $service = DoctorIndependentService::where('id', $request->independent_service_id)
+            ->where('doctor_id', $doctor->doctor_id)
+            ->where('status', 1)
+            ->firstOrFail();
+        $serviceData = $this->getIndependentServiceAmount($service->id);
 
         // Double-booking prevention
         $existingAppointment = Appointment::where('doctor_id', $doctor->doctor_id)
@@ -196,6 +220,11 @@ class IndependentBookingApiController extends Controller
         $data['service_id'] = null;
         $data['independent_service_id'] = $request->independent_service_id;
         $data['booking_type'] = 'independent';
+        $data['booking_slot_key'] = Appointment::buildBookingSlotKey(
+            (int) $data['doctor_id'],
+            $data['appointment_date'],
+            $data['appointment_time'],
+        );
         $data['service_price'] = $serviceData['service_price'];
         $data['service_amount'] = $serviceData['service_amount'];
         $data['total_amount'] = $serviceData['total_amount'];
@@ -206,7 +235,15 @@ class IndependentBookingApiController extends Controller
         $data['start_date_time'] = Carbon::parse($data['appointment_date'] . ' ' . $data['appointment_time'])
             ->format('Y-m-d H:i:s');
 
-        $appointment = Appointment::create($data);
+        try {
+            $appointment = Appointment::create($data);
+        } catch (UniqueConstraintViolationException $e) {
+            if (str_contains($e->getMessage(), 'booking_slot_key')) {
+                return response()->json(['message' => __('frontend.lbl_no_slots_available'), 'status' => false], 422);
+            }
+
+            throw $e;
+        }
 
         AppointmentTransaction::updateOrCreate(
             ['appointment_id' => $appointment->id],

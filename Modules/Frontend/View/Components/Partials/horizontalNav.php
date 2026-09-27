@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Frontend\View\Components\partials;
+namespace Modules\Frontend\View\Components\Partials;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class horizontal extends Component
+class Horizontal extends Component
 {
     /**
      * Create a new component instance.

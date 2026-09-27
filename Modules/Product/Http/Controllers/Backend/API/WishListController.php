@@ -13,9 +13,8 @@ class WishListController extends Controller
 {
     public function getWishList(Request $request)
     {
-        $user_id = $request->input('user_id') ?? Auth::id();
-
-        $perPage = $request->input('per_page', 10);
+        $user_id = Auth::id();
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
 
         $wishlist = WishList::where('user_id', $user_id)
                              ->with('product')
@@ -36,7 +35,9 @@ class WishListController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+        ]);
 
         $product = Product::where('id', $data['product_id'])->first();
 
@@ -46,7 +47,7 @@ class WishListController extends Controller
             return response()->json(['message' => $message, 'status' => true], 200);
         }
 
-        $data['user_id'] = $request->input('user_id') ?? Auth::id();
+        $data['user_id'] = Auth::id();
 
         $wishlist = WishList::Create($data);
 
@@ -59,9 +60,9 @@ class WishListController extends Controller
     {
         $wishlist_id = $request->wishlist_id;
 
-        $wishlist = WishList::where('id', $wishlist_id)->first();
+        $wishlist = WishList::whereKey($wishlist_id)->where('user_id', Auth::id())->first();
 
-        $user_id = $request->input('user_id') ?? Auth::id();
+        $user_id = Auth::id();
 
         if ($request->has('product_id') && $request->product_id != '') {
             $wishlist = WishList::where('product_id', $request->product_id)->where('user_id', $user_id)->first();

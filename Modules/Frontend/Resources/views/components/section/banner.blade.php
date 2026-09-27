@@ -1,3 +1,55 @@
+@push('after-styles')
+<style>
+/* ── Home Banner Title Enhancement ─────────────────────────────────────── */
+.banner-content-title {
+    font-family: 'Cairo', sans-serif !important;
+    font-size: clamp(1.85rem, 4.5vw, 3.25rem) !important;
+    font-weight: 800 !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.03em !important;
+    color: #ffffff !important;
+    text-shadow:
+        0 2px 20px rgba(0,0,0,0.35),
+        0 1px 4px  rgba(0,0,0,0.25) !important;
+    animation: es-banner-title-in 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+    position: relative;
+}
+
+/* Glowing underline accent on the title */
+.banner-content-title::after {
+    content: '';
+    display: block;
+    width: 3.5rem;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00e5c8, #00aaff);
+    margin-top: 0.75rem;
+    animation: es-banner-title-in 0.8s cubic-bezier(0.22,1,0.36,1) 0.5s both;
+    box-shadow: 0 0 12px rgba(0,229,200,0.5);
+}
+
+@keyframes es-banner-title-in {
+    from { opacity: 0; transform: translateY(22px); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+/* Animate the instant-link title too */
+.instant-link-title {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75) !important;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.7rem !important;
+}
+
+/* Banner search box refinement */
+.es-banner-search-wrap {
+    animation: es-banner-title-in 0.8s cubic-bezier(0.22,1,0.36,1) 0.5s both;
+}
+</style>
+@endpush
+
 <div class="banner-section-wrapper">
     <div class="main-banner">
         @foreach ($sliders as $slider)
@@ -20,19 +72,35 @@
                         </h1> -->
 
                             @if (!empty($sectionData['section_1']['enable_search']) && $sectionData['section_1']['enable_search'] === 'on')
-                                <div class="banner-content-search-box">
+                                <div class="banner-content-search-box es-banner-search-wrap">
                                     <form id="search-form" method="GET" action="{{ url('/search') }}">
-                                        <div class="d-flex align-items-center p-2 rounded section-bg">
-                                            <div class="icon ps-2">
-                                                <i class="ph ph-magnifying-glass align-middle"></i>
-                                            </div>
+                                        <div class="es-banner-search-form">
+                                            <i class="ph ph-magnifying-glass es-banner-search-icon" aria-hidden="true"></i>
                                             <input type="text" id="search-query" name="query"
-                                                class="form-control px-2 py-2 h-auto" placeholder="{{ __('messages.search') }}..."
-                                                value="{{ request('query') }}">
-                                            <button type="submit" class="btn btn-primary"
-                                                id="search-button">{{ __('messages.search') }}</button>
+                                                class="es-banner-search-input"
+                                                placeholder="{{ __('messages.search') }}…"
+                                                value="{{ request('query') }}"
+                                                autocomplete="off">
+                                            <button type="submit" class="es-banner-search-btn" id="search-button">
+                                                {{ __('messages.search') }}
+                                            </button>
                                         </div>
                                     </form>
+                                    <div class="es-banner-search-categories">
+                                        <span class="es-banner-cat-label">{{ __('frontend.instant_link') ?? 'Browse' }}:</span>
+                                        <a href="{{ route('doctors') }}" class="es-banner-cat-pill">
+                                            <i class="ph ph-stethoscope" aria-hidden="true"></i>
+                                            {{ __('frontend.doctors') ?? 'Doctors' }}
+                                        </a>
+                                        <a href="{{ route('clinics') }}" class="es-banner-cat-pill">
+                                            <i class="ph ph-hospital" aria-hidden="true"></i>
+                                            {{ __('frontend.clinics') ?? 'Clinics' }}
+                                        </a>
+                                        <a href="{{ route('services') }}" class="es-banner-cat-pill">
+                                            <i class="ph ph-first-aid-kit" aria-hidden="true"></i>
+                                            {{ __('frontend.services') ?? 'Services' }}
+                                        </a>
+                                    </div>
                                 </div>
                             @endif
 

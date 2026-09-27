@@ -29,6 +29,11 @@ class IcuAdmissionRequestsController extends Controller
         $this->middleware(['permission:delete_icu_admission_requests'])->only('destroy', 'action', 'bulk_action');
     }
 
+    public function create()
+    {
+        return redirect()->route('backend.icu-admission-requests.index');
+    }
+
     public function index(Request $request)
     {
         $filter = [

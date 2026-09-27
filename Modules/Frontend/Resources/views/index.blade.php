@@ -18,6 +18,11 @@
         </div>
     @endif
 
+    <!-- Quick Access Section -->
+    @if ($data['sectionData'])
+        @include('frontend::components.section.quick_access_section', ['sectionData' => $data['sectionData']])
+    @endif
+
     <!-- Categories Section -->
     @if ( $data['sectionData'] && isset( $data['sectionData']['section_2']) &&  $data['sectionData']['section_2']['section_2'] == 1)
     <div class="category-section">

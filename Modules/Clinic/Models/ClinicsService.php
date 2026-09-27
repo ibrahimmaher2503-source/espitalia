@@ -142,11 +142,11 @@ class ClinicsService extends BaseModel
     public function scopeCheckMultivendor($query)
     {
         if (multiVendor() == "0") {
-            $query = $query->whereHas('vendor', function ($q) {
-                $q->whereIn('user_type', ['admin', 'demo_admin']);
-            });
-        } else {
-            $query = $query;
+            $userIds = User::whereIn('user_type', ['admin', 'demo_admin'])->pluck('id');
+
+            if ($userIds->isNotEmpty()) {
+                $query->whereIn('vendor_id', $userIds);
+            }
         }
     }
 
@@ -158,7 +158,7 @@ class ClinicsService extends BaseModel
 
             if (multiVendor() == "0") {
 
-                $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
 
                 $query = $query->whereIn('vendor_id', $user_ids)->withCount(['doctor_service']);
             } else {

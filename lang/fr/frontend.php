@@ -228,4 +228,18 @@ return[
 
     // ICU module
     'icu_hospitals' => 'Catalogue des Hôpitaux',
+
+    // Quick Access / Our Services section
+    'our_services'         => 'Nos Services',
+    'everything_you_need'  => 'Tout ce dont vous',
+    'need'                 => 'avez besoin',
+    'quick_access_desc'    => 'Tous nos services de santé, à portée de clic.',
+    'browse_by_specialty'  => 'Parcourir par spécialité',
+    'all_medical_services' => 'Tous les services médicaux',
+    'find_nearby_clinics'  => 'Trouver des cliniques proches',
+    'meet_our_specialists' => 'Rencontrez nos spécialistes',
+    'home_nursing_care'    => 'Soins infirmiers à domicile',
+    'order_lab_tests'      => 'Commander des analyses en ligne',
+    'intensive_care_units' => 'Unités de soins intensifs',
+    'virtual_consultation' => 'Consultation virtuelle',
 ];

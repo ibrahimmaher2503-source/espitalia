@@ -62,7 +62,8 @@ class EncounterDashboardController extends Controller
 
         $perPage = $request->input('per_page', 10); 
 
-         $data= EncounterMedicalReport::where('encounter_id',$request->encounter_id);
+         $encounter = $this->accessibleEncounter($request->encounter_id);
+         $data= EncounterMedicalReport::where('encounter_id',$encounter->id);
 
         if($perPage=='all'){
             $data = $data->get();
@@ -87,7 +88,8 @@ class EncounterDashboardController extends Controller
 
         $perPage = $request->input('per_page', 10); 
 
-         $data= EncounterPrescription::where('encounter_id',$request->encounter_id);
+         $encounter = $this->accessibleEncounter($request->encounter_id);
+         $data= EncounterPrescription::where('encounter_id',$encounter->id);
 
         if($perPage=='all'){
             $data = $data->get();
@@ -107,12 +109,13 @@ class EncounterDashboardController extends Controller
     }
         
     public function saveEncounterDashboard(Request $request){
-        $user_id = $request->user_id;
-        $encounter_id = $request->encounter_id;
-        $problems = $request->problems;
-        $observations = $request->observations;
-        $notes = $request->notes;
-        $prescriptions = $request->prescriptions;
+        $encounter = $this->accessibleEncounter($request->encounter_id);
+        $user_id = $encounter->user_id;
+        $encounter_id = $encounter->id;
+        $problems = $request->input('problems', []);
+        $observations = $request->input('observations', []);
+        $notes = $request->input('notes', []);
+        $prescriptions = $request->input('prescriptions', []);
 
         EncouterMedicalHistroy::where('encounter_id', $encounter_id)->delete();
         foreach($problems as $problem){
@@ -184,7 +187,8 @@ class EncounterDashboardController extends Controller
 
     public function encounterDashboardDetail(Request $request){
         $encounter_id = $request->encounter_id;
-        $encounter_data = PatientEncounter::where('id',$encounter_id)->with('user','clinic','doctor','medicalHistroy','prescriptions','EncounterOtherDetails','medicalReport','bodyChart','soap')->first();
+        $encounter_data = $this->accessibleEncounter($encounter_id)
+            ->load('user','clinic','doctor','medicalHistroy','prescriptions','EncounterOtherDetails','medicalReport','bodyChart','soap');
 
         $responseData = New EncounterDashboardDetailsResource($encounter_data);
 
@@ -200,6 +204,12 @@ class EncounterDashboardController extends Controller
 
         $billing_records = BillingRecord::with('user','clinic','doctor','clinicservice','patientencounter');
 
+        if ($this->isPatientRequest()) {
+            $billing_records->whereHas('patientencounter', function ($query) {
+                $query->where('user_id', auth()->id());
+            });
+        }
+
         $billing_records = $billing_records->orderBy('updated_at', 'desc');
 
         $billing_records = $billing_records->paginate($perPage);
@@ -208,7 +218,10 @@ class EncounterDashboardController extends Controller
 
         if($request->filled('encounter_id')){
     
-            $billing_data = BillingRecord::where('encounter_id',$request->encounter_id)->with(['user','clinic','doctor','clinicservice.doctor_service','billingItem'])->first();
+            $encounter = $this->accessibleEncounter($request->encounter_id);
+            $billing_data = BillingRecord::where('encounter_id',$encounter->id)
+                ->with(['user','clinic','doctor','clinicservice.doctor_service','billingItem'])
+                ->first();
             // dd($billing_data);
             if (!$billing_data) {
                 return response()->json([
@@ -235,9 +248,13 @@ class EncounterDashboardController extends Controller
 
     public function saveBodychart(Request $request){
 
-        $data = $request->except('file_url');
+        $encounter = $this->accessibleEncounter($request->encounter_id);
+        $data = $request->only('name', 'description', 'appointment_id');
+        $data['encounter_id'] = $encounter->id;
+        $data['patient_id'] = $encounter->user_id;
         $bodychart = AppointmentPatientBodychart::create($data);
         if ($request->hasFile('file_url')) {
+            $request->validate(['file_url' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240']]);
             storeMediaFile($bodychart, $request->file('file_url'));
         }
 
@@ -250,17 +267,27 @@ class EncounterDashboardController extends Controller
     public function updateBodychart(Request $request, $id)
     {
         $image_handling = setting('image_handling');
-        $record = AppointmentPatientBodychart::findOrFail($id);
-        $data = $request->except('file_url');
+        $record = AppointmentPatientBodychart::whereKey($id)
+            ->whereHas('patient_encounter', function ($query) {
+                if ($this->isPatientRequest()) {
+                    $query->where('user_id', auth()->id());
+                }
+            })
+            ->firstOrFail();
+        $data = $request->only('name', 'description', 'appointment_id');
+        $data['encounter_id'] = $record->encounter_id;
+        $data['patient_id'] = $record->patient_id;
     
         if ($record && $image_handling === 'Saved_image') {
             $record->update($data);
             if ($request->hasFile('file_url')) {
+                $request->validate(['file_url' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240']]);
                 storeMediaFile($record, $request->file('file_url'));
             }
         } else {
             $record = AppointmentPatientBodychart::create($data);
             if ($request->hasFile('file_url')) {
+                $request->validate(['file_url' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240']]);
                 storeMediaFile($record, $request->file('file_url'));
             }
         }
@@ -272,7 +299,13 @@ class EncounterDashboardController extends Controller
 
     public function deleteBodychart(Request $request, $id)
     {
-        $data = AppointmentPatientBodychart::findOrFail($id);
+        $data = AppointmentPatientBodychart::whereKey($id)
+            ->whereHas('patient_encounter', function ($query) {
+                if ($this->isPatientRequest()) {
+                    $query->where('user_id', auth()->id());
+                }
+            })
+            ->firstOrFail();
         $data->delete();
         
         return response()->json([
@@ -283,7 +316,8 @@ class EncounterDashboardController extends Controller
 
     public function bodyChartList(Request $request){
         $perPage = $request->input('per_page', 10);
-        $encounter_id = $request->encounter_id;
+        $encounter = $this->accessibleEncounter($request->encounter_id);
+        $encounter_id = $encounter->id;
 
         $bodychart_data = AppointmentPatientBodychart::with('patient_encounter')->where('encounter_id', $encounter_id);
 
@@ -302,7 +336,8 @@ class EncounterDashboardController extends Controller
 
     public function encounterServiceDetails(Request $request){
         $encounter_id = $request->encounter_id;
-        $encounter_data = PatientEncounter::where('id',$encounter_id)->with('user','clinic','doctor','appointment','medicalHistroy','prescriptions','EncounterOtherDetails','medicalReport')->first();
+        $encounter_data = $this->accessibleEncounter($encounter_id)
+            ->load('user','clinic','doctor','appointment','medicalHistroy','prescriptions','EncounterOtherDetails','medicalReport');
 
         $responseData = New EncounterServiceResource($encounter_data);
 
@@ -311,5 +346,26 @@ class EncounterDashboardController extends Controller
             'data' => $responseData,
             'message' => __('appointment.encounter_service_detail'),
         ], 200);
+    }
+
+    private function isPatientRequest(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && (
+            $user->user_type === 'user'
+            || (method_exists($user, 'hasRole') && $user->hasRole('user'))
+        );
+    }
+
+    private function accessibleEncounter($encounterId): PatientEncounter
+    {
+        $query = PatientEncounter::query();
+
+        if ($this->isPatientRequest()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->whereKey($encounterId)->firstOrFail();
     }
 }

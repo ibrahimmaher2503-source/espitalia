@@ -18,5 +18,6 @@ use Modules\RequestService\Http\Controllers\Backend\API\RequestServicesControlle
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('get-request-service', [RequestServicesController::class, 'getRequestList']);
-    Route::post('save-request-service', [Modules\RequestService\Http\Controllers\Backend\RequestServicesController::class, 'store']);
+    Route::post('save-request-service', [Modules\RequestService\Http\Controllers\Backend\RequestServicesController::class, 'store'])
+        ->middleware('idempotency:request_service');
 });

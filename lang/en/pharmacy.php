@@ -57,6 +57,8 @@ return [
 
     // Payment methods
     'payment_cash_on_delivery' => 'Cash on Delivery',
+    'msg_address_required' => 'A delivery address is required.',
+    'msg_payment_method_unavailable' => 'This payment method is not currently available.',
 
     // Messages
     'msg_category_created' => 'Category created successfully.',

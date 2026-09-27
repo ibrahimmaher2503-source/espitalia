@@ -77,6 +77,8 @@ class Kernel extends HttpKernel
         'check.header.menu' => \App\Http\Middleware\CheckHeaderMenuSettings::class,
         'auth_check' => \App\Http\Middleware\AuthCheck::class,
         'user_check' => \App\Http\Middleware\checkUser::class,
+        'api_permission' => \App\Http\Middleware\EnsureApiPermission::class,
+        'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
 
         '2fa' => \PragmaRX\Google2FALaravel\Middleware::class,
     ];

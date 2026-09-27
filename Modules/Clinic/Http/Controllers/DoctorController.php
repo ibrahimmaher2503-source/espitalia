@@ -27,6 +27,7 @@ use Modules\Appointment\Models\Appointment;
 use Modules\Clinic\Models\Receptionist;
 use Modules\Clinic\Models\DoctorRating;
 use Modules\Clinic\Models\ClinicServiceMapping;
+use Modules\Clinic\Models\DoctorIndependentSession;
 use Illuminate\Database\Query\Expression;
 use App\Models\Holiday;
 use  App\Models\DoctorHoliday;
@@ -210,36 +211,66 @@ class DoctorController extends Controller
 
     public function availableSlot(Request $request)
     {
+        $validated = $request->validate([
+            'appointment_date' => ['required', 'date_format:Y-m-d'],
+            'clinic_id' => ['required', 'integer', 'exists:clinic,id'],
+            'doctor_id' => ['required', 'integer', 'exists:users,id'],
+            'service_id' => ['required', 'integer', 'exists:clinics_services,id'],
+        ]);
+
+        $timezone = new \DateTimeZone(setting('default_time_zone') ?? 'UTC');
+        $carbonDate = Carbon::createFromFormat('!Y-m-d', $validated['appointment_date'], $timezone);
+        if ($carbonDate->lt(Carbon::today($timezone))) {
+            return response()->json([
+                'status' => false,
+                'message' => __('radiology_lab.past_date'),
+                'data' => [],
+            ], 422);
+        }
+
+        $isValidCombination = DoctorClinicMapping::where('clinic_id', $validated['clinic_id'])
+            ->where('doctor_id', $validated['doctor_id'])
+            ->exists()
+            && DoctorServiceMapping::where('clinic_id', $validated['clinic_id'])
+                ->where('doctor_id', $validated['doctor_id'])
+                ->where('service_id', $validated['service_id'])
+                ->exists()
+            && ClinicServiceMapping::where('clinic_id', $validated['clinic_id'])
+                ->where('service_id', $validated['service_id'])
+                ->exists();
+
+        if (! $isValidCombination) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.invalid_request'),
+                'data' => [],
+            ], 422);
+        }
 
         $availableSlot = [];
 
-        if($request->filled(['appointment_date', 'clinic_id', 'doctor_id', 'service_id'])) {
-
-            $timezone = new \DateTimeZone(setting('default_time_zone') ?? 'UTC');
-
             $time_slot_duration = 10;
-            $timeslot = ClinicsService::where('id', $request->service_id)->value('time_slot');
+            $timeslot = ClinicsService::where('id', $validated['service_id'])->value('time_slot');
 
             if($timeslot) {
                 $time_slot_duration = ($timeslot === 'clinic_slot') ?
-                    (int) Clinics::where('id', $request->clinic_id)->value('time_slot') :
+                    (int) Clinics::where('id', $validated['clinic_id'])->value('time_slot') :
                     (int) $timeslot;
              }
+            $time_slot_duration = max(1, $time_slot_duration);
            
             $currentDate = Carbon::today($timezone);
-            $carbonDate = Carbon::parse($request->appointment_date, $timezone);
 
-            $dayOfWeek = $carbonDate->locale('en')->dayName;
-            $availableSlot = [];
+            $dayOfWeek = strtolower($carbonDate->englishDayOfWeek);
 
-            $doctorSession = DoctorSession::where('clinic_id', $request->clinic_id)->where('doctor_id', $request->doctor_id)->where('day', $dayOfWeek)->first();
+            $doctorSession = DoctorSession::where('clinic_id', $validated['clinic_id'])->where('doctor_id', $validated['doctor_id'])->where('day', $dayOfWeek)->first();
 
             if($doctorSession && !$doctorSession->is_holiday) {
 
                 $startTime = Carbon::parse($doctorSession->start_time, $timezone);
                 $endTime = Carbon::parse($doctorSession->end_time, $timezone);
 
-                $breaks = $doctorSession->breaks;
+                $breaks = $doctorSession->breaks ?? [];
 
                 $timeSlots = [];
 
@@ -281,8 +312,8 @@ class DoctorController extends Controller
                 }
 
 
-                $clinic_holiday = Holiday::where('clinic_id', $request->clinic_id)
-                ->where('date', $request->appointment_date)
+                $clinic_holiday = Holiday::where('clinic_id', $validated['clinic_id'])
+                ->where('date', $validated['appointment_date'])
                 ->first();
 
 
@@ -298,8 +329,8 @@ class DoctorController extends Controller
                     $availableSlot = array_values($availableSlot);
                 }
 
-                $doctor_holiday = DoctorHoliday::where('doctor_id', $request->doctor_id)
-                ->where('date', $request->appointment_date)
+                $doctor_holiday = DoctorHoliday::where('doctor_id', $validated['doctor_id'])
+                ->where('date', $validated['appointment_date'])
                 ->first();
 
                 if($doctor_holiday) {
@@ -315,32 +346,31 @@ class DoctorController extends Controller
                 }
 
 
-                $appointmentData = Appointment::where('appointment_date', $request->appointment_date)->where('doctor_id',$request->doctor_id)->where('status','!=','cancelled')->get();
+                $appointmentData = Appointment::where('appointment_date', $validated['appointment_date'])->where('doctor_id', $validated['doctor_id'])->whereNotIn('status', ['cancelled', 'canceled'])->get();
 
 
                 $bookedSlots = [];
 
                 foreach ($appointmentData as $appointment) {
 
-                    $startTime = Carbon::parse($appointment->start_date_time)->setTimezone($timezone);
-                    $startTime = strtotime( $startTime);
-                    $duration = $appointment->duration;
+                    $startTime = Carbon::createFromFormat(
+                        '!Y-m-d H:i',
+                        $validated['appointment_date'].' '.Carbon::parse($appointment->appointment_time)->format('H:i'),
+                        $timezone,
+                    );
+                    $endTime = $startTime->copy()->addMinutes(max(1, (int) $appointment->duration));
 
-                    $endTime = $startTime + ($duration * 60);
-
-                    $startTime=$startTime-($duration * 60);
-
-                    while ($startTime < $endTime) {
-                        $bookedSlots[] = date('H:i', $startTime);
-                        $startTime += 300;
+                    foreach ($availableSlot as $slot) {
+                        $slotTime = Carbon::createFromFormat('!Y-m-d H:i', $validated['appointment_date'].' '.$slot, $timezone);
+                        if ($slotTime->greaterThanOrEqualTo($startTime) && $slotTime->lt($endTime)) {
+                            $bookedSlots[] = $slot;
+                        }
                     }
                 }
                 $availableSlotTime = array_diff($availableSlot, $bookedSlots);
                 $availableSlot = array_values($availableSlotTime);
 
             }
-
-        }
 
         $message='messages.avaibleslot';
 
@@ -602,7 +632,7 @@ class DoctorController extends Controller
      */
     public function create()
     {
-        return view('clinic::create');
+        return redirect()->route('backend.doctor.index');
     }
 
     /**
@@ -669,9 +699,10 @@ class DoctorController extends Controller
 
         $data->syncRoles($roles);
 
+        $isIndependent = (bool) $request->input('is_independent', false);
+
         $doctor_data = [
             'doctor_id' => $data->id,
-            'clinic_id' => $request->clinic_id,
             'experience' => $request->experience_en ?? $request->experience_ar,
             'experience_ar' => $request->experience_ar,
             'experience_en' => $request->experience_en,
@@ -680,6 +711,7 @@ class DoctorController extends Controller
             'description_en' => $request->description_en,
             'vendor_id' => $resolvedVendorId,
             'signature' => $request->signature,
+            'is_independent' => $isIndependent,
         ];
         $doctor = Doctor::create($doctor_data);
 
@@ -707,84 +739,66 @@ class DoctorController extends Controller
         }
 
 
-        if ($request->has('clinic_id') && !empty($request->clinic_id)) {
+        $defaultDays = [
+            ['day' => 'monday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'tuesday',   'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'wednesday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'thursday',  'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'friday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'saturday',  'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+            ['day' => 'sunday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => true,  'breaks' => []],
+        ];
 
+        if ($isIndependent) {
+            foreach ($defaultDays as $day) {
+                DoctorIndependentSession::create(array_merge($day, ['doctor_id' => $data->id]));
+            }
+        } else {
+            if ($request->filled('clinic_id')) {
+                $clinicId = explode(',', $request->clinic_id);
 
-            $days = [
-                ['day' => 'monday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'tuesday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'wednesday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'thursday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'friday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'saturday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
-                ['day' => 'sunday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => true, 'breaks' => []],
-            ];
+                foreach ($clinicId as $value) {
+                    DoctorClinicMapping::create(['doctor_id' => $data->id, 'clinic_id' => $value]);
 
-            $clinicId = explode(",", $request->clinic_id);
-
-            foreach ($clinicId as $value) {
-
-                $doctor_clinic = [
-                    'doctor_id' => $data->id,
-                    'clinic_id' => $value,
-                ];
-
-                DoctorClinicMapping::create($doctor_clinic);
-
-                foreach ($days as $key => $val) {
-
-                    $val['clinic_id'] = $value;
-                    $val['doctor_id'] =  $data->id;
-
-                    DoctorSession::create($val);
+                    foreach ($defaultDays as $day) {
+                        DoctorSession::create(array_merge($day, ['clinic_id' => $value, 'doctor_id' => $data->id]));
+                    }
                 }
             }
-        }
 
-        if ($request->has('service_id') &&   $request->has('clinic_id') ) {
-
-            if ($request->service_id !== null &&  $request->clinic_id !==null) {
-
+            if ($request->filled('service_id') && $request->filled('clinic_id')) {
                 $services = explode(',', $request->service_id);
-                $clinices = explode(",", $request->clinic_id);
+                $clinices = explode(',', $request->clinic_id);
 
-                foreach( $clinices as $clinic){
+                foreach ($clinices as $clinic) {
+                    foreach ($services as $value) {
+                        $clinic_service = ClinicServiceMapping::where('service_id', $value)->where('clinic_id', $clinic)->first();
 
-                    foreach($services as $value) {
-
-                        $clinic_service=ClinicServiceMapping::where('service_id',$value)->where('clinic_id',$clinic)->first();
-
-                        if($clinic_service){
-
+                        if ($clinic_service) {
                             $clinicService = ClinicsService::findOrFail($value);
 
-                            if($clinicService['discount']==0){
-
-                                $clinicService['discount_value']=0;
-                                $clinicService['discount_type']=null;
+                            if ($clinicService['discount'] == 0) {
+                                $clinicService['discount_value'] = 0;
+                                $clinicService['discount_type'] = null;
                                 $clinicService['service_discount_price'] = $clinicService['charges'];
-                            }else{
+                            } else {
                                 $clinicService['discount_price'] = $clinicService['discount_type'] == 'percentage' ? $clinicService['charges'] * $clinicService['discount_value'] / 100 : $clinicService['discount_value'];
                                 $clinicService['service_discount_price'] = $clinicService['charges'] - $clinicService['discount_price'];
                             }
+
                             $inclusive_tax_price = $this->inclusiveTaxPrice($clinicService);
                             $inclusive_tax_price = $inclusive_tax_price['inclusive_tax_price'] ?? 0;
-                            $charges = $clinicService->charges;
-                            $service_data = [
-                                 'doctor_id' => $data->id,
-                                 'service_id' => $value,
-                                 'charges' => $charges,
-                                 'clinic_id' => $clinic,
-                                 'inclusive_tax_price' => $inclusive_tax_price
-                            ];
 
-                           DoctorServiceMapping::create($service_data);
-
+                            DoctorServiceMapping::create([
+                                'doctor_id' => $data->id,
+                                'service_id' => $value,
+                                'charges' => $clinicService->charges,
+                                'clinic_id' => $clinic,
+                                'inclusive_tax_price' => $inclusive_tax_price,
+                            ]);
                         }
                     }
-
                 }
-
             }
         }
         if (isset($request->commission_id) && $request->has('commission_id')) {
@@ -879,6 +893,7 @@ class DoctorController extends Controller
             'en' => optional($data->doctor)->description_en ?? optional($data->doctor)->getRawOriginal('description') ?? optional($data->doctor)->getRawOriginal('description') ?? null,
         ];
         $data['signature'] = optional($data->doctor)->signature ?? null;
+        $data['is_independent'] = (bool) (optional($data->doctor)->is_independent ?? false);
         $data['vendor_id'] = optional($data->doctor)->vendor_id ?? null;
         $data['doctor_document'] = optional($data->doctor_document)->map(function ($document) {
 
@@ -952,16 +967,19 @@ class DoctorController extends Controller
 
         $employee_id = $data->id;
         $doctor = Doctor::firstOrNew(['doctor_id' => $data->id]);
+        $isIndependent = (bool) $request->input('is_independent', false);
+        $wasIndependent = (bool) ($doctor->is_independent ?? false);
         $doctor->fill([
-            'doctor_id' => $data->id,
-            'experience' => $request->experience_en ?? $request->experience_ar ?? $doctor->getRawOriginal('experience'),
-            'experience_ar' => $request->experience_ar,
-            'experience_en' => $request->experience_en,
-            'description' => $request->description_en ?? $request->description_ar ?? $doctor->getRawOriginal('description') ?? $doctor->getRawOriginal('description'),
+            'doctor_id'      => $data->id,
+            'experience'     => $request->experience_en ?? $request->experience_ar ?? $doctor->getRawOriginal('experience'),
+            'experience_ar'  => $request->experience_ar,
+            'experience_en'  => $request->experience_en,
+            'description'    => $request->description_en ?? $request->description_ar ?? $doctor->getRawOriginal('description'),
             'description_ar' => $request->description_ar,
             'description_en' => $request->description_en,
-            'signature' => $request->signature,
-            'vendor_id' => $request->vendor_id,
+            'signature'      => $request->signature,
+            'vendor_id'      => $request->vendor_id,
+            'is_independent' => $isIndependent,
         ]);
         $doctor->save();
 
@@ -985,65 +1003,86 @@ class DoctorController extends Controller
             }
         }
 
-        if ($request->has('service_id') &&   $request->has('clinic_id') ) {
+        if ($isIndependent) {
+            if (!$wasIndependent) {
+                DoctorSession::where('doctor_id', $id)->delete();
+                DoctorClinicMapping::where('doctor_id', $id)->forceDelete();
+                DoctorServiceMapping::where('doctor_id', $id)->forceDelete();
 
-            if ($request->service_id !== null &&  $request->clinic_id !==null) {
+                if (DoctorIndependentSession::where('doctor_id', $id)->count() === 0) {
+                    $defaultDays = [
+                        ['day' => 'monday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'tuesday',   'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'wednesday', 'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'thursday',  'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'friday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'saturday',  'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => false, 'breaks' => []],
+                        ['day' => 'sunday',    'start_time' => '09:00:00', 'end_time' => '18:00:00', 'is_holiday' => true,  'breaks' => []],
+                    ];
+                    foreach ($defaultDays as $day) {
+                        DoctorIndependentSession::create(array_merge($day, ['doctor_id' => $id]));
+                    }
+                }
+            }
+        } else {
+            if ($wasIndependent) {
+                DoctorIndependentSession::where('doctor_id', $id)->forceDelete();
+            }
 
-                $services = explode(',', $request->service_id);
-                $clinices = explode(",", $request->clinic_id);
+            if ($request->has('service_id') && $request->has('clinic_id')) {
+                if ($request->service_id !== null && $request->clinic_id !== null) {
+                    $services = explode(',', $request->service_id);
+                    $clinices = explode(',', $request->clinic_id);
 
-                foreach( $clinices as $clinic){
+                    foreach ($clinices as $clinic) {
+                        foreach ($services as $value) {
+                            $clinic_service = ClinicServiceMapping::where('service_id', $value)->where('clinic_id', $clinic)->first();
 
-                    foreach($services as $value) {
+                            if ($clinic_service) {
+                                $clinicService = ClinicsService::findOrFail($value);
 
-                        $clinic_service=ClinicServiceMapping::where('service_id',$value)->where('clinic_id',$clinic)->first();
+                                if ($clinicService['discount'] == 0) {
+                                    $clinicService['discount_value'] = 0;
+                                    $clinicService['discount_type'] = null;
+                                    $clinicService['service_discount_price'] = $clinicService['charges'];
+                                } else {
+                                    $clinicService['discount_price'] = $clinicService['discount_type'] == 'percentage'
+                                        ? $clinicService['charges'] * $clinicService['discount_value'] / 100
+                                        : $clinicService['discount_value'];
+                                    $clinicService['service_discount_price'] = $clinicService['charges'] - $clinicService['discount_price'];
+                                }
 
-                        if($clinic_service){
+                                $inclusive_tax_price = $this->inclusiveTaxPrice($clinicService);
+                                $inclusive_tax_price = $inclusive_tax_price['inclusive_tax_price'] ?? 0;
 
-                            $clinicService = ClinicsService::findOrFail($value);
-
-                            if($clinicService['discount']==0){
-
-                                $clinicService['discount_value']=0;
-                                $clinicService['discount_type']=null;
-                                $clinicService['service_discount_price'] = $clinicService['charges'];
-                            }else{
-                                $clinicService['discount_price'] = $clinicService['discount_type'] == 'percentage' ? $clinicService['charges'] * $clinicService['discount_value'] / 100 : $clinicService['discount_value'];
-                                $clinicService['service_discount_price'] = $clinicService['charges'] - $clinicService['discount_price'];
+                                DoctorServiceMapping::create([
+                                    'doctor_id'           => $data->id,
+                                    'service_id'          => $value,
+                                    'charges'             => $clinicService->charges,
+                                    'clinic_id'           => $clinic,
+                                    'inclusive_tax_price' => $inclusive_tax_price,
+                                ]);
                             }
-                            $inclusive_tax_price = $this->inclusiveTaxPrice($clinicService);
-                            $inclusive_tax_price = $inclusive_tax_price['inclusive_tax_price'] ?? 0;
-                            $charges = $clinicService->charges;
-                            $service_data = [
-                                 'doctor_id' => $data->id,
-                                 'service_id' => $value,
-                                 'charges' => $charges,
-                                 'clinic_id' => $clinic,
-                                 'inclusive_tax_price' => $inclusive_tax_price
-                            ];
-
-                           DoctorServiceMapping::create($service_data);
-
                         }
                     }
-
                 }
-
             }
-        }
 
-        $existingClinicIds = DoctorClinicMapping::where('doctor_id', $id)->pluck('clinic_id')->toArray();
-        $newClinicIds = $request->has('clinic_id') && !empty($request->clinic_id) ? explode(",", $request->clinic_id) : [];
-        $clinicsToRemove = array_diff($existingClinicIds, $newClinicIds);
-        if (!empty($clinicsToRemove)) {
-            DoctorSession::where('doctor_id', $id)->whereIn('clinic_id', $clinicsToRemove)->delete();
-        }
-        DoctorClinicMapping::where('doctor_id', $id)->whereIn('clinic_id', $clinicsToRemove)->forceDelete();
-        foreach ($newClinicIds as $clinicId) {
-            DoctorClinicMapping::updateOrCreate(
-                ['doctor_id' => $id, 'clinic_id' => $clinicId],
-                ['doctor_id' => $id, 'clinic_id' => $clinicId]
-            );
+            $existingClinicIds = DoctorClinicMapping::where('doctor_id', $id)->pluck('clinic_id')->toArray();
+            $newClinicIds = $request->filled('clinic_id') ? explode(',', $request->clinic_id) : [];
+            $clinicsToRemove = array_diff($existingClinicIds, $newClinicIds);
+
+            if (!empty($clinicsToRemove)) {
+                DoctorSession::where('doctor_id', $id)->whereIn('clinic_id', $clinicsToRemove)->delete();
+                DoctorClinicMapping::where('doctor_id', $id)->whereIn('clinic_id', $clinicsToRemove)->forceDelete();
+            }
+
+            foreach ($newClinicIds as $clinicId) {
+                DoctorClinicMapping::updateOrCreate(
+                    ['doctor_id' => $id, 'clinic_id' => $clinicId],
+                    ['doctor_id' => $id, 'clinic_id' => $clinicId]
+                );
+            }
         }
 
         if (isset($request->commission_id) && $request->has('commission_id')) {

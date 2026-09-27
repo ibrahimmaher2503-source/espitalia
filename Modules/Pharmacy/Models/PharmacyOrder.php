@@ -16,6 +16,7 @@ class PharmacyOrder extends BaseModel
         'user_id',
         'pharmacy_id',
         'address_id',
+        'delivery_address',
         'subtotal',
         'delivery_fee',
         'total',

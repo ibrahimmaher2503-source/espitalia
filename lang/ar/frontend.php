@@ -216,6 +216,9 @@ return[
     // Independent booking
     'book_a_doctor' => 'حجز طبيب',
     'book_doctor' => 'حجز طبيب',
+    'book-doctor' => [
+        'form' => 'حجز طبيب',
+    ],
     'independent_booking' => 'حجز مستقل',
     'lbl_book_directly' => 'احجز مباشرة',
     'lbl_select_independent_service' => 'اختر الخدمة',
@@ -226,6 +229,8 @@ return[
     'lbl_no_slots_available' => 'لا توجد مواعيد متاحة لهذا التاريخ.',
     'lbl_independent' => 'مستقل',
     'lbl_book_now' => 'احجز الآن',
+    'degree' => 'الدرجة العلمية',
+    'university' => 'الجامعة',
     'lbl_experience' => 'الخبرة',
     'lbl_years' => 'سنوات',
 
@@ -239,4 +244,26 @@ return[
     // Call Booking module
     'book_a_call' => 'حجز مكالمة',
     'book_call_form' => 'حجز مكالمة',
+
+    // Header & Search page
+    'my_account'             => 'حسابي',
+    'account_menu'           => 'قائمة الحساب',
+    'lbl_newly_added_members' => 'الأعضاء المضافون حديثاً',
+    'find_your_care'         => 'ابحث عن',
+    'care'                   => 'رعايتك',
+    'search_subtitle'        => 'ابحث عن أطباء، عيادات، خدمات والمزيد',
+
+    // Quick Access / Our Services section
+    'our_services'         => 'خدماتنا',
+    'everything_you_need'  => 'كل ما',
+    'need'                 => 'تحتاجه',
+    'quick_access_desc'    => 'جميع خدماتنا الصحية، في متناول يدك.',
+    'browse_by_specialty'  => 'تصفح حسب التخصص',
+    'all_medical_services' => 'جميع الخدمات الطبية',
+    'find_nearby_clinics'  => 'ابحث عن أقرب عيادة',
+    'meet_our_specialists' => 'تعرف على أطبائنا',
+    'home_nursing_care'    => 'رعاية تمريضية منزلية',
+    'order_lab_tests'      => 'اطلب تحاليل مخبرية أونلاين',
+    'intensive_care_units' => 'وحدات العناية المركزة',
+    'virtual_consultation' => 'استشارة طبية عن بُعد',
 ];

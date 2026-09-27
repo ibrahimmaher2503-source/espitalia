@@ -29,7 +29,7 @@
                                 @endphp
 
                                 @foreach ($valueArray as $key => $value)
-                                    @if (in_array($key, ['categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests']))
+                                    @if (in_array($key, ['categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests', 'icu', 'nurse_request', 'doctor_visit']))
                                         <li class="nav-item list-item" data-section="{{ $key }}"
                                             draggable=true>
                                             <div class="form-group mb-0">
@@ -154,6 +154,21 @@
                                         </div>
                                     </div>
                                 </li>
+
+                                <li class="nav-item list-item" data-section="icu" draggable=true>
+                                    <div class="form-group mb-0">
+                                        <div class="form-control d-flex align-items-center justify-content-between">
+                                            <label for="icu"
+                                                class="mb-0">{{ __('messages.icu') ?? 'ICU Hospitals' }}</label>
+                                            <div class="form-check form-switch m-0">
+                                                <input type="checkbox" class="form-check-input" name="icu"
+                                                    id="icu"
+                                                    {{ !empty($landing_page_data->icu) ? 'checked' : '' }}>
+                                                <label class="custom-control-label" for="icu"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
                             </ul>
                         @endif
                         <div class="form-padding-box mt-3">
@@ -259,7 +274,7 @@
     });
 
     function updateOrder() {
-        const sections = ['categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests'];
+        const sections = ['categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests', 'icu', 'nurse_request', 'doctor_visit'];
         const order = {};
         sections.forEach(function(section) {
             const sectionItems = Array.from(document.querySelectorAll(`.list-item[data-section="${section}"]`));

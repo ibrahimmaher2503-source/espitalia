@@ -831,9 +831,18 @@ class GenerateMenus
                 $pharmacy = $this->parentMenu($menu, [
                     'icon' => 'ph ph-storefront',
                     'title' => __('sidebar.my_pharmacy'),
-                    'route' => 'backend.pharmacy-panel-inventory.index',
+                    'route' => 'backend.pharmacy-panel-dashboard.index',
                     'permission' => ['view_pharmacy_inventory'],
                     'nickname' => 'my_pharmacy',
+                    'order' => 0,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-gauge',
+                    'title' => __('sidebar.dashboard'),
+                    'route' => 'backend.pharmacy-panel-dashboard.index',
+                    'active' => 'app/pharmacy-panel/dashboard',
+                    'permission' => ['view_pharmacy_inventory'],
                     'order' => 0,
                 ]);
 
@@ -843,7 +852,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-panel-inventory.index',
                     'active' => 'app/pharmacy-panel/inventory',
                     'permission' => ['view_pharmacy_inventory'],
-                    'order' => 0,
+                    'order' => 1,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -939,7 +948,7 @@ class GenerateMenus
             }
 
             // --- OFFERS ---
-            if (auth()->user()->hasAnyRole(['admin', 'demo_admin', 'vendor']) && auth()->user()->can('view_offers')) {
+            if (auth()->user()->hasAnyRole(['admin', 'demo_admin', 'vendor'])) {
                 $this->staticMenu($menu, ['title' => __('sidebar.offers'), 'order' => 0]);
 
                 $offers = $this->parentMenu($menu, [
@@ -952,7 +961,7 @@ class GenerateMenus
                 ]);
 
                 $this->childMain($offers, [
-                    'icon' => 'ph ph-tag',
+                    'icon' => 'ph ph-list-bullets',
                     'title' => __('sidebar.offers'),
                     'route' => 'backend.offers.index',
                     'permission' => ['view_offers'],
@@ -961,12 +970,21 @@ class GenerateMenus
                 ]);
 
                 $this->childMain($offers, [
+                    'icon' => 'ph ph-plus-circle',
+                    'title' => __('offer.lbl_create_offer'),
+                    'route' => 'backend.offers.create',
+                    'permission' => ['add_offers'],
+                    'nickname' => 'offers_create',
+                    'order' => 2,
+                ]);
+
+                $this->childMain($offers, [
                     'icon' => 'ph ph-chart-line-up',
                     'title' => __('sidebar.offer_analytics'),
                     'route' => 'backend.offer-analytics.index',
                     'permission' => ['view_offer_analytics'],
                     'nickname' => 'offer_analytics',
-                    'order' => 2,
+                    'order' => 3,
                 ]);
 
                 $this->childMain($offers, [
@@ -975,13 +993,12 @@ class GenerateMenus
                     'route' => 'backend.offer-usage-logs.index',
                     'permission' => ['view_offer_analytics'],
                     'nickname' => 'offer_logs',
-                    'order' => 3,
+                    'order' => 4,
                 ]);
             }
 
             // --- PHARMACY MARKETPLACE ---
-            $pharmacyPermissions = ['view_pharmacy_categories', 'view_pharmacy_brands', 'view_pharmacy_product_types', 'view_pharmacy_products', 'view_pharmacies', 'view_pharmacy_orders', 'view_pharmacy_commission', 'view_pharmacy_earning'];
-            if (auth()->user()->hasAnyRole(['admin', 'demo_admin']) && collect($pharmacyPermissions)->contains(fn($permission) => auth()->user()->can($permission))) {
+            if (auth()->user()->hasAnyRole(['admin', 'demo_admin'])) {
                 $this->staticMenu($menu, ['title' => __('sidebar.pharmacy_marketplace'), 'order' => 0]);
 
                 $pharmacy = $this->parentMenu($menu, [
@@ -999,7 +1016,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-categories.index',
                     'active' => 'app/pharmacy-categories',
                     'permission' => ['view_pharmacy_categories'],
-                    'order' => 0,
+                    'order' => 1,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1008,7 +1025,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-brands.index',
                     'active' => 'app/pharmacy-brands',
                     'permission' => ['view_pharmacy_brands'],
-                    'order' => 0,
+                    'order' => 2,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1017,7 +1034,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-product-types.index',
                     'active' => 'app/pharmacy-product-types',
                     'permission' => ['view_pharmacy_product_types'],
-                    'order' => 0,
+                    'order' => 3,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1026,7 +1043,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-products.index',
                     'active' => 'app/pharmacy-products',
                     'permission' => ['view_pharmacy_products'],
-                    'order' => 0,
+                    'order' => 4,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1035,7 +1052,16 @@ class GenerateMenus
                     'route' => 'backend.pharmacies.index',
                     'active' => 'app/pharmacies',
                     'permission' => ['view_pharmacies'],
-                    'order' => 0,
+                    'order' => 5,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-package',
+                    'title' => __('sidebar.pharmacy_inventory'),
+                    'route' => 'backend.pharmacy-panel-inventory.index',
+                    'active' => 'app/pharmacy-panel/inventory',
+                    'permission' => ['view_pharmacy_inventory'],
+                    'order' => 6,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1044,7 +1070,34 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-orders.index',
                     'active' => 'app/pharmacy-orders',
                     'permission' => ['view_pharmacy_orders'],
-                    'order' => 0,
+                    'order' => 7,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-stack',
+                    'title' => __('sidebar.pharmacy_batches'),
+                    'route' => 'backend.pharmacy-panel-batches.index',
+                    'active' => 'app/pharmacy-panel/batches',
+                    'permission' => ['view_pharmacy_batches'],
+                    'order' => 8,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-users-three',
+                    'title' => __('sidebar.pharmacy_staff'),
+                    'route' => 'backend.pharmacy-panel-staff.index',
+                    'active' => 'app/pharmacy-panel/staff',
+                    'permission' => ['view_pharmacy_staff'],
+                    'order' => 9,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-map-pin-area',
+                    'title' => __('sidebar.pharmacy_delivery_zones'),
+                    'route' => 'backend.pharmacy-panel-delivery-zones.index',
+                    'active' => 'app/pharmacy-panel/delivery-zones',
+                    'permission' => ['view_pharmacy_delivery_zones'],
+                    'order' => 10,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1053,7 +1106,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-commissions.index',
                     'active' => 'app/pharmacy-commissions',
                     'permission' => ['view_pharmacy_commission'],
-                    'order' => 0,
+                    'order' => 11,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1062,7 +1115,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-earnings.index',
                     'active' => 'app/pharmacy-earnings',
                     'permission' => ['view_pharmacy_earning'],
-                    'order' => 0,
+                    'order' => 12,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1071,7 +1124,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-prescriptions.index',
                     'active' => 'app/pharmacy-prescriptions',
                     'permission' => ['view_pharmacy_prescriptions'],
-                    'order' => 0,
+                    'order' => 13,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1080,7 +1133,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-coupons.index',
                     'active' => 'app/pharmacy-coupons',
                     'permission' => ['view_pharmacy_coupons'],
-                    'order' => 0,
+                    'order' => 14,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1089,7 +1142,16 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-refunds.index',
                     'active' => 'app/pharmacy-refunds',
                     'permission' => ['view_pharmacy_refunds'],
-                    'order' => 0,
+                    'order' => 15,
+                ]);
+
+                $this->childMain($pharmacy, [
+                    'icon' => 'ph ph-bell-ringing',
+                    'title' => __('sidebar.pharmacy_alerts'),
+                    'route' => 'backend.pharmacy-panel-alerts.index',
+                    'active' => 'app/pharmacy-panel/alerts',
+                    'permission' => ['view_pharmacy_notifications'],
+                    'order' => 16,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1098,7 +1160,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-reports.index',
                     'active' => 'app/pharmacy-reports',
                     'permission' => ['view_pharmacy_reports'],
-                    'order' => 0,
+                    'order' => 17,
                 ]);
 
                 $this->childMain($pharmacy, [
@@ -1107,7 +1169,7 @@ class GenerateMenus
                     'route' => 'backend.pharmacy-audit.index',
                     'active' => 'app/pharmacy-audit',
                     'permission' => ['view_pharmacy_audit'],
-                    'order' => 0,
+                    'order' => 18,
                 ]);
             }
 
@@ -1360,6 +1422,9 @@ class GenerateMenus
                 if ($item->data('permission')) {
                     if (auth()->check()) {
                         if (\Auth::getDefaultDriver() == 'admin') {
+                            return true;
+                        }
+                        if (auth()->user()->hasRole('admin')) {
                             return true;
                         }
                         if (auth()->user()->hasAnyPermission($item->data('permission'), \Auth::getDefaultDriver())) {

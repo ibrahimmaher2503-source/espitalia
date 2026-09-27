@@ -151,10 +151,7 @@ _No API routes found._
 | GET | `/api/user` | Closure@handle | public |
 | POST | `/api/register` | Unknown@? | public |
 | POST | `/api/login` | Unknown@? | public |
-| POST | `/api/generate-qr` | Unknown@? | public |
 | POST | `/api/verify` | Unknown@? | public |
-| POST | `/api/otp-resend` | Unknown@? | public |
-| POST | `/api/otp-verify` | Unknown@? | public |
 | POST | `/api/social-login` | Unknown@? | public |
 | POST | `/api/forgot-password` | Unknown@? | public |
 | GET | `/api/logout` | Unknown@? | public |
@@ -482,4 +479,3 @@ _No API routes found._
 | GET | `/api/country-list` | CountryController@index_list | auth:sanctum |
 | GET | `/api/state-list` | StateController@index_list | auth:sanctum |
 | GET | `/api/city-list` | CityController@index_list | auth:sanctum |
-

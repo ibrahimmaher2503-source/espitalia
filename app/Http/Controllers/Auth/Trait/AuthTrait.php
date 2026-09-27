@@ -118,9 +118,6 @@ trait AuthTrait
         $user->save();         
 
         if($user->user_type == 'user'){
-
-            /* generate google authenticator qr code  */
-            $user->qr_image = self::multiFactorAuth($user);
             $wallet = [
                 'title' => $user->first_name.' '.$user->last_name,
                 'user_id' => $user->id,
@@ -227,27 +224,4 @@ trait AuthTrait
         return $user;
     }
 
-    /**
-     * generate google authenticator qr code 
-     * @param $userData
-     */
-    protected function multiFactorAuth($userData)
-    {
-        $google2fa = app('pragmarx.google2fa');
-        $google2fa_secret = $google2fa->generateSecretKey();
-
-        $QR_Image = $google2fa->getQRCodeInline(
-            config('app.name'),
-            $userData->email,
-            $google2fa_secret
-        );
-
-        User::where('id',$userData->id)->update([
-            'google2fa_secret' => $google2fa_secret
-        ]);
-
-
-        return $QR_Image;
-        
-    }
 }

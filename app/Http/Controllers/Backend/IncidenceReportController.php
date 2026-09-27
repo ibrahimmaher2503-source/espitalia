@@ -162,7 +162,7 @@ class IncidenceReportController extends Controller
     public function updateStatus($id, Request $request)
     {
         $status = $request->value;
-        $data = Incidence::find($id)->update(['incident_type' => $status]);
+        $data = Incidence::find($id)->update(['status' => $status]);
         if ($data) {
             $message = __('appointment.status_update');
             return response()->json(['message' => $message, 'status' => true]);

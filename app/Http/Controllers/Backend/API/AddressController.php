@@ -5,25 +5,17 @@ namespace App\Http\Controllers\Backend\API;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AddressResource;
 use App\Models\Address;
-use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AddressController extends Controller
 {
     public function AddressList(Request $request)
     {
-        $data['user_id'] = $request->input('user_id') ?? Auth::id();
-
-        $user = User::where('id', $data['user_id'])->first();
-
-        if (! $user) {
-            $message = __('users.user_not_found');
-
-            return response()->json(['message' => $message, 'status' => true], 200);
-        }
-
-        $user_address = $user->addresses;
+        // Patient API address operations are always scoped to the bearer
+        // token. Never let a client choose another user_id for an IDOR.
+        $user_address = Auth::user()->addresses;
 
         $addressCollection = AddressResource::collection($user_address);
 
@@ -34,29 +26,32 @@ class AddressController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'address_line_1' => ['required', 'string', 'max:255'],
+            'address_line_2' => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['nullable', 'string', 'max:32'],
+            'city' => ['required', 'string', 'max:100'],
+            'state' => ['required', 'string', 'max:100'],
+            'country' => ['required', 'string', 'max:100'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'is_primary' => ['sometimes', 'boolean'],
+            'governorate_id' => ['nullable', 'integer'],
+            'city_id' => ['nullable', 'integer'],
+            'label' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:32'],
+            'first_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+        ]);
 
-        $data['user_id'] = $request->input('user_id') ?? Auth::id();
+        $newAddress = DB::transaction(function () use ($data) {
+            $user = Auth::user();
+            if (($data['is_primary'] ?? false) === true) {
+                $user->addresses()->update(['is_primary' => false]);
+            }
 
-        $user = User::where('id', $data['user_id'])->first();
-
-        if (! $user) {
-            $message = __('users.user_not_found');
-
-            return response()->json(['message' => $message, 'status' => true], 200);
-        }
-
-        if ($request->has('is_primary') && $request->is_primary == 1) {
-            $user->address()->update(['is_primary' => 0]);
-        }
-
-        $newAddress = new Address($data);
-
-        if ($request->is_primary == 1) {
-            $newAddress->is_primary = 1;
-        }
-
-        $user->address()->save($newAddress);
+            return $user->addresses()->create($data);
+        });
 
         $message = __('users.address_store');
 
@@ -65,14 +60,14 @@ class AddressController extends Controller
 
      public function RemoveAddress(Request $request)
      {
-         $address_id = $request->id;
+         $address_id = $request->validate(['id' => ['required', 'integer']])['id'];
 
-         $address = Address::where('id', $address_id)->first();
+         $address = Auth::user()->addresses()->whereKey($address_id)->first();
 
          if (! $address) {
              $message = __('users.address_not_found');
 
-             return response()->json(['message' => $message, 'status' => true], 200);
+             return response()->json(['message' => $message, 'status' => false], 404);
          }
 
          $address->delete();
@@ -84,35 +79,33 @@ class AddressController extends Controller
 
      public function EditAddress(Request $request)
      {
-         $address_id = $request->id;
+         $address_id = $request->validate(['id' => ['required', 'integer']])['id'];
 
-         $address = Address::find($address_id);
+         $address = Auth::user()->addresses()->whereKey($address_id)->first();
 
          if (! $address) {
              $message = __('users.address_not_found');
 
-             return response()->json(['message' => $message, 'status' => true], 404);
+             return response()->json(['message' => $message, 'status' => false], 404);
          }
 
-         $user_id = $request->input('user_id') ?? Auth::id();
-
-         $user = User::where('id', $user_id)->first();
-
-         if ($request->has('is_primary') && $request->is_primary == 1) {
-             $user->addresses()->where('id', '!=', $address_id)->update(['is_primary' => 0]);
-         }
-
-         $address->update([
-             'first_name' => $request->input('first_name'),
-             'last_name' => $request->input('last_name'),
-             'address_line_1' => $request->input('address_line_1'),
-             'address_line_2' => $request->input('address_line_2'),
-             'postal_code' => $request->input('postal_code'),
-             'city' => $request->input('city'),
-             'state' => $request->input('state'),
-             'country' => $request->input('country'),
-             'is_primary' => $request->is_primary,
+         $data = $request->validate([
+             'first_name' => ['nullable', 'string', 'max:100'],
+             'last_name' => ['nullable', 'string', 'max:100'],
+             'address_line_1' => ['required', 'string', 'max:255'],
+             'address_line_2' => ['nullable', 'string', 'max:255'],
+             'postal_code' => ['nullable', 'string', 'max:32'],
+             'city' => ['required', 'string', 'max:100'],
+             'state' => ['required', 'string', 'max:100'],
+             'country' => ['required', 'string', 'max:100'],
+             'is_primary' => ['sometimes', 'boolean'],
          ]);
+
+         if (($data['is_primary'] ?? false) === true) {
+             Auth::user()->addresses()->where('id', '!=', $address_id)->update(['is_primary' => false]);
+         }
+
+         $address->update($data);
 
          $message = __('users.address_updated');
 

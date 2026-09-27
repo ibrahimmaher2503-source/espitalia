@@ -1,3 +1,5 @@
+@props(['clinic'])
+
 @if($clinic)
 <div class="clinics-card p-3 rounded">
     <div class="position-relative">

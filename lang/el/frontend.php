@@ -226,4 +226,18 @@ return[
 
     // ICU module
     'icu_hospitals' => 'Κατάλογος Νοσοκομείων',
+
+    // Quick Access / Our Services section
+    'our_services'         => 'Οι Υπηρεσίες μας',
+    'everything_you_need'  => 'Ό,τι',
+    'need'                 => 'χρειάζεστε',
+    'quick_access_desc'    => 'Όλες οι υπηρεσίες υγείας μας, με ένα κλικ.',
+    'browse_by_specialty'  => 'Αναζήτηση ανά ειδικότητα',
+    'all_medical_services' => 'Όλες οι ιατρικές υπηρεσίες',
+    'find_nearby_clinics'  => 'Κλινικές κοντά σας',
+    'meet_our_specialists' => 'Γνωρίστε τους ειδικούς μας',
+    'home_nursing_care'    => 'Νοσηλευτική φροντίδα στο σπίτι',
+    'order_lab_tests'      => 'Παραγγελία εξετάσεων online',
+    'intensive_care_units' => 'Μονάδες εντατικής θεραπείας',
+    'virtual_consultation' => 'Εικονική διαβούλευση',
 ];

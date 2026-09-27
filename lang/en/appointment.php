@@ -108,7 +108,7 @@ return [
     'encounter' => 'Encounter',
     'encounter_status' =>'Encounter Status Updated',
     'encounter_delete' =>'Encounter Status Deleted',
-    'encounter_detail_save' => 'Encounter Details has been save successfully.',
+    'encounter_detail_save' => 'Encounter Details has been saved successfully.',
     'encounter_delete_successfully' => 'Encounter Deleted Successfully',
     'encounter_prescription_save' => 'Encounter Prescription has been  Store successfully.',
     'encounter_prescription_update' => 'Encounter Prescription has been  Update successfully.',

@@ -84,7 +84,7 @@ class BillingRecord extends BaseModel
        if (auth()->user()->hasRole(['admin', 'demo_admin'])) {
            if (multiVendor() == "0") {
 
-            $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
               
               $query->with('clinic')->whereHas('clinic', function ($query) use ($user_ids) {
                  $query->whereIn('vendor_id', $user_ids);

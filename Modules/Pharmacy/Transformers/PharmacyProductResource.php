@@ -18,7 +18,7 @@ class PharmacyProductResource extends JsonResource
             'name' => $this->getNameAttribute(),
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
-            'image' => $this->getFirstMediaUrl('product_image'),
+            'image' => filter_var($this->getFirstMediaUrl('product_image'), FILTER_VALIDATE_URL) ?: null,
             'product_type' => $this->productType ? [
                 'id' => $this->productType->id,
                 'name' => $this->productType->getNameAttribute(),

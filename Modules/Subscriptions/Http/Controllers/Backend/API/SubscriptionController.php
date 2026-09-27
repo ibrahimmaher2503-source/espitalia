@@ -24,7 +24,7 @@ class SubscriptionController extends Controller
      */
     public function saveSubscriptionDetails(SubscriptionRequest $request)
     {
-        $user_id = $request->user_id ? $request->user_id : auth()->id();
+        $user_id = auth()->id();
 
         $user = User::where('id', $user_id)->first();
 
@@ -52,7 +52,7 @@ class SubscriptionController extends Controller
             }
         }
 
-        $plan = Plan::where('id', $request->plan_id)->first();
+        $plan = Plan::whereKey($request->plan_id)->firstOrFail();
 
         //get end date
 
@@ -81,19 +81,13 @@ class SubscriptionController extends Controller
                 'subscriptions_id' => $result->id,
                 'user_id' => $result->user_id,
                 'amount' => $result->amount,
-                'payment_status' => $request->payment_status,
+                // A client cannot settle a subscription by posting "paid".
+                // A verified gateway callback must perform that transition.
+                'payment_status' => 'pending',
                 'payment_type' => $request->payment_type,
             ];
             $payment = SubscriptionTransactions::create($payment_data);
 
-            if ($payment->payment_status == 'paid') {
-                $result->status = config('constant.SUBSCRIPTION_STATUS.ACTIVE');
-                $result->payment_id = $payment->id;
-                $result->save();
-                $user->is_subscribe = 1;
-                $user->save();
-                $message = __('messages.payment_completed');
-            }
         }
 
         $items = new SubscriptionResource($result);
@@ -115,7 +109,7 @@ class SubscriptionController extends Controller
 
     public function cancelSubscription(Request $request)
     {
-        $user_id = $request->user_id ? $request->user_id : auth()->id();
+        $user_id = auth()->id();
         $subscription_plan_id = $request->id;
 
         $user_subscription = Subscription::where('id', $subscription_plan_id)->where('user_id', $user_id)->first();

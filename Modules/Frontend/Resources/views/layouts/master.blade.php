@@ -23,8 +23,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Kalam:wght@300;400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <style>
+        * { font-family: 'Cairo', sans-serif !important; }
+    </style>
 
     <link rel="stylesheet" href="{{ asset('iconly/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('phosphor-icons/regular/style.css') }}">
@@ -73,6 +76,7 @@
         }
         window.currencyFormat = currencyFormat
         window.defaultCurrencySymbol = @json(Currency::defaultSymbol())
+        window.appLocale = '{{ app()->getLocale() }}';
     </script>
     @stack('after-scripts')
 </body>

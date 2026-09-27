@@ -14,6 +14,8 @@ class IcuDepartmentResource extends JsonResource
                 return [
                     'id' => $this->hospital->id,
                     'name' => $this->hospital->name,
+                    'name_ar' => $this->hospital->name_ar,
+                    'name_en' => $this->hospital->name_en,
                 ];
             }),
             'name' => $this->name,

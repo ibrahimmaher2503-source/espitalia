@@ -28,8 +28,6 @@ class LoginResource extends JsonResource
             'login_type' => $this->login_type,
             'profile_image' => $this->media->pluck('original_url')->first(),
             'address' => $this->address,
-            'is_google_authentication' => $this->is_google_authentication,
-
         ];
     }
 }

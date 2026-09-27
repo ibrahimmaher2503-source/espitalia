@@ -97,6 +97,16 @@ class Branch extends BaseModel
         return $this->hasMany(\Modules\Clinic\Models\Clinics::class, 'branch_id');
     }
 
+    public function labs()
+    {
+        return $this->hasMany(\Modules\RadiologyLab\Models\Lab::class, 'branch_id');
+    }
+
+    public function radiologyCenters()
+    {
+        return $this->hasMany(\Modules\RadiologyLab\Models\RadiologyCenter::class, 'branch_id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

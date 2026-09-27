@@ -39,7 +39,7 @@
                                 <div class="input-group custom-input-group mb-3" style="flex-direction: column; align-items: flex-start;">
                                     <div style="width: 100%; display: flex;">
                                         <input type="email" name="email" class="form-control" placeholder="Enter Email"
-                                            value="{{ setting('is_dummy_credentials') ? 'john@gmail.com' : '' }}"
+                                            value=""
                                             required autofocus>
                                         <span class="input-group-text"><i class="ph ph-envelope-simple"></i></span>
                                     </div>
@@ -50,7 +50,7 @@
 
                                 <div class="input-group custom-input-group mb-3">
                                     <input type="password" name="password" class="form-control" id="password"
-                                        placeholder="Enter Password" value="{{ setting('is_dummy_credentials') ? '12345678' : '' }}" required>
+                                        placeholder="Enter Password" value="" required>
                                     <span class="input-group-text"><i class="ph ph-eye-slash"
                                             id="togglePassword"></i></span>
                                 </div>
@@ -84,10 +84,6 @@
                                                 fill="#4285F4" />
                                         </svg>
                                     </a>
-                                </div>
-                                <div class="d-flex justify-content-center flex-wrap gap-1 mt-5 mb-3">
-                                 <a href="{{ route('login-page', ['google2fa' => 1]) }}"
-                                    class=" font-size-14 fw-bold">{{ __("messages.secure_login_google2fa") }}</a>
                                 </div>
                                 <div class="d-flex justify-content-center flex-wrap gap-1 mt-5 mb-3">
                                     <span class="font-size-14 text-body">{{ __("messages.not_a_member") }}</span>

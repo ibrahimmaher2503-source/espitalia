@@ -44,9 +44,6 @@ Route::post('/forgot-password-link', [PasswordResetLinkController::class, 'store
 Route::controller(UserController::class)->group(function () {
     Route::post('user-login', 'loginstore')->name('user-login');
 
-    Route::get('multi-factor-auth/{id?}', 'multiFactorAuth')->name('multi-factor-auth');
-    Route::post('2fa', 'completeRegistration')->name('2fa');
-    
     // Login with Google
     Route::get('/auth/google', 'redirectToGoogle')->name('auth.google');
     Route::get('/auth/google/callback', 'handleGoogleCallback')->name('auth.google.callback');

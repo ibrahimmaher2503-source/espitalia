@@ -5,6 +5,9 @@ node_modules
 /vendor
 .env
 .env.backup
+# Never commit Firebase Admin service-account credentials.
+firebase-service-account*.json
+storage/app/firebase/*.json
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -45,3 +48,33 @@ public/api-docs.html
 public/postman-collection.json
 docs/
 .superpowers/
+
+# Local credentials, QA data and runtime output
+.env.*
+!.env.example
+/.codex_tmp/
+/.qa-runtime/
+/.playwright-mcp/
+/.claude/settings*.json
+/dogfood-output/
+/cookies.txt
+/composer.phar
+/server_err*.txt
+/server_out*.txt
+/status_result.txt
+/_adm_idx.json
+/hospitals_store*.json
+/ar-dashboard-snapshot.md
+/test-*.png
+/pharmacy-*.png
+/storage/installed
+/storage/framework/visual-browser/
+*.log
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sql
+*.sql.gz
+*.pem
+*.p12
+*.jks

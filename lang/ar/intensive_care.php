@@ -157,6 +157,7 @@ return [
     'request_cancel_success' => 'تم إلغاء طلب الدخول بنجاح.',
     'request_delete_success' => 'تم حذف طلب الدخول بنجاح.',
     'cannot_cancel' => 'لا يمكن إلغاء طلب الدخول هذا.',
+    'request_already_cancelled' => 'تم إلغاء طلب الدخول هذا بالفعل.',
     'status_update_success' => 'تم تحديث الحالة بنجاح.',
     'invalid_status_transition' => 'انتقال الحالة هذا غير مسموح به.',
     'hospital_save_success' => 'تم إنشاء المستشفى بنجاح.',

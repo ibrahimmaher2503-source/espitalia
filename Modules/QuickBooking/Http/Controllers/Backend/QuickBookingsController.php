@@ -303,7 +303,7 @@ class QuickBookingsController extends Controller
         $service_id = $request->service_id;
         $clinic_id = $request->clinic_id;
 
-        $data = Doctor::with(['user', 'doctorService'])
+        $data = Doctor::with(['user.profile', 'doctorService'])
             ->whereHas('doctorService', function ($query) use ($service_id, $clinic_id) {
                 $query->where('service_id', $service_id)
                     ->where('clinic_id', $clinic_id);
@@ -358,18 +358,17 @@ class QuickBookingsController extends Controller
         $user = User::where('email', $userRequest['email'])->first();
 
         if (!isset($user)) {
-            $userRequest['password'] = Hash::make('12345678');
+            $generatedPassword = bin2hex(random_bytes(24));
+            $userRequest['password'] = Hash::make($generatedPassword);
             $user = User::create($userRequest);
 
             $roles = ['user'];
             $user->syncRoles($roles);
 
-            \Artisan::call('cache:clear');
-
             event(new UserCreated($user));
 
             $data = [
-                'password' => '12345678',
+                'password' => $generatedPassword,
             ];
 
             try {

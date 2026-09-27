@@ -1,5 +1,0 @@
-[   15850ms] [ERROR] Failed to load resource: net::ERR_CACHE_READ_FAILURE @ https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js:0
-[   16370ms] [ERROR] Failed to load resource: net::ERR_CACHE_READ_FAILURE @ https://fonts.gstatic.com/s/intertight/v9/NGSwv5HMAFg6IuGlBNMjxLsH8ag.woff2:0
-[   18609ms] TypeError: window.tooltipInit is not a function
-    at Object.initialize (webpack-internal:///./resources/js/backend-custom.js:601:14)
-    at eval (webpack-internal:///./Modules/Frontend/Resources/assets/js/app.js:216:26)

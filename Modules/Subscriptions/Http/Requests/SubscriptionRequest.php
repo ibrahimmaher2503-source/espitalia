@@ -14,7 +14,10 @@ class SubscriptionRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'plan_id' => ['required', 'integer', 'exists:plans,id'],
+            'identifier' => ['nullable', 'string', 'max:255'],
+            'payment_status' => ['nullable', 'string', 'max:32'],
+            'payment_type' => ['nullable', 'string', 'max:64'],
         ];
     }
 

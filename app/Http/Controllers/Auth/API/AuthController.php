@@ -8,82 +8,23 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\LoginResource;
 use App\Http\Resources\RegisterResource;
 use App\Http\Resources\SocialLoginResource;
-use App\Mail\sendLoginOtp;
 use App\Models\User;
 use Auth;
 use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Artisan;
 use Modules\Commission\Models\EmployeeCommission;
 use Modules\Commission\Models\Commission;
 use App\Models\UserProfile;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Modules\Clinic\Models\Doctor;
+use App\Services\Auth\FirebaseIdentityTokenVerifier;
 
 class AuthController extends Controller
 {
     use AuthTrait;
 
-     /**
-     * generate google authenticator qr code 
-     * @param $request
-     * @return \Illuminate\Http\Response
-     */
-    public function generateQR(Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id'
-        ]);
-
-        $user = User::where('id',$request->user_id)->first();
-        $result = $this->multiFactorAuth($user);
-        return response()->json(["qr_image" => $result]); 
-    }
-
-    /**
-     * google authenticator otp verification 
-     * @param $request
-     * @return \Illuminate\Http\Response
-     */
-    public function verify(Request $request)
-    {
-        $validated = $request->validate([
-            'id' => 'required|exists:users,id',
-            'one_time_password' => 'required',
-        ]);
-
-        $user = User::where('id',$request->id)->first();
-
-        if($user->is_google_authentication == 1 && $request->google_authentication_type == 'google2fa') // check if user is using google authenticator
-        {
-            $google2fa = app('pragmarx.google2fa');
-            $valid = $google2fa->verifyKey($user->google2fa_secret, $request->input('one_time_password'));
-        
-            if ($valid) {
-                $success['user'] = $user;
-                $success['token'] = $user->createToken(setting('app_name'))->plainTextToken;
-                $userResource = new RegisterResource($user);            
-                return $this->sendResponse($userResource, "Successfully");            
-            }
-            else {
-                return response()->json(['status' => false, 'message' => 'Invalid One Time Password.!']);
-            }
-        }else{
-            if ($user->otp == $request->input('one_time_password')) {
-             
-                $success['user'] = $user;
-                $success['token'] = $user->createToken(setting('app_name'))->plainTextToken;
-                $userResource = new RegisterResource($user);            
-                return $this->sendResponse($userResource, "Successfully");
-            }  else {
-                return response()->json(['status' => false, 'message' => 'Invalid One Time Password.!']);            
-            }
-        }
-    }
-
-    
     public function register(Request $request)
     {
         $user = $this->registerTrait($request);
@@ -142,135 +83,89 @@ class AuthController extends Controller
                 return response()->json(['status' => false, 'message' => __('messages.account_not_verify')]);
             }
         }
+        $request->ensureIsNotRateLimited();
         if (Auth::attempt(['email' => request('email'), 'password' => request('password')])) {
+            RateLimiter::clear($request->throttleKey());
             $user = Auth::user();
-
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('view:clear');
-            Artisan::call('config:cache');
-            Artisan::call('route:clear');
 
 
             if ($user->is_banned == 1 || $user->status == 0) {
                 return response()->json(['status' => false, 'message' => __('messages.login_error')]);
             }
 
-            $user->player_id = $request->input('player_id'); // Store the player_id
-            $user->google_authentication_type = $request->input('google_authentication_type'); // Store the google authentication type
-            // Save the user
+            $user->player_id = $request->input('player_id');
             $user->save();
+            Auth::logout();
 
-            if ($usertype != "user")
-            {
-                $user['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
-
-                Artisan::call('cache:clear');
-                Artisan::call('config:clear');
-                Artisan::call('view:clear');
-                Artisan::call('config:cache');
-                Artisan::call('route:clear');
-                $loginResource = new LoginResource($user);
-                $message = __('messages.user_login');
-
-                return $this->sendResponse($loginResource, $message);
-            }else{
-                $user['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
-                if($user->is_google_authentication == 1 && $user->google_authentication_type == 'google2fa') // check if user is using google authenticator
-                {
-
-                    $google2fa = app('pragmarx.google2fa');
-                    $google2fa_secret = $google2fa->generateSecretKey();
-
-                    User::where('id',$userData->id)->update([
-                        'google2fa_secret' => $google2fa_secret
-                    ]);
-                    $loginResource = [
-                        'id' => $user->id,
-                        'is_google_authentication' => $user->is_google_authentication,
-                        'google_authentication_type' => $user->google_authentication_type,
-                        'api_token' => $user->api_token,
-                        // 'qr_image' => $this->multiFactorAuth($user) // generate google authenticator qr code 
-                    ];                    
-                }else{
-                    $loginResource = [
-                        'id' => $user->id,
-                        'is_google_authentication' => $user->is_google_authentication,
-                        'google_authentication_type' => $user->google_authentication_type,
-                        'api_token' => $user->api_token,
-                    ];
-                    self::otpSend($request); // otp send on registered email
-                }
-                
-                
-                $message = __('messages.login_otp');
-                return $this->sendResponse($loginResource, $message);
-            }
+            return $this->issueApiToken($user);
         } else {
+            RateLimiter::hit($request->throttleKey(), 60);
             return $this->sendError(__('messages.not_matched'), ['error' => __('messages.unauthorised')], 200);
         }
     }
 
-    /**
-     * otp resend/send on email
-     * @param $request
-     * @return \Illuminate\Http\Response
-     */
-    public function otpSend(Request $request)
+    private function issueApiToken(User $user)
     {
-        $request->validate([
-            'email' => 'required|email:filter',
+        $user['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
+        return $this->sendResponse(new LoginResource($user), __('messages.user_login'));
+    }
+
+    public function socialLogin(Request $request, FirebaseIdentityTokenVerifier $identityTokenVerifier)
+    {
+        $input = $request->validate([
+            'login_type' => ['required', 'in:google,apple'],
+            'id_token' => ['required', 'string', 'max:8192'],
+            'first_name' => ['nullable', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+            'player_id' => ['nullable', 'string', 'max:512'],
         ]);
 
-        $otp = rand(100000,999999);
-        $user = User::where('email','=',$request->email)->update(['otp' => $otp]);
+        try {
+            $claims = $identityTokenVerifier->verify($input['id_token']);
+        } catch (\Throwable $exception) {
+            report($exception);
 
-        if($user){
-            $bodyData = ['body' => 'Your OTP To Login is : '. $otp];        
-            Mail::to($request->email)->send(new sendLoginOtp($bodyData));
-        
-            return response(["status" => 200, "message" => "OTP sent successfully"]);
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.invalid_request'),
+            ], 401);
         }
-        else{
-            return response()->json(['status' => false, 'message' => __('messages.register_before_login')]);
+
+        $provider = data_get($claims, 'firebase.sign_in_provider');
+        $expectedProvider = $input['login_type'] === 'google' ? 'google.com' : 'apple.com';
+        if ($provider !== $expectedProvider) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.invalid_request'),
+            ], 401);
         }
-    }
 
-     /**
-     * verify email otp
-     * @param $request
-     * @return \Illuminate\Http\Response
-     */
-    public function verifyOtp(Request $request)
-    {
-    
-        $user  = User::where([['email','=',$request->email],['otp','=',$request->otp]])->first();
-        if($user){            
-            
-            User::where('email','=',$request->email)->update(['otp' => null]);            
-            $user['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
+        $input['email'] = strtolower((string) $claims['email']);
+        $input['firebase_uid'] = (string) $claims['sub'];
+        $input['user_type'] = 'user';
+        $emailUser = User::where('email', $input['email'])->first();
+        $user_data = User::where('firebase_uid', $input['firebase_uid'])->first() ?: $emailUser;
 
-            $loginResource = new LoginResource($user);
-            $message = __('messages.user_login');
-
-            return $this->sendResponse($loginResource, $message);            
+        if ($user_data?->firebase_uid !== null
+            && ! hash_equals((string) $user_data->firebase_uid, $input['firebase_uid'])) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.invalid_request'),
+            ], 401);
         }
-        else{
-            return response(["status" => 401, 'message' => 'Invalid Otp']);
-        }
-    }
 
-    public function socialLogin(Request $request)
-    {
-        $input = $request->all();
-
-        if ($input['login_type'] === 'mobile') {
-            $user_data = User::where('username', $input['username'])->where('login_type', 'mobile')->first();
-        } else {
-            $user_data = User::where('email', $input['email'])->first();
+        if ($user_data && $user_data->login_type !== $input['login_type']) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.already_taken'),
+            ], 409);
         }
 
         if ($user_data != null) {
+
+            if ($user_data->firebase_uid === null) {
+                $user_data->forceFill(['firebase_uid' => $input['firebase_uid']])->save();
+            }
 
             $usertype = $user_data->user_type;
 
@@ -341,16 +236,24 @@ class AuthController extends Controller
                 return $this->sendError($otp_response);
             }
 
-            $password = !empty($input['accessToken']) ? $input['accessToken'] : $input['email'];
+            $name = trim((string) ($claims['name'] ?? ''));
+            $nameParts = preg_split('/\s+/', $name, 2) ?: [];
+            $firstName = trim((string) ($input['first_name'] ?? $claims['given_name'] ?? ($nameParts[0] ?? '')));
+            $lastName = trim((string) ($input['last_name'] ?? $claims['family_name'] ?? ($nameParts[1] ?? '')));
 
-            $input['user_type'] = $request->user_type;
-            $input['display_name'] = $input['first_name'] . ' ' . $input['last_name'];
-            $input['password'] = Hash::make($password);
-            $input['user_type'] = isset($input['user_type']) ? $input['user_type'] : 'user';
-            if (request('player_id') != null) {
-                $input['player_id'] = request('player_id');
-            }
-            $user = User::create($input);
+            $input['first_name'] = $firstName !== '' ? $firstName : 'Patient';
+            $input['last_name'] = $lastName !== '' ? $lastName : 'User';
+            $input['password'] = Hash::make(Str::random(48));
+            $user = User::create(collect($input)->only([
+                'email',
+                'first_name',
+                'last_name',
+                'user_type',
+                'password',
+                'player_id',
+                'login_type',
+                'firebase_uid',
+            ])->all());
 
             $usertype = $user->user_type;
 
@@ -374,10 +277,6 @@ class AuthController extends Controller
             \Illuminate\Support\Facades\Artisan::call('config:cache');
 
 
-            if (!empty($input['profile_image'])) {
-                $media = $user->addMediaFromUrl($input['profile_image'])->toMediaCollection('profile_image');
-                $user->avatar = $media->getUrl();
-            }
             $user_data = User::where('id', $user->id)->first();
 
             $message = trans('messages.save_form', ['form' => $input['user_type']]);
@@ -408,23 +307,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Check if the user is authenticated
-        if (!Auth::guard('sanctum')->check()) {
-            // User is not logged in, return a response indicating that
-            return response()->json(['status' => false, 'message' => __('messages.user_not_logged_in')]);
-        }
+        $user = $request->user();
+        $request->user()->currentAccessToken()?->delete();
+        $user->player_id = null;
+        $user->save();
 
-        // User is logged in, proceed with the logout process
-        $user = Auth::guard('sanctum')->user();
-
-        // Revoke all tokens associated with the user
-        $user->tokens()->delete();
-
-        if ($request->is('api*')) {
-            $user->player_id = null;
-            $user->save();
-            return response()->json(['status' => true, 'message' => __('messages.user_logout')]);
-        }
+        return response()->json(['status' => true, 'message' => __('messages.user_logout')]);
     }
 
     public function forgotPassword(Request $request)
@@ -453,76 +341,70 @@ class AuthController extends Controller
 
     public function changePassword(Request $request)
     {
-        $user = \Auth::user();
-        $user_id = !empty($request->id) ? $request->id : $user->id;
-        $user = User::where('id', $user_id)->first();
-        if ($user == '') {
-            return response()->json([
-                'status' => false,
-                'message' => __('messages.user_notfound'),
-            ], 400);
+        $user = $request->user();
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => __('messages.unauthorised')], 401);
         }
+
+        $data = $request->validate([
+            'old_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'max:191'],
+        ]);
 
         $hashedPassword = $user->password;
 
-        $match = Hash::check($request->old_password, $hashedPassword);
-
-        $same_exits = Hash::check($request->new_password, $hashedPassword);
-
-        if ($match) {
-            if ($same_exits) {
-                $message = __('messages.old_new_pass_same');
-
-                return response()->json([
-                    'status' => false,
-                    'message' => __('messages.same_pass'),
-                ], 400);
-            }
-
-            $user->fill([
-                'password' => Hash::make($request->new_password),
-            ])->save();
-
-            $success['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
-            $success['name'] = $user->name;
-
+        if (! is_string($hashedPassword) || ! Hash::check($data['old_password'], $hashedPassword)) {
             return response()->json([
-                'status' => true,
-                'data' => $success,
-                'message' => __('messages.pass_successfull'),
-            ], 200);
-        } else {
-            $success['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
-            $success['name'] = $user->name;
-            $message = __('messages.valid_password');
-
-            return response()->json([
-                'status' => true,
-                'data' => $success,
-                'message' => __('messages.pass_successfull'),
-            ], 200);
+                'status' => false,
+                'message' => __('messages.valid_password'),
+            ], 422);
         }
+
+        if (Hash::check($data['new_password'], $hashedPassword)) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.same_pass'),
+            ], 422);
+        }
+
+        $user->forceFill(['password' => Hash::make($data['new_password'])])->save();
+        $user->tokens()->delete();
+        $success = [
+            'api_token' => $user->createToken(setting('app_name'))->plainTextToken,
+            'name' => $user->name,
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data' => $success,
+            'message' => __('messages.pass_successfull'),
+        ]);
     }
 
     public function updateProfile(Request $request)
     {
-        $user = \Auth::user();
-        if ($request->has('id') && !empty($request->id)) {
-            $user = User::where('id', $request->id)->first();
+        $user = $request->user();
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => __('messages.unauthorised')], 401);
         }
-        if ($user == null) {
 
-            return response()->json([
-                'message' => __('messages.no_record'),
-            ], 400);
-        }
-        $user->fill($request->all())->update();
+        $data = $request->validate([
+            'first_name' => ['sometimes', 'string', 'max:191'],
+            'last_name' => ['sometimes', 'string', 'max:191'],
+            'mobile' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'gender' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'date_of_birth' => ['sometimes', 'nullable', 'date'],
+            'email' => ['sometimes', 'email', 'max:191', 'unique:users,email,'.$user->id],
+            'player_id' => ['sometimes', 'nullable', 'string', 'max:512'],
+            'profile_image' => ['sometimes', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        unset($data['profile_image']);
+        $user->forceFill($data)->save();
 
         $user_data = User::find($user->id);
-        if ($request->has('profile_image')) {
-
-            $request->file('profile_image');
-
+        if ($request->hasFile('profile_image')) {
             storeMediaFile($user_data, $request->file('profile_image'), 'profile_image');
         }
 
@@ -585,18 +467,16 @@ class AuthController extends Controller
 
     public function userDetails(Request $request)
     {
-        $userID = $request->id;
-        $user = User::find($userID);
+        $user = $request->user();
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => __('messages.unauthorised')], 401);
+        }
         $user['about_self'] = $user->profile->about_self ?? null;
         $user['expert'] = $user->profile->expert ?? null;
         $user['facebook_link'] = $user->profile->facebook_link ?? null;
         $user['instagram_link'] = $user->profile->instagram_link ?? null;
         $user['twitter_link'] = $user->profile->twitter_link ?? null;
         $user['dribbble_link'] = $user->profile->dribbble_link ?? null;
-
-        if (!$user) {
-            return response()->json(['status' => false, 'message' => __('messages.user_notfound')], 404);
-        }
 
         return response()->json(['status' => true, 'data' => $user, 'message' => __('messages.user_details_successfull')]);
     }
@@ -628,8 +508,9 @@ class AuthController extends Controller
     }
     public function checkContact(Request $request)
     {
-        $contact = $request->input('contact');
-        // \Log::info('Checking contact number: ' . $contact);
+        $contact = (string) $request->validate([
+            'contact' => ['required', 'string', 'max:32'],
+        ])['contact'];
         
         $cleanContact = preg_replace('/[^0-9+]/', '', $contact);
         $exists = User::where('mobile', $contact)->exists();
@@ -645,15 +526,6 @@ class AuthController extends Controller
             $exists = User::where('mobile', 'LIKE', '%' . $lastTenDigits)->exists();
         }
         
-        // Debug: Log the result
-        \Log::info('Contact exists check result: ' . ($exists ? 'true' : 'false'));
-        \Log::info('Original contact: ' . $contact);
-        \Log::info('Clean contact: ' . $cleanContact);
-        
-        // Debug: Let's also check what phone numbers are in the database
-        $allPhones = User::whereNotNull('mobile')->pluck('mobile')->toArray();
-        \Log::info('All phone numbers in database: ' . json_encode($allPhones));
-        
         if ($exists) {
             $message = __('messages.contact_already_taken');
             return response()->json(['status' => 'error', 'message' => $message], 409); // 409 Conflict
@@ -664,7 +536,7 @@ class AuthController extends Controller
 
     public function checkEmail(Request $request)
     {
-        $email = $request->input('email');
+        $email = $request->validate(['email' => ['required', 'email', 'max:191']])['email'];
 
         // Check if email exists
         $exists = User::where('email', $email)->exists();

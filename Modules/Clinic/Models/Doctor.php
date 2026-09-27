@@ -29,7 +29,7 @@ class Doctor extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $table = 'doctors';
-    protected $fillable = ['doctor_id', 'experience', 'signature', 'vendor_id', 'description', 'governorate_id', 'city_id', 'experience_ar', 'experience_en', 'description_ar', 'description_en', 'title_ar', 'title_en', 'license_number', 'is_active'];
+    protected $fillable = ['doctor_id', 'experience', 'signature', 'vendor_id', 'description', 'governorate_id', 'city_id', 'experience_ar', 'experience_en', 'description_ar', 'description_en', 'title_ar', 'title_en', 'license_number', 'is_active', 'is_independent'];
     protected $casts = [
 
         'doctor_id' => 'integer',
@@ -140,9 +140,14 @@ class Doctor extends BaseModel
 
     public function scopeCheckMultivendor($query){
         if(multiVendor() == "0") {
-            return $query->where('status',1)->whereHas('vendor', function ($q){
-                $q->whereIn('user_type', ['admin','demo_admin']);
-            });
+            $userIds = User::whereIn('user_type', ['admin','demo_admin'])->pluck('id');
+            $query = $query->where('status',1);
+
+            if ($userIds->isNotEmpty()) {
+                $query->whereIn('vendor_id', $userIds);
+            }
+
+            return $query;
         }
 
         return $query->where('status',1);
@@ -155,7 +160,7 @@ class Doctor extends BaseModel
        if (auth()->user()->hasRole(['admin', 'demo_admin'])) {
            if (multiVendor() == "0") {
 
-            $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+            $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
             $query = $query->whereIn('vendor_id', $user_ids);
            }
            return $query; 

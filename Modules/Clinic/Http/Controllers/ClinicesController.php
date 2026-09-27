@@ -122,7 +122,7 @@ class ClinicesController extends Controller
 
         $userId = auth()->id();
 
-        $query_data = Clinics::SetRole(auth()->user())->with('clinicdoctor', 'specialty', 'clinicdoctor', 'receptionist');
+        $query_data = Clinics::SetRole(auth()->user())->with('clinicdoctor', 'specialty', 'receptionist');
 
         if ($request->filled('doctor_id') && $request->doctor_id != null) {
             $doctor_id = $request->doctor_id;
@@ -141,7 +141,7 @@ class ClinicesController extends Controller
 
                     // Check user existence and type
                     if ($user && in_array($user->user_type, ['admin', 'demo_admin'])) {
-                        $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                        $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
                         $query_data->whereIn('vendor_id', $user_ids);
                     } else {
                         $query_data->where('vendor_id', $vendor_id);
@@ -197,7 +197,7 @@ class ClinicesController extends Controller
     public function index_data(Datatables $datatable, Request $request)
     {
         $userId = auth()->id();
-        $query = Clinics::SetRole(auth()->user())->with('clinicdoctor', 'specialty', 'clinicdoctor', 'receptionist');
+        $query = Clinics::SetRole(auth()->user())->with('clinicdoctor', 'specialty', 'receptionist');
 
         $filter = $request->filter;
 

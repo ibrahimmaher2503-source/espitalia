@@ -59,7 +59,7 @@ class FrontendSettingController extends Controller
                     $tabpage = 'section_1';
                     break;
                 case 'heder-menu-setting':
-                    $keys = ['header_setting', 'categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests', 'enable_search', 'enable_language', 'enable_darknight_mode'];
+                    $keys = ['header_setting', 'categories', 'services', 'clinics', 'doctors', 'appointments', 'available_nurses', 'lab_tests', 'icu', 'nurse_request', 'doctor_visit', 'enable_search', 'enable_language', 'enable_darknight_mode'];
                     foreach ($keys as $key) {
                         $landing_page_data[$key] = $decodedata->$key ?? 0;
                     }
@@ -217,14 +217,18 @@ class FrontendSettingController extends Controller
         $landing_page_data = [
             $type => $status,
         ];
-        if (!empty($data['title'])) {
-            $landing_page_data['title'] = $data['title'];
-        }
-        if (!empty($data['subtitle'])) {
-            $landing_page_data['subtitle'] = $data['subtitle'];
-        }
-        if (!empty($data['description'])) {
-            $landing_page_data['description'] = $data['description'];
+        // Bilingual title/subtitle/description
+        foreach (['title', 'subtitle', 'description'] as $field) {
+            $ar = $data["{$field}_ar"] ?? null;
+            $en = $data["{$field}_en"] ?? null;
+            if ($ar !== null) $landing_page_data["{$field}_ar"] = $ar;
+            if ($en !== null) $landing_page_data["{$field}_en"] = $en;
+            // Legacy single-value fallback (keep for backward compat)
+            if (!empty($data[$field])) {
+                $landing_page_data[$field] = $data[$field];
+            } elseif ($ar || $en) {
+                $landing_page_data[$field] = $ar ?: $en;
+            }
         }
         foreach ($configurations[$type] ?? [] as $field) {
             $landing_page_data[$field] = isset($data[$field]) ? $data[$field] : [];

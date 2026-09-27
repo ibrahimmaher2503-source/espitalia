@@ -51,13 +51,17 @@ Route::prefix('v1/pharmacy')->middleware('auth:sanctum')->name('api.')->group(fu
     Route::get('cart/available-pharmacies', [PharmacyMatchingApiController::class, 'index'])->name('cart.available-pharmacies');
 
     // Orders
-    Route::post('orders', [OrderApiController::class, 'store'])->name('orders.store');
+    Route::post('orders', [OrderApiController::class, 'store'])
+        ->middleware('idempotency:pharmacy_order')->name('orders.store');
     Route::get('orders', [OrderApiController::class, 'index'])->name('orders.index');
     Route::get('orders/{id}', [OrderApiController::class, 'show'])->name('orders.show');
-    Route::post('orders/{id}/cancel', [OrderApiController::class, 'cancel'])->name('orders.cancel');
+    Route::post('orders/{id}/cancel', [OrderApiController::class, 'cancel'])
+        ->middleware('idempotency:pharmacy_cancellation')->name('orders.cancel');
 
     // Prescriptions (patient)
-    Route::post('prescriptions', [PrescriptionApiController::class, 'store'])->name('prescriptions.store');
+    Route::post('prescriptions', [PrescriptionApiController::class, 'store'])
+        ->middleware('idempotency:pharmacy_prescription')
+        ->name('prescriptions.store');
     Route::get('prescriptions', [PrescriptionApiController::class, 'index'])->name('prescriptions.index');
     Route::get('prescriptions/{id}', [PrescriptionApiController::class, 'show'])->name('prescriptions.show');
 
@@ -65,7 +69,9 @@ Route::prefix('v1/pharmacy')->middleware('auth:sanctum')->name('api.')->group(fu
     Route::post('coupons/validate', [CouponApiController::class, 'validate'])->name('coupons.validate');
 
     // Refunds (patient)
-    Route::post('orders/{id}/refund', [RefundApiController::class, 'store'])->name('refunds.store');
+    Route::post('orders/{id}/refund', [RefundApiController::class, 'store'])
+        ->middleware('idempotency:pharmacy_refund')
+        ->name('refunds.store');
     Route::get('refunds', [RefundApiController::class, 'index'])->name('refunds.index');
     Route::get('refunds/{id}', [RefundApiController::class, 'show'])->name('refunds.show');
 

@@ -3,6 +3,7 @@
 namespace Modules\Clinic\Transformers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Schema;
 use Modules\Clinic\Transformers\ClinicServiceMappingResource;
 use Modules\Clinic\Transformers\DoctorServiceMappingResource;
 use Modules\Appointment\Trait\AppointmentTrait;
@@ -40,7 +41,7 @@ class ServiceResource extends JsonResource
             'name' => $this->name,
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
-            'system_service_id'=>$this->id,
+            'system_service_id'=>$this->system_service_id,
             'slug' => $this->slug,
             'description' => $this->description,
             'description_ar' => $this->description_ar,
@@ -69,7 +70,7 @@ class ServiceResource extends JsonResource
             'type'=>$this->type,
             'vendor_name'=>optional($this->vendor)->full_name,
             'service_image' => $this->file_url,
-            'active_offers' => class_exists(\Modules\Offer\Models\Offer::class)
+            'active_offers' => class_exists(\Modules\Offer\Models\Offer::class) && Schema::hasTable('offers')
                 ? \Modules\Offer\Models\Offer::getActiveOffersForService($this->id)
                 : [],
             'created_by' => $this->created_by,

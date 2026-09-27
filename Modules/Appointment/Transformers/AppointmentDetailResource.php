@@ -19,6 +19,8 @@ class AppointmentDetailResource extends JsonResource
      */
     public function toArray($request)
     {
+        $isIndependent = $this->booking_type === 'independent';
+        $service = $isIndependent ? $this->independentService : $this->clinicservice;
 
         $remaining_payable_amount = 0;
         $cacellationcharges = 0;
@@ -135,12 +137,15 @@ class AppointmentDetailResource extends JsonResource
             'appointment_date'=> $this->appointment_date,
             'appointment_time'=> $this->appointment_time,
             'duration'=> $this->duration,
+            'booking_type' => $this->booking_type,
+            'independent_service_id' => $this->independent_service_id,
             'service_id'=> $this->service_id,
-            'service_name'=> optional($this->clinicservice)->name,
+            'service_name'=> optional($service)->name,
+            'service_description' => optional($service)->description,
             'category_name' => optional(optional($this->clinicservice)->category)->name,
-            'service_image' => optional($this->clinicservice)->file_url,
-            'service_type' => optional($this->clinicservice)->type,
-            'is_video_consultancy' => optional($this->clinicservice)->is_video_consultancy,
+            'service_image' => optional($service)->file_url,
+            'service_type' => optional($service)->type,
+            'is_video_consultancy' => optional($service)->is_video_consultancy,
             'appointment_extra_info' => $this->appointment_extra_info,
             'total_amount' => $totalAmount,
             'service_amount' => $this->service_amount,
@@ -160,7 +165,7 @@ class AppointmentDetailResource extends JsonResource
             'tax_data' => $tax_data,
             'billing_items' => BillingItemResource::collection($billingItems),
             'payment_status' => optional($this->appointmenttransaction)->payment_status,
-            'is_enable_advance_payment' => optional($this->clinicservice)->is_enable_advance_payment,
+            'is_enable_advance_payment' => optional($service)->is_enable_advance_payment,
             'advance_payment_amount' => $this->advance_payment_amount,
             'advance_payment_status' => optional($this->appointmenttransaction)->advance_payment_status,
             'advance_paid_amount' => $this->advance_paid_amount,

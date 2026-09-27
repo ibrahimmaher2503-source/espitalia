@@ -2,32 +2,28 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('pharmacies', function (Blueprint $table) {
-            $table->string('name_ar')->nullable()->after('name');
-            $table->string('name_en')->nullable()->after('name_ar');
-            $table->text('description')->nullable()->after('name_en');
-            $table->text('description_ar')->nullable()->after('description');
-            $table->text('description_en')->nullable()->after('description_ar');
-        });
-
-        // Backfill: copy existing name into name_en
-        DB::statement('UPDATE pharmacies SET name_en = name WHERE name IS NOT NULL AND name_en IS NULL');
-
-        // Backfill: copy existing description into description_en
-        DB::statement('UPDATE pharmacies SET description_en = description WHERE description IS NOT NULL AND description_en IS NULL');
+        // The core migration 2026_04_11_000005 already owns the bilingual
+        // name and description columns. This module migration only adds the
+        // legacy description field still consumed by the pharmacy model.
+        if (! Schema::hasColumn('pharmacies', 'description')) {
+            Schema::table('pharmacies', function (Blueprint $table) {
+                $table->text('description')->nullable()->after('name_en');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('pharmacies', function (Blueprint $table) {
-            $table->dropColumn(['name_ar', 'name_en', 'description', 'description_ar', 'description_en']);
-        });
+        if (Schema::hasColumn('pharmacies', 'description')) {
+            Schema::table('pharmacies', function (Blueprint $table) {
+                $table->dropColumn('description');
+            });
+        }
     }
 };

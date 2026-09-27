@@ -17,8 +17,11 @@ Route::get('nurses/search', [NurseSearchApiController::class, 'search']);
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {
 
     // Nurse Requests
-    Route::apiResource('nurse-requests', NurseRequestApiController::class);
-    Route::post('nurse-requests/{id}/cancel', [NurseRequestApiController::class, 'cancel'])->name('nurse-requests.cancel');
+    Route::apiResource('nurse-requests', NurseRequestApiController::class)->except(['store']);
+    Route::post('nurse-requests', [NurseRequestApiController::class, 'store'])
+        ->middleware('idempotency:nurse_request');
+    Route::post('nurse-requests/{id}/cancel', [NurseRequestApiController::class, 'cancel'])
+        ->middleware('idempotency:nurse_cancellation')->name('nurse-requests.cancel');
 
     // Nurses (read-only for API consumers)
     Route::get('nurses', [NursesApiController::class, 'index'])->name('nurses.index');

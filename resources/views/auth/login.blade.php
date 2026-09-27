@@ -77,23 +77,6 @@
             </div>
 
         </form>
-        @if(setting('is_dummy_credentials'))
-        <div>
-            <h6 class="text-center border-top py-3 mt-3">{{__('messages.lbl_demo_account')}}</h6>
-            <div class="parent">
-                <select name="select" id="SelectUser" class="form-control selectpiker" onchange="getSelectedOption()">
-                    <option value="">{{__('messages.lbl_select_role')}}</option>
-                    <option value="12345678,demo@espitalia.com">{{__('messages.lbl_demo_admin')}}</option>
-                    <option value="12345678,doctor@espitalia.com">{{__('messages.lbl_doctor')}}</option>
-                    @if(multiVendor() === "1")
-                    <option value="12345678,vendor@espitalia.com">{{__('messages.lbl_click_admin')}}</option>
-                    @endif
-                    <option value="12345678,receptionist@espitalia.com">{{__('messages.lbl_receptionist')}}</option>
-                </select>
-            </div>
-        </div>
-        @endif
-
         <x-slot name="extra">
             @if (Route::has('register'))
             <p class="text-center text-gray-600 mt-4">
@@ -103,56 +86,7 @@
         </x-slot>
     </x-auth-card>
 
-    <!-- Include necessary CSS and JavaScript for select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: inherit;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow,
-        .select2-container--default .select2-selection--single .select2-selection__clear,
-        .select2-container--classic .select2-selection--single .select2-selection__arrow {
-            height: 100%;
-        }
-    </style>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script type="text/javascript">
-        window.onload = function() {
-            getSelectedOption();
-        };
-        $(document).ready(function() {
-            $('#SelectUser').select2({
-                placeholder: "Select Role",
-                minimumResultsForSearch: Infinity,
-                width: '100%'
-            });
-
-            $('.select2-container').addClass('wide');
-        });
-
-
-        function getSelectedOption() {
-            var selectElement = document.getElementById("SelectUser");
-            var selectedOption = selectElement.options[selectElement.selectedIndex];
-
-            if (selectedOption && selectedOption.value !== "") {
-                var values = selectedOption.value.split(",");
-                var password = values[0];
-                var email = values[1];
-
-                domId('email').value = email;
-                domId('password').value = password;
-            } else {
-                domId('email').value = "";
-                domId('password').value = "";
-            }
-        }
-
         function domId(name) {
             return document.getElementById(name);
         }

@@ -57,7 +57,9 @@ class LabSearchTest extends BaseTest
                     ],
                 ],
                 'message',
-            ]);
+            ])
+            ->assertJsonPath('data.items.0.name_ar', 'مختبر الكويت')
+            ->assertJsonPath('data.items.0.name_en', 'Kuwait Lab');
     }
 
     public function test_search_returns_only_active_labs()

@@ -17,6 +17,8 @@ class AppointmentResource extends JsonResource
      */
     public function toArray($request)
     {
+        $isIndependent = $this->booking_type === 'independent';
+        $service = $isIndependent ? $this->independentService : $this->clinicservice;
         $remaining_payable_amount = 0;
         $cacellationcharges = 0;
         $startTime = Carbon::parse($this->appointment_time);
@@ -82,25 +84,27 @@ class AppointmentResource extends JsonResource
             'pincode' => optional($this->user)->pincode,
             'clinic_id' => $this->clinic_id,
             'clinic_name' => optional($this->cliniccenter)->name,
+            'booking_type' => $this->booking_type,
+            'independent_service_id' => $this->independent_service_id,
             'doctor_id' => $this->doctor_id,
             'doctor_name' => trim(optional($this->doctor)->first_name . ' ' . optional($this->doctor)->last_name) ?: default_user_name(),
             'appointment_date' => $this->appointment_date,
             'appointment_time' => $this->appointment_time,
-            'description' => $this->description,
+            'description' => $isIndependent ? optional($service)->description : $this->description,
             'encounter_id' => optional($this->patientEncounter)->id,
             'encounter_description' => optional($this->patientEncounter)->description,
             'encounter_status' => optional($this->patientEncounter)->status,
             'end_time' => $endTime->format('H:i:s'),
             'duration' => $this->duration,
             'service_id' => $this->service_id,
-            'service_name' => optional($this->clinicservice)->name,
-            'service_type' => optional($this->clinicservice)->type,
-            'is_video_consultancy' => optional($this->clinicservice)->is_video_consultancy,
+            'service_name' => optional($service)->name,
+            'service_type' => optional($service)->type,
+            'is_video_consultancy' => optional($service)->is_video_consultancy,
             'appointment_extra_info' => $this->appointment_extra_info,
             'total_amount' => $totalAmount,
             'service_amount' => $this->service_amount,
             'payment_status' => optional($this->appointmenttransaction)->payment_status,
-            'is_enable_advance_payment' => optional($this->clinicservice)->is_enable_advance_payment,
+            'is_enable_advance_payment' => optional($service)->is_enable_advance_payment,
             'advance_payment_amount' => $this->advance_payment_amount,
             'advance_payment_status' => optional($this->appointmenttransaction)->advance_payment_status,
             'advance_paid_amount' => $this->advance_paid_amount,

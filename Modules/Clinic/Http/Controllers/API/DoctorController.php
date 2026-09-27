@@ -43,11 +43,13 @@ class DoctorController extends Controller
         }
 
         if(auth()->user()){
-            $doctor_list = Doctor::CheckMultivendor()->SetRole(auth()->user())->with('user','doctorCommission','doctorService','doctorclinic');
+            $doctor_list = Doctor::CheckMultivendor()->SetRole(auth()->user())->with('user.profile','doctorCommission','doctorService','doctorclinic','specializations');
         }
         else{
-            $doctor_list = Doctor::CheckMultivendor()->with('user','doctorCommission','doctorService','doctorclinic')->where('status',1);
+            $doctor_list = Doctor::CheckMultivendor()->with('user.profile','doctorCommission','doctorService','doctorclinic','specializations')->where('status',1);
         }
+
+        $doctor_list->whereHas('user');
 
         if ($request->has('search')) {
             $searchTerm = str_replace(['%', '_'], ['\%', '\_'], $request->input('search'));
@@ -91,6 +93,14 @@ class DoctorController extends Controller
         if($request->filled('vendor_id')){
             $doctor_list->where('vendor_id',$request->vendor_id);
          }
+
+        if ($request->filled('governorate_id')) {
+            $doctor_list->where('governorate_id', $request->governorate_id);
+        }
+
+        if ($request->filled('city_id')) {
+            $doctor_list->where('city_id', $request->city_id);
+        }
         
         if ($request->filled('specialization_ids') && is_array($request->specialization_ids)) {
             $specIds = $request->specialization_ids;
@@ -111,6 +121,15 @@ class DoctorController extends Controller
         }
         if($request->filled('doctor_id')){
             $doctor = $doctor_list->where('doctor_id',$request->doctor_id)->first();
+
+            if (!$doctor) {
+                return response()->json([
+                    'status' => false,
+                    'data' => null,
+                    'message' => __('messages.record_not_found'),
+                ], 404);
+            }
+
             $responseData = new DoctorDetailsResource($doctor);
 
             return response()->json([
@@ -140,8 +159,13 @@ class DoctorController extends Controller
 
     public function doctorDetails($id)
     {
-        $doctor = Doctor::with('user', 'doctorCommission', 'doctorService', 'doctorclinic', 'doctorReviews', 'doctorDocuments')
-            ->find($id);
+        $doctor = Doctor::with('user', 'doctorCommission', 'doctorService', 'doctorclinic', 'doctorReviews', 'doctorDocuments', 'specializations')
+            ->whereHas('user')
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)
+                    ->orWhere('doctor_id', $id);
+            })
+            ->first();
 
         if (! $doctor || (! auth()->user() && (int) $doctor->status !== 1)) {
             return response()->json([
@@ -326,6 +350,15 @@ class DoctorController extends Controller
 
         if($request->filled('patient_id')){
             $patient = $patient_list->where('id',$request->patient_id)->first();
+
+            if (!$patient) {
+                return response()->json([
+                    'status' => false,
+                    'data' => null,
+                    'message' => __('messages.record_not_found'),
+                ], 404);
+            }
+
             $responseData = new PatientDetailsResource($patient);
 
             return response()->json([
@@ -381,6 +414,15 @@ class DoctorController extends Controller
         if($request->filled('receptionist_id')){
 
             $receptionist = $receptionist_list->where('id',$request->receptionist_id)->first();
+
+            if (!$receptionist) {
+                return response()->json([
+                    'status' => false,
+                    'data' => null,
+                    'message' => __('messages.record_not_found'),
+                ], 404);
+            }
+
             $responseData = New ReceptionistResource($receptionist);
 
             return response()->json([

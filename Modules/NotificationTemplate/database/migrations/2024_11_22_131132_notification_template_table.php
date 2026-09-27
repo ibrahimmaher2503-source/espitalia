@@ -12,7 +12,9 @@ return new class extends Migration {
     public function up()
     {
         // Disable foreign key checks!
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
         /*
          * NotificationTemplates Seed
          * ------------------
@@ -248,7 +250,9 @@ return new class extends Migration {
         echo " Insert: notificationtempletes \n\n";
 
         // Enable foreign key checks!
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         DB::table('notification_templates')->delete();
         DB::table('notification_template_content_mapping')->delete();

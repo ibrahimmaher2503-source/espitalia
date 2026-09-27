@@ -1,15 +1,16 @@
 <?php
 
+use App\Models\Setting;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use App\Models\Setting;
 use Modules\Currency\Models\Currency;
 
 function randomString($length)
 {
-    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     $token = substr(str_shuffle($chars), 0, $length);
+
     return $token;
 }
 
@@ -20,7 +21,7 @@ function onesingle($fields)
     curl_setopt($ch, CURLOPT_URL, 'https://onesignal.com/api/v1/notifications');
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json; charset=utf-8',
-        'Authorization:Basic ' . setting('onesignal_rest_api_key'),
+        'Authorization:Basic '.setting('onesignal_rest_api_key'),
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, false);
@@ -39,7 +40,7 @@ function mail_footer($type)
         'logged_in_user_role' => auth()->user() ? auth()->user()->getRoleNames()->first()->name ?? '-' : '',
         'company_name' => setting('app_name'),
         'company_contact_info' => implode('', [
-            setting('helpline_number') . PHP_EOL,
+            setting('helpline_number').PHP_EOL,
             setting('inquriy_email'),
         ]),
     ];
@@ -66,12 +67,10 @@ function sendNotificationOnBookingUpdate($type, $requestservice)
 function sendNotification($data)
 {
 
-
     $mailable = \Modules\NotificationTemplate\Models\NotificationTemplate::where('type', $data['notification_type'])->with('defaultNotificationTemplateMap')->first();
 
     if ($mailable != null && $mailable->to != null) {
         $mails = json_decode($mailable->to);
-
 
         foreach ($mails as $key => $mailTo) {
             $data['type'] = $data['notification_type'];
@@ -81,11 +80,6 @@ function sendNotification($data)
             $data['company_contact_info'] = setting('helpline_number');
 
             $refundAmount = $data['wallet']['refund_amount'] ?? null;
-
-
-
-
-
 
             $appointment = isset($data['appointment']) ? $data['appointment'] : null;
             $wallet = isset($data['wallet']) ? $data['wallet'] : null;
@@ -157,7 +151,6 @@ function sendNotification($data)
 
                     $admin = \App\Models\User::role('admin')->first();
 
-
                     $data['person_id'] = $admin->id;
 
                     if (isset($admin->email)) {
@@ -181,13 +174,13 @@ function sendNotification($data)
                             try {
                                 if ($data['type'] == 'new_appointment') {
 
-                                    $data['notification_msg'] = 'New Appointment #' . $data['id'] . ' Booked by ' . $data['user_name'] . '.';
-                                } else if ($data['type'] == 'cancel_appointment') {
+                                    $data['notification_msg'] = 'New Appointment #'.$data['id'].' Booked by '.$data['user_name'].'.';
+                                } elseif ($data['type'] == 'cancel_appointment') {
 
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' is cancelled by ' . $data['user_name'] . '.';
-                                } else if ($data['type'] == 'reschedule_appointment') {
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' is cancelled by '.$data['user_name'].'.';
+                                } elseif ($data['type'] == 'reschedule_appointment') {
 
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' is rescheduled by ' . $data['user_name'] . '.';
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' is rescheduled by '.$data['user_name'].'.';
                                 }
                                 $doctor->notify(new \App\Notifications\CommonNotification($data['notification_type'], $data));
                             } catch (\Exception $e) {
@@ -209,16 +202,16 @@ function sendNotification($data)
 
                                 if ($data['type'] == 'new_appointment') {
 
-                                    $data['notification_msg'] = 'New Appointment #' . $data['id'] . ' Booked by ' . $data['user_name'] . '.';
-                                } else if ($data['type'] == 'accept_appointment') {
+                                    $data['notification_msg'] = 'New Appointment #'.$data['id'].' Booked by '.$data['user_name'].'.';
+                                } elseif ($data['type'] == 'accept_appointment') {
 
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' is accepted by ' . $data['doctor_name'] . '.';
-                                } else if ($data['type'] == 'cancel_appointment') {
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' is accepted by '.$data['doctor_name'].'.';
+                                } elseif ($data['type'] == 'cancel_appointment') {
 
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' is cancelled by ' . $data['user_name'] . '.';
-                                } else if ($data['type'] == 'reschedule_appointment') {
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' is cancelled by '.$data['user_name'].'.';
+                                } elseif ($data['type'] == 'reschedule_appointment') {
 
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' is rescheduled by ' . $data['user_name'] . '.';
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' is rescheduled by '.$data['user_name'].'.';
                                 }
 
                                 $vendor->notify(new \App\Notifications\CommonNotification($data['notification_type'], $data));
@@ -240,23 +233,22 @@ function sendNotification($data)
 
                             if ($data['type'] == 'accept_appointment') {
 
-                                $data['notification_msg'] = 'Your Appointment #' . $data['id'] . ' is accepted by ' . $data['doctor_name'] . '.';
-                            } else if ($data['type'] == 'accept_appointment') {
+                                $data['notification_msg'] = 'Your Appointment #'.$data['id'].' is accepted by '.$data['doctor_name'].'.';
+                            } elseif ($data['type'] == 'accept_appointment') {
 
-                                $data['notification_msg'] = 'Your Appointment #' . $data['id'] . ' is accepted by ' . $data['doctor_name'] . '.';
-                            } else if ($data['type'] == 'cancel_appointment') {
+                                $data['notification_msg'] = 'Your Appointment #'.$data['id'].' is accepted by '.$data['doctor_name'].'.';
+                            } elseif ($data['type'] == 'cancel_appointment') {
                                 if ($data['updated_by_role'] == 'user') {
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' has been cancelled.';
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' has been cancelled.';
                                 } else {
-                                    $data['notification_msg'] = 'Appointment #' . $data['id'] . ' has been cancelled by' . $data['updated_by_role'] . '.';
+                                    $data['notification_msg'] = 'Appointment #'.$data['id'].' has been cancelled by'.$data['updated_by_role'].'.';
                                 }
-                            } else if ($data['type'] == 'reschedule_appointment') {
+                            } elseif ($data['type'] == 'reschedule_appointment') {
 
-                                $data['notification_msg'] = 'Your Appointment #' . $data['id'] . ' is rescheduled by You.';
-                            } else if ($data['type'] == 'wallet_refund') {
+                                $data['notification_msg'] = 'Your Appointment #'.$data['id'].' is rescheduled by You.';
+                            } elseif ($data['type'] == 'wallet_refund') {
 
-
-                                $data['notification_msg'] = 'Your wallet has been credited with a refund ' . \Currency::format($data['refund_amount']);
+                                $data['notification_msg'] = 'Your wallet has been credited with a refund '.\Currency::format($data['refund_amount']);
                             }
 
                             $user->notify(new \App\Notifications\CommonNotification($data['notification_type'], $data));
@@ -304,7 +296,7 @@ function dateAgo($date, $type2 = '')
         return $diff_time;
     }
 
-    return $diff_time1 . ' on ' . $diff_time;
+    return $diff_time1.' on '.$diff_time;
 }
 
 function customDate($date, $format = 'd-m-Y h:i A')
@@ -358,8 +350,8 @@ function formatOffset($offset)
         $sign = ' ';
     }
 
-    return 'GMT' . $sign . str_pad($hour, 2, '0', STR_PAD_LEFT)
-        . ':' . str_pad($minutes, 2, '0');
+    return 'GMT'.$sign.str_pad($hour, 2, '0', STR_PAD_LEFT)
+        .':'.str_pad($minutes, 2, '0');
 }
 
 function timeZoneList()
@@ -370,7 +362,7 @@ function timeZoneList()
     $data = $offset = $added = [];
     foreach ($list as $abbr => $info) {
         foreach ($info as $zone) {
-            if (!empty($zone['timezone_id']) and !in_array($zone['timezone_id'], $added) and in_array($zone['timezone_id'], $idents)) {
+            if (! empty($zone['timezone_id']) and ! in_array($zone['timezone_id'], $added) and in_array($zone['timezone_id'], $idents)) {
                 $z = new \DateTimeZone($zone['timezone_id']);
                 $c = new \DateTime(null, $z);
                 $zone['time'] = $c->format('H:i a');
@@ -384,7 +376,7 @@ function timeZoneList()
     array_multisort($offset, SORT_ASC, $data);
     $options = [];
     foreach ($data as $key => $row) {
-        $options[$row['timezone_id']] = $row['time'] . ' - ' . formatOffset($row['offset']) . ' ' . $row['timezone_id'];
+        $options[$row['timezone_id']] = $row['time'].' - '.formatOffset($row['offset']).' '.$row['timezone_id'];
     }
 
     return $options;
@@ -393,7 +385,7 @@ function timeZoneList()
 /*
  * Global helpers file with misc functions.
  */
-if (!function_exists('app_name')) {
+if (! function_exists('app_name')) {
     /**
      * Helper to grab the application name.
      *
@@ -407,38 +399,38 @@ if (!function_exists('app_name')) {
 /**
  * Avatar Find By Gender
  */
-if (!function_exists('default_user_avatar')) {
+if (! function_exists('default_user_avatar')) {
     function default_user_avatar()
     {
-        return asset(config('app.avatar_base_path') . 'avatar.webp');
+        return asset(config('app.avatar_base_path').'avatar.webp');
     }
     function default_user_name()
     {
         return __('messages.unknown_user');
     }
 }
-if (!function_exists('user_avatar')) {
+if (! function_exists('user_avatar')) {
     function user_avatar()
     {
         if (auth()->user()->profile_image ?? null) {
             return auth()->user()->profile_image;
         } else {
-            return asset(config('app.avatar_base_path') . 'avatar.webp');
+            return asset(config('app.avatar_base_path').'avatar.webp');
         }
     }
 }
 
-if (!function_exists('default_file_url')) {
+if (! function_exists('default_file_url')) {
     function default_file_url()
     {
-        return asset(config('app.image_path') . 'default.webp');
+        return asset(config('app.image_path').'default.webp');
     }
 }
 
 /*
  * Global helpers file with misc functions.
  */
-if (!function_exists('user_registration')) {
+if (! function_exists('user_registration')) {
     /**
      * Helper to grab the application name.
      *
@@ -461,7 +453,7 @@ if (!function_exists('user_registration')) {
  * !USAGE
  * return jdd($id);
  */
-if (!function_exists('jdd')) {
+if (! function_exists('jdd')) {
     function jdd($data)
     {
         return response()->json($data, 500);
@@ -475,7 +467,7 @@ if (!function_exists('jdd')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('label_case')) {
+if (! function_exists('label_case')) {
     /**
      * Prepare the Column Name for Lables.
      */
@@ -498,7 +490,7 @@ if (!function_exists('label_case')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('show_column_value')) {
+if (! function_exists('show_column_value')) {
     /**
      * Return Column values as Raw and formatted.
      *
@@ -532,10 +524,10 @@ if (!function_exists('show_column_value')) {
             $img_path = asset($value);
 
             $return_text = '<figure class="figure">
-                                <a href="' . $img_path . '" data-lightbox="image-set" data-title="Path: ' . $value . '">
-                                    <img src="' . $img_path . '" style="max-width:200px;" class="figure-img img-fluid rounded img-thumbnail" alt="">
+                                <a href="'.$img_path.'" data-lightbox="image-set" data-title="Path: '.$value.'">
+                                    <img src="'.$img_path.'" style="max-width:200px;" class="figure-img img-fluid rounded img-thumbnail" alt="">
                                 </a>
-                                <figcaption class="figure-caption">Path: ' . $value . '</figcaption>
+                                <figcaption class="figure-caption">Path: '.$value.'</figcaption>
                             </figure>';
         } else {
             $return_text = $value;
@@ -552,7 +544,7 @@ if (!function_exists('show_column_value')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('fielf_required')) {
+if (! function_exists('fielf_required')) {
     /**
      * Prepare the Column Name for Lables.
      */
@@ -573,11 +565,11 @@ if (!function_exists('fielf_required')) {
  *
  * @var [type]
  */
-if (!function_exists('setting')) {
+if (! function_exists('setting')) {
     function setting($key, $default = null)
     {
         if (is_null($key)) {
-            return new App\Models\Setting();
+            return new App\Models\Setting;
         }
 
         if (is_array($key)) {
@@ -585,6 +577,7 @@ if (!function_exists('setting')) {
         }
 
         $value = App\Models\Setting::get($key);
+
         return is_null($value) ? value($default) : $value;
     }
 }
@@ -594,7 +587,7 @@ if (!function_exists('setting')) {
  *
  * @var [type]
  */
-if (!function_exists('humanFilesize')) {
+if (! function_exists('humanFilesize')) {
     function humanFilesize($size, $precision = 2)
     {
         $units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -606,7 +599,7 @@ if (!function_exists('humanFilesize')) {
             $i++;
         }
 
-        return round($size, $precision) . $units[$i];
+        return round($size, $precision).$units[$i];
     }
 }
 
@@ -616,7 +609,7 @@ if (!function_exists('humanFilesize')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('encode_id')) {
+if (! function_exists('encode_id')) {
     /**
      * Prepare the Column Name for Lables.
      */
@@ -635,7 +628,7 @@ if (!function_exists('encode_id')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('decode_id')) {
+if (! function_exists('decode_id')) {
     /**
      * Prepare the Column Name for Lables.
      */
@@ -659,7 +652,7 @@ if (!function_exists('decode_id')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('slug_format')) {
+if (! function_exists('slug_format')) {
     /**
      * Format a string to Slug.
      */
@@ -686,13 +679,13 @@ if (!function_exists('slug_format')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('icon')) {
+if (! function_exists('icon')) {
     /**
      * Format a string to Slug.
      */
     function icon($string = 'fas fa-check')
     {
-        $return_string = "<i class='" . $string . "'></i>";
+        $return_string = "<i class='".$string."'></i>";
 
         return $return_string;
     }
@@ -704,7 +697,7 @@ if (!function_exists('icon')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('generate_rgb_code')) {
+if (! function_exists('generate_rgb_code')) {
     /**
      * Prepare the Column Name for Lables.
      */
@@ -728,7 +721,7 @@ if (!function_exists('generate_rgb_code')) {
  *
  * ------------------------------------------------------------------------
  */
-if (!function_exists('date_today')) {
+if (! function_exists('date_today')) {
     /**
      * Return Date with weekday.
      *
@@ -744,7 +737,7 @@ if (!function_exists('date_today')) {
     }
 }
 
-if (!function_exists('language_direction')) {
+if (! function_exists('language_direction')) {
     /**
      * return direction of languages.
      *
@@ -766,7 +759,7 @@ if (!function_exists('language_direction')) {
             'fa', //  'فارسی', Persian
             'glk', //  'گیلکی', Gilaki
             'he', //  'עברית', Hebrew
-            'lrc', //- 'لوری', Northern Luri
+            'lrc', // - 'لوری', Northern Luri
             'mzn', //  'مازِرونی', Mazanderani
             'pnb', //  'پنجابی', Western Punjabi
             'ps', //  'پښتو', Pashto
@@ -783,7 +776,7 @@ if (!function_exists('language_direction')) {
     }
 }
 
-if (!function_exists('module_exist')) {
+if (! function_exists('module_exist')) {
     /**
      * return value for module exist or not.
      *
@@ -802,7 +795,7 @@ function storeMediaFile($module, $files, $key = 'file_url')
 
     if (is_array($files)) {
         foreach ($files as $file) {
-            if (!empty($file)) {
+            if (! empty($file)) {
                 $module->addMedia($file)->toMediaCollection($key);
             }
         }
@@ -863,7 +856,7 @@ function formatCurrency($number, $noOfDecimal, $decimalSeparator, $thousandSepar
         $currencyString .= $integerPart;
         // Add decimal part and decimal separator if applicable
         if ($noOfDecimal > 0) {
-            $currencyString .= $decimalSeparator . $decimalPart;
+            $currencyString .= $decimalSeparator.$decimalPart;
         }
     }
 
@@ -871,7 +864,7 @@ function formatCurrency($number, $noOfDecimal, $decimalSeparator, $thousandSepar
         // Add decimal part and decimal separator if applicable
         $currencyString .= $integerPart;
         if ($noOfDecimal > 0) {
-            $currencyString .= $integerPart . $decimalSeparator . $decimalPart;
+            $currencyString .= $integerPart.$decimalSeparator.$decimalPart;
         }
         if ($currencyPosition == 'right_with_space') {
             $currencyString .= ' ';
@@ -941,7 +934,7 @@ function checkInWishList($product_id, $user_id)
 {
     $product = \Modules\Product\Models\WishList::where('product_id', $product_id)->where('user_id', $user_id)->first();
 
-    if (!$product) {
+    if (! $product) {
         return 0;
     } else {
         return 1;
@@ -952,7 +945,7 @@ function checkInCart($product_variation_id, $user_id)
 {
     $cart = \Modules\Product\Models\Cart::where('user_id', $user_id)->where('product_variation_id', $product_variation_id)->first();
 
-    if (!$cart) {
+    if (! $cart) {
         return 0;
     } else {
         return 1;
@@ -963,7 +956,7 @@ function checkIsLike($review_id, $user_id)
 {
     $review = \Modules\Product\Models\Review::find($review_id);
 
-    if (!$review) {
+    if (! $review) {
         return 0; // Review not found
     }
 
@@ -979,7 +972,7 @@ function checkIsdisLike($review_id, $user_id)
 {
     $review = \Modules\Product\Models\Review::find($review_id);
 
-    if (!$review) {
+    if (! $review) {
         return 0; // Review not found
     }
 
@@ -1025,7 +1018,7 @@ function getDiscountedPrice($data)
     return $sumOfDiscountedPrices;
 }
 
-if (!function_exists('variationDiscountedPrice')) {
+if (! function_exists('variationDiscountedPrice')) {
     // return discounted price of a variation
     function variationDiscountedPrice($product, $variation, $addTax = false)
     {
@@ -1098,7 +1091,7 @@ function getDiscountAmount($data)
     return $sumOfDiscountedPrices;
 }
 
-if (!function_exists('getSubTotal')) {
+if (! function_exists('getSubTotal')) {
     // return sub total price
     function getSubTotal($carts, $couponDiscount = true, $couponCode = '', $addTax = true)
     {
@@ -1118,7 +1111,7 @@ if (!function_exists('getSubTotal')) {
     }
 }
 
-if (!function_exists('generateVariationOptions')) {
+if (! function_exists('generateVariationOptions')) {
     //  generate combinations based on variations
     function generateVariationOptions($options)
     {
@@ -1131,7 +1124,7 @@ if (!function_exists('generateVariationOptions')) {
             if (isset($variation_ids[$option->variation_id])) {
                 $value_ids = $variation_ids[$option->variation_id];
             }
-            if (!in_array($option->variation_value_id, $value_ids)) {
+            if (! in_array($option->variation_value_id, $value_ids)) {
                 array_push($value_ids, $option->variation_value_id);
             }
             $variation_ids[$option->variation_id] = $value_ids;
@@ -1250,7 +1243,7 @@ function getBookingTaxamount($amount, $tax_data)
                 $tax_details[] = [
                     'tax_name' => $tax['name'],
                     'tax_type' => $tax['type'],
-                    "tax_scope" => isset($tax['tax_type']) ? $tax['tax_type'] : (isset($tax['tax_scope']) ? $tax['tax_scope'] : null),
+                    'tax_scope' => isset($tax['tax_type']) ? $tax['tax_type'] : (isset($tax['tax_scope']) ? $tax['tax_scope'] : null),
 
                     'tax_value' => isset($tax['percent']) ? $tax['percent'] : $tax['tax_amount'],
                     'tax_amount' => $tax_amount,
@@ -1265,7 +1258,6 @@ function getBookingTaxamount($amount, $tax_data)
             ->whereNull('module_type')
             ->orWhere('module_type', 'services')->where('status', 1)->where('tax_type', 'exclusive')->get();
 
-
         foreach ($tax_list as $tax) {
 
             if ($tax['type'] == 'percent') {
@@ -1278,7 +1270,7 @@ function getBookingTaxamount($amount, $tax_data)
                 'tax_name' => $tax['title'],
                 'tax_type' => $tax['type'],
                 'tax_value' => isset($tax['percent']) ? $tax['percent'] : $tax['value'],
-                "tax_scope" => isset($tax['tax_type']) ? $tax['tax_type'] : (isset($tax['tax_scope']) ? $tax['tax_scope'] : null),
+                'tax_scope' => isset($tax['tax_type']) ? $tax['tax_type'] : (isset($tax['tax_scope']) ? $tax['tax_scope'] : null),
 
                 'tax_amount' => $tax_amount,
             ];
@@ -1286,9 +1278,6 @@ function getBookingTaxamount($amount, $tax_data)
             $total_tax_amount += $tax_amount;
         }
     }
-
-
-
 
     return [
         'total_tax_amount' => $total_tax_amount,
@@ -1299,6 +1288,7 @@ function getBookingTaxamount($amount, $tax_data)
 function multiVendor()
 {
     $setting_data = \App\Models\Setting::where('name', 'is_multi_vendor')->first();
+
     return $setting_data ? $setting_data->val : 0;
 }
 function encounter()
@@ -1310,32 +1300,36 @@ function encounter()
             $encounter[$field] = asset(setting($field));
         }
     }
+
     return $encounter;
 }
 function bodychart()
 {
 
     $setting_data = \App\Models\Setting::where('name', 'is_body_chart')->first();
+
     return $setting_data->val ?? 0;
 }
 
 function soap()
 {
     $setting_data = \App\Models\Setting::where('name', 'view_patient_soap')->first();
+
     return $setting_data->val ?? 0;
 }
 
 function prescription()
 {
     $setting_data = \App\Models\Setting::where('name', 'is_encounter_prescription')->first();
+
     return $setting_data->val ?? 0;
 }
 function telemedSetting()
 {
     $setting_data = \App\Models\Setting::where('name', 'is_telemed_setting')->first();
+
     return $setting_data->val ?? 0;
 }
-
 
 function getzoomVideoUrl($data)
 {
@@ -1360,17 +1354,14 @@ function getzoomVideoUrl($data)
 
         return $zoom_url = '';
     }
-    // $account_id = 'WJHpsUd9TKKt99vWOKqeig';
-    // $client_id = 'AcILlYbFS2ajeVjFPQMdwg';
-    // $client_secret = '150kB12FZyJ5W4AHoDi1EpwG9mCrxJX9';
 
-    $authorization = base64_encode($client_id . ':' . $client_secret);
+    $authorization = base64_encode($client_id.':'.$client_secret);
 
     $curl = curl_init();
 
     $url = "https://zoom.us/oauth/token?grant_type=account_credentials&account_id=$account_id";
 
-    curl_setopt_array($curl, array(
+    curl_setopt_array($curl, [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
@@ -1379,12 +1370,11 @@ function getzoomVideoUrl($data)
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_HTTPHEADER => array(
+        CURLOPT_HTTPHEADER => [
             'Host: zoom.us',
-            'Authorization: Basic ' . $authorization,
-            'Cookie: TS018dd1ba=01a4bf7a43d12da00e647623dc86cc762d126ecbc8d05da8041a487f2d9af5f795dbc94ddaff0e57c96c75394da34ba688b274d027; TS01f92dc5=01a4bf7a43d12da00e647623dc86cc762d126ecbc8d05da8041a487f2d9af5f795dbc94ddaff0e57c96c75394da34ba688b274d027; __cf_bm=2zLDWSFRt_rnknkjf0bFIFxuJIu1ZSd48NLBQiH7ByU-1691735997-0-AfSs0V8YmXQE0t25v+BewBtQQlqkCxAOHQI9pbUANYn5bxIi09JPmaKA/LM7IUsjd3iHRFhgr8BttQMgSkzlOdk=; _zm_chtaid=528; _zm_ctaid=T-ladtb9RQy5jtqpoyz5Ew.1691735997275.ec80d36ec41d720bf03b5c8cdc81edaa; _zm_mtk_guid=0bab4993560a483fb93c8926f1220417; _zm_page_auth=us05_c_9QH5C_6TQJS-eycodFJaSg; _zm_ssid=us05_c_jooeGe7USU6A4k5JXX5Psg; cred=7CB892515BDA6C68C6344C62AB3336E3'
-        ),
-    ));
+            'Authorization: Basic '.$authorization,
+        ],
+    ]);
 
     $response = curl_exec($curl);
 
@@ -1400,6 +1390,7 @@ function getzoomVideoUrl($data)
     } else {
         $zoom_url = [];
     }
+
     return $zoom_url;
 }
 
@@ -1426,14 +1417,14 @@ function getjoinUrl($access_token, $data)
     }
     $service_name = isset($emailData['service_name']) ? $emailData['service_name'] : '';
     $service_duration = isset($data['service_duration']) ? $data['service_duration'] : '30'; // Default duration
-    $date_time = new DateTime($emailData['appointment_date'] . ' ' . $emailData['appointment_time']);
+    $date_time = new DateTime($emailData['appointment_date'].' '.$emailData['appointment_time']);
     $formatted_date_time = $date_time->format('Y-m-d\TH:i:s\Z'); // Format the date-time as required
-    $desc = "Dear {$emailData['user_name']},<br><br>" .
-        "We are delighted to confirm your appointment for {$emailData['service_name']} at {$emailData['clinic_name']} with Dr. {$emailData['doctor_name']} on {$emailData['appointment_date']} at {$emailData['appointment_time']}.<br><br>" .
-        "Best regards,<br>" .
+    $desc = "Dear {$emailData['user_name']},<br><br>".
+        "We are delighted to confirm your appointment for {$emailData['service_name']} at {$emailData['clinic_name']} with Dr. {$emailData['doctor_name']} on {$emailData['appointment_date']} at {$emailData['appointment_time']}.<br><br>".
+        'Best regards,<br>'.
         "{$emailData['clinic_name']}";
     $description = strip_tags($desc);
-    curl_setopt_array($curl, array(
+    curl_setopt_array($curl, [
         CURLOPT_URL => 'https://api.zoom.us/v2/users/me/meetings',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
@@ -1443,9 +1434,9 @@ function getjoinUrl($access_token, $data)
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => '{
-            "topic": "' . $service_name . '",
+            "topic": "'.$service_name.'",
             "type": 2,
-            "start_time": "' . $formatted_date_time . '",
+            "start_time": "'.$formatted_date_time.'",
             "settings": {
                 "host_video": true,
                 "participant_video": true,
@@ -1456,11 +1447,11 @@ function getjoinUrl($access_token, $data)
                 "auto_recording": "cloud"
             }
         }',
-        CURLOPT_HTTPHEADER => array(
+        CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $access_token
-        ),
-    ));
+            'Authorization: Bearer '.$access_token,
+        ],
+    ]);
 
     $response = curl_exec($curl);
 
@@ -1494,6 +1485,7 @@ function getjoinUrl($access_token, $data)
         ->pluck('email')
         ->toArray();
     Mail::to($emails)->send(new App\Mail\AppointmentConfirmation($meetingDetails));
+
     return $zoom_url;
 }
 function greeting()
@@ -1514,9 +1506,10 @@ function greeting()
 }
 function setNamePrefix($user)
 {
-    $display_name = $user->first_name . " " . $user->last_name;
+    $display_name = $user->first_name.' '.$user->last_name;
     $gender = $user->gender === 'male' ? 'Mr.' : 'Ms.';
-    return $gender . $display_name;
+
+    return $gender.$display_name;
 }
 
 function calculateDoctorCommission($data)
@@ -1571,10 +1564,8 @@ function calculateAdminCommission($data)
         }
     }
 
-
     return $adminCommission;
 }
-
 
 function calculateClinicCommission($data)
 {
@@ -1623,7 +1614,7 @@ function getAttachmentArray($attchments)
             if (getFileExistsCheck($attchment)) {
                 $file = [
                     'id' => $attchment->id,
-                    'url' => $attchment->getFullUrl()
+                    'url' => $attchment->getFullUrl(),
                 ];
                 array_push($files, $file);
             }
@@ -1662,7 +1653,7 @@ function dateFormatList()
 
 function getTimeInFormat($format)
 {
-    $now = new DateTime();
+    $now = new DateTime;
     $hours = $now->format('H');
     $minutes = $now->format('i');
     $seconds = $now->format('s');
@@ -1670,44 +1661,46 @@ function getTimeInFormat($format)
     $totalSecondsSinceMidnight = ($hours * 3600) + ($minutes * 60) + $seconds;
 
     switch ($format) {
-        case "H:i":
+        case 'H:i':
             return "$hours:$minutes";
-        case "H:i:s":
+        case 'H:i:s':
             return "$hours:$minutes:$seconds";
-        case "g:i A":
+        case 'g:i A':
             $ampm = $hours >= 12 ? 'PM' : 'AM';
             $formattedHours = $hours % 12 || 12;
+
             return "$formattedHours:$minutes $ampm";
-        case "H:i:s T":
+        case 'H:i:s T':
             return "$hours:$minutes:$seconds UTC";
-        case "H:i:s.v":
+        case 'H:i:s.v':
             return "$hours:$minutes:$seconds.$milliseconds";
-        case "U":
+        case 'U':
             return $now->getTimestamp();
-        case "u":
+        case 'u':
             return $milliseconds * 1000;
-        case "G.i":
+        case 'G.i':
             return $hours + $minutes / 60;
-        case "@BMT":
+        case '@BMT':
             $swatchBeat = floor($totalSecondsSinceMidnight / 86.4);
+
             return "@{$swatchBeat}BMT";
         default:
-            return "Invalid format";
+            return 'Invalid format';
     }
 }
 
 function timeFormatList()
 {
     $timeFormats = [
-        "H:i",
-        "H:i:s",
-        "g:i A",
-        "H:i:s T",
-        "H:i:s.v",
-        "U",
-        "u",
-        "G.i",
-        "@BMT"
+        'H:i',
+        'H:i:s',
+        'g:i A',
+        'H:i:s T',
+        'H:i:s.v',
+        'U',
+        'u',
+        'G.i',
+        '@BMT',
     ];
 
     return array_map(function ($format) {
@@ -1715,8 +1708,7 @@ function timeFormatList()
     }, $timeFormats);
 }
 
-
-if (!function_exists('formatDate')) {
+if (! function_exists('formatDate')) {
     function formatDate($date)
     {
         // Get timezone from settings, default to UTC if not found
@@ -1730,14 +1722,14 @@ if (!function_exists('formatDate')) {
         $timeformate = $timeSetting ? $timeSetting->val : 'h:i A';
 
         // Combine date and time format
-        $combinedFormat = $dateformate . ' ' . $timeformate;
+        $combinedFormat = $dateformate.' '.$timeformate;
 
         // Return formatted date based on the timezone and settings
         return \Carbon\Carbon::parse($date)->timezone($timezone)->format($combinedFormat);
     }
 }
 
-if (!function_exists('isActive')) {
+if (! function_exists('isActive')) {
     /**
      * Returns 'active' or 'done' class based on the current step.
      *
@@ -1761,6 +1753,7 @@ function dbConnectionStatus(): bool
 {
     try {
         DB::connection()->getPdo();
+
         return true;
     } catch (Exception $e) {
         return false;
@@ -1770,12 +1763,13 @@ function dbConnectionStatus(): bool
 function formatUpdatedAt($updatedAt)
 {
     $diff = Carbon::now()->diffInHours($updatedAt);
+
     return $diff < 25 ? $updatedAt->diffForHumans() : $updatedAt->isoFormat('llll');
 }
 
 function getSingleMedia($model, $collection = 'profile_image', $skip = true)
 {
-    if (!\Auth::check() && $skip) {
+    if (! \Auth::check() && $skip) {
         return asset('images/user/user.png');
     }
     $media = null;
@@ -1840,6 +1834,7 @@ function getSingleMedia($model, $collection = 'profile_image', $skip = true)
                 $media = asset('images/default.png');
                 break;
         }
+
         return $media;
     }
 }
@@ -1851,6 +1846,7 @@ function authSession($force = false)
         $user = \Auth::user()->getRoleNames();
         \Session::put('auth_user', $user);
         $session = \Session::get('auth_user');
+
         return $session;
     }
     if (\Session::has('auth_user')) {
@@ -1860,6 +1856,7 @@ function authSession($force = false)
         \Session::put('auth_user', $user);
         $session = \Session::get('auth_user');
     }
+
     return $session;
 }
 
@@ -1869,7 +1866,7 @@ function comman_custom_response($response, $status_code = 200)
 }
 
 // In helpers.php
-if (!function_exists('generateBreadcrumb')) {
+if (! function_exists('generateBreadcrumb')) {
     function generateBreadcrumb()
     {
         $breadcrumb = [];
@@ -1953,11 +1950,14 @@ if (!function_exists('generateBreadcrumb')) {
             $breadcrumb[] = ['name' => __('frontend.request_detail'), 'url' => ''];
         } elseif ($routeName == 'book-call') {
             $breadcrumb[] = ['name' => __('frontend.book_a_call'), 'url' => route('book-call')];
+        } elseif ($routeName == 'book-doctor.form') {
+            $breadcrumb[] = ['name' => __('frontend.book_a_doctor'), 'url' => route('book-doctor')];
+            $breadcrumb[] = ['name' => __('frontend.book_doctor'), 'url' => ''];
         } elseif ($routeName == 'book-call.form') {
             $breadcrumb[] = ['name' => __('frontend.book_a_call'), 'url' => route('book-call')];
             $breadcrumb[] = ['name' => __('frontend.book_call_form'), 'url' => ''];
         } else {
-            $breadcrumb[] = ['name' => ucfirst(__('frontend.' . $routeName)), 'url' => ''];
+            $breadcrumb[] = ['name' => ucfirst(__('frontend.'.$routeName)), 'url' => ''];
         }
 
         return $breadcrumb;
@@ -1973,11 +1973,11 @@ function getDurationFormat($duration)
     $formatted = '';
 
     if ($hours > 0) {
-        $formatted .= $hours . __('frontend.hour') . ' ';
+        $formatted .= $hours.__('frontend.hour').' ';
     }
 
     if ($remainingMinutes > 0 || $hours == 0) {
-        $formatted .= $remainingMinutes . __('frontend.min');
+        $formatted .= $remainingMinutes.__('frontend.min');
     }
 
     return trim($formatted);
@@ -1990,23 +1990,24 @@ function getDisplayName($user)
 
     if ($user) {
 
-        $display_name  =  $user->first_name . ' ' . $user->last_name;
+        $display_name = $user->first_name.' '.$user->last_name;
         if ($user->user_type == 'doctor') {
-            return 'Dr. ' . $display_name;
+            return 'Dr. '.$display_name;
         }
     }
 
     return $display_name;
 }
 
-
 function GetpaymentMethod($name)
 {
 
     if ($name) {
         $payment_key = Setting::where('name', $name)->value('val');
+
         return $payment_key !== null ? $payment_key : null;
     }
+
     return null;
 }
 
@@ -2016,10 +2017,9 @@ function GetcurrentCurrency()
     $currency = Currency::where('is_primary', 1)->first();
 
     $currency_code = $currency ? strtolower($currency->currency_code) : 'usd';
+
     return $currency_code;
 }
-
-
 
 function DateFormate($date)
 {
@@ -2033,4 +2033,31 @@ function DateFormate($date)
     $newDate = $datetime->format(setting('date_formate') ?? 'Y-m-d');
 
     return $newDate;
+}
+
+if (! function_exists('localField')) {
+    /**
+     * Return the locale-appropriate value for a bilingual _ar/_en field pair.
+     *
+     * Use this for stdClass / raw DB results. Full Eloquent models with accessors
+     * already resolve the locale via their getXxxAttribute() methods — prefer those.
+     *
+     * Fallback chain: locale field → other-locale field → ''
+     */
+    function localField(object $entity, string $field, ?string $locale = null): string
+    {
+        $locale ??= app()->getLocale();
+
+        $arKey = $field.'_ar';
+        $enKey = $field.'_en';
+
+        $ar = $entity->{$arKey} ?? null;
+        $en = $entity->{$enKey} ?? null;
+
+        if ($locale === 'ar') {
+            return ($ar !== null && $ar !== '') ? $ar : (($en !== null && $en !== '') ? $en : '');
+        }
+
+        return ($en !== null && $en !== '') ? $en : (($ar !== null && $ar !== '') ? $ar : '');
+    }
 }

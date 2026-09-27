@@ -21,7 +21,6 @@ class SocialLoginResource extends JsonResource
             'email' => $this->email,
             'mobile' => $this->mobile,
             'login_type' => $this->login_type,
-            'player_id' => $this->player_id,
             'gender' => $this->gender,
             'date_of_birth' => $this->date_of_birth,
             'email_verified_at' => $this->email_verified_at,

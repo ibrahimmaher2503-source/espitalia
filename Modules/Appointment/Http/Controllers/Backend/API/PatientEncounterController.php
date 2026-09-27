@@ -16,7 +16,7 @@ class PatientEncounterController extends Controller
 {
     public function encounterList(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
 
         $encounter_data = PatientEncounter::SetRole(auth()->user())->with('user', 'clinic', 'doctor', 'appointment','soap');
 
@@ -49,7 +49,10 @@ class PatientEncounterController extends Controller
     public function encounterInvoice(Request $request)
     {
         $id = $request->id;
-        $data = PatientEncounter::where('id', $id)->with('user', 'clinic', 'doctor', 'medicalHistroy', 'prescriptions', 'EncounterOtherDetails', 'medicalReport', 'appointmentdetail', 'billingrecord')->first();
+        $data = PatientEncounter::SetRole(auth()->user())
+            ->whereKey($id)
+            ->with('user', 'clinic', 'doctor', 'medicalHistroy', 'prescriptions', 'EncounterOtherDetails', 'medicalReport', 'appointmentdetail', 'billingrecord')
+            ->firstOrFail();
 
         $data['selectedProblemList'] =  $data->medicalHistroy()->where('type', 'encounter_problem')->get();
         $data['selectedObservationList'] = $data->medicalHistroy()->where('type', 'encounter_observations')->get();
@@ -83,7 +86,10 @@ class PatientEncounterController extends Controller
     {
         $id = $request->id;
 
-        $data = PatientEncounter::where('id', $id)->with('user', 'clinic', 'doctor', 'medicalHistroy', 'prescriptions', 'EncounterOtherDetails', 'medicalReport', 'appointmentdetail', 'billingrecord')->first();
+        $data = PatientEncounter::SetRole(auth()->user())
+            ->whereKey($id)
+            ->with('user', 'clinic', 'doctor', 'medicalHistroy', 'prescriptions', 'EncounterOtherDetails', 'medicalReport', 'appointmentdetail', 'billingrecord')
+            ->firstOrFail();
 
 
         $data['prescriptions'] = $data->prescriptions()->get();

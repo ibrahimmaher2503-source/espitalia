@@ -243,6 +243,8 @@ return [
     'lbl_city' => 'المدينة',
     'lbl_select_governorate' => 'اختر المحافظة',
     'lbl_select_city' => 'اختر المدينة',
+    'lbl_branch' => 'الفرع',
+    'lbl_select_branch' => 'اختر الفرع',
     'lab_save_success' => 'تم إنشاء المختبر بنجاح.',
     'lab_update_success' => 'تم تحديث المختبر بنجاح.',
     'lab_delete_success' => 'تم حذف المختبر بنجاح.',

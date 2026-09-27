@@ -57,7 +57,9 @@ class RadiologySearchTest extends BaseTest
                     ],
                 ],
                 'message',
-            ]);
+            ])
+            ->assertJsonPath('data.items.0.name_ar', 'مركز أشعة الكويت')
+            ->assertJsonPath('data.items.0.name_en', 'Kuwait Radiology Center');
     }
 
     public function test_search_returns_only_active_centers()

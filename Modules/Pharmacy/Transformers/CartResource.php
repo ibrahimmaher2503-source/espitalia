@@ -22,7 +22,7 @@ class CartResource extends JsonResource
                     'product' => [
                         'id' => $item->product->id,
                         'name' => $item->product->getNameAttribute(),
-                        'image' => $item->product->getFirstMediaUrl('product_image'),
+                        'image' => filter_var($item->product->getFirstMediaUrl('product_image'), FILTER_VALIDATE_URL) ?: null,
                         'price_from' => $minPrice,
                         'is_in_stock' => $isInStock,
                     ],

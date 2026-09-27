@@ -13,10 +13,11 @@
                 data-items-tab="2" data-items-mobile-sm="1" data-items-mobile="1" data-speed="1000"
                 data-autoplay="false" data-center="false" data-infinite="false" data-navigation="false"
                 data-pagination="true" data-spacing="12">
-                @foreach ($sectionData['section_6']['doctor_id'] as $doctor_id)
+                @foreach ($sectionData['section_6']['doctor_id'] ?? [] as $doctor_id)
     @php
         // Fetch doctor with the associated user
-        $doctor = \Modules\Clinic\Models\Doctor::where('id', $doctor_id)
+        $doctor = \Modules\Clinic\Models\Doctor::CheckMultivendor()
+            ->where('id', $doctor_id)
             ->with('user') // Removed empty string in the relationship
             ->first();
 

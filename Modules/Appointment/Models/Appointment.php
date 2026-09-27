@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+use Carbon\Carbon;
 use Modules\Clinic\Models\ClinicsService;
 use Modules\Appointment\Models\AppointmentTransaction;
 use Modules\Clinic\Models\Clinics;
@@ -36,7 +37,7 @@ class Appointment extends BaseModel
 
     const CUSTOM_FIELD_MODEL = 'Modules\Appointment\Models\Appointment';
 
-    protected $fillable = ['appointment_number', 'status', 'booking_type', 'start_date_time', 'user_id', 'otherpatient_id', 'clinic_id', 'doctor_id', 'appointment_extra_info', 'appointment_date', 'appointment_time', 'service_id', 'independent_service_id', 'call_service_id', 'call_type', 'meeting_link', 'total_amount', 'service_amount', 'service_price', 'duration', 'advance_payment_amount', 'advance_paid_amount', 'notes_ar', 'notes_en', 'cancellation_charge_amount', 'offer_id', 'offer_discount', 'offer_code'];
+    protected $fillable = ['appointment_number', 'status', 'booking_type', 'start_date_time', 'user_id', 'otherpatient_id', 'clinic_id', 'doctor_id', 'appointment_extra_info', 'appointment_date', 'appointment_time', 'booking_slot_key', 'service_id', 'independent_service_id', 'call_service_id', 'call_type', 'meeting_link', 'total_amount', 'service_amount', 'service_price', 'duration', 'advance_payment_amount', 'advance_paid_amount', 'notes_ar', 'notes_en', 'cancellation_charge_amount', 'offer_id', 'offer_discount', 'offer_code'];
 
     protected $appends = ['file_url'];
 
@@ -61,6 +62,48 @@ class Appointment extends BaseModel
                 $appointment->appointment_number = "APT-{$year}-" . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
             }
         });
+
+        static::saving(function ($appointment) {
+            if (in_array(strtolower((string) $appointment->status), ['cancelled', 'canceled'], true)) {
+                $appointment->booking_slot_key = null;
+            } elseif ($appointment->booking_slot_key !== null) {
+                $appointment->booking_slot_key = static::buildBookingSlotKey(
+                    (int) $appointment->doctor_id,
+                    $appointment->appointment_date,
+                    $appointment->appointment_time,
+                );
+            }
+        });
+
+        static::deleting(function ($appointment) {
+            if ($appointment->booking_slot_key !== null) {
+                static::withoutEvents(function () use ($appointment) {
+                    $appointment->newModelQuery()
+                        ->whereKey($appointment->getKey())
+                        ->update(['booking_slot_key' => null]);
+                });
+            }
+        });
+
+        static::restoring(function ($appointment) {
+            if ($appointment->doctor_id && $appointment->appointment_date && $appointment->appointment_time) {
+                $appointment->booking_slot_key = static::buildBookingSlotKey(
+                    (int) $appointment->doctor_id,
+                    $appointment->appointment_date,
+                    $appointment->appointment_time,
+                );
+            }
+        });
+    }
+
+    public static function buildBookingSlotKey(int $doctorId, mixed $date, mixed $time): string
+    {
+        $dateValue = $date instanceof Carbon
+            ? $date->format('Y-m-d')
+            : Carbon::parse((string) $date)->format('Y-m-d');
+        $timeValue = Carbon::parse((string) $time)->format('H:i:s');
+
+        return implode('|', [$doctorId, $dateValue, $timeValue]);
     }
 
     public function getNotesAttribute()
@@ -164,13 +207,15 @@ class Appointment extends BaseModel
     public function scopeCheckMultivendor($query)
     {
         if (multiVendor() == "0") {
-            $query = $query->where(function ($q) {
-                $q->whereHas('cliniccenter', function ($sub) {
-                    $sub->whereHas('vendor', function ($que) {
-                        $que->whereIn('user_type', ['admin', 'demo_admin']);
-                    });
-                })->orWhereIn('booking_type', ['independent', 'call']);
-            });
+            $userIds = User::whereIn('user_type', ['admin', 'demo_admin'])->pluck('id');
+
+            if ($userIds->isNotEmpty()) {
+                $query = $query->where(function ($q) use ($userIds) {
+                    $q->whereHas('cliniccenter', function ($sub) use ($userIds) {
+                        $sub->whereIn('vendor_id', $userIds);
+                    })->orWhereIn('booking_type', ['independent', 'call']);
+                });
+            }
         }
     }
 
@@ -180,7 +225,7 @@ class Appointment extends BaseModel
 
         if (auth()->user()->hasRole(['admin', 'demo_admin'])) {
             if (multiVendor() == "0") {
-                $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
                 $query->where(function ($q) use ($user_ids) {
                     $q->whereHas('cliniccenter', function ($sub) use ($user_ids) {
                         $sub->whereIn('vendor_id', $user_ids);

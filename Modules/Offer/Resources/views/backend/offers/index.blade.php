@@ -107,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td><span class="badge bg-${statusColor(item.status)}">${item.status}</span></td>
                         <td>${new Date(item.created_at).toLocaleDateString()}</td>
                         <td>
-                            <a href="{{ route('backend.offers.show', '') }}/${item.id}" class="btn btn-info btn-xs"><i class="ph ph-eye"></i></a>
-                            <a href="{{ route('backend.offers.edit', '') }}/${item.id}" class="btn btn-warning btn-xs"><i class="ph ph-pencil-simple"></i></a>
+                            <a href="{{ url('app/offers') }}/${item.id}" class="btn btn-info btn-xs"><i class="ph ph-eye"></i></a>
+                            <a href="{{ url('app/offers') }}/${item.id}/edit" class="btn btn-warning btn-xs"><i class="ph ph-pencil-simple"></i></a>
                             <button class="btn btn-sm btn-${item.status === 'active' ? 'secondary' : 'success'}" onclick="toggleStatus(${item.id})">
                                 <i class="ph ph-${item.status === 'active' ? 'pause' : 'play'}"></i>
                             </button>

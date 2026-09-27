@@ -135,6 +135,9 @@ return new class extends Migration
                     "incidence" => 1,
                     "available_nurses" => 1,
                     "lab_tests" => 1,
+                    "icu" => 1,
+                    "nurse_request" => 1,
+                    "doctor_visit" => 1,
                     "enable_search" => 1,
                     "enable_language" => 1,
                     "enable_darknight_mode" => 1

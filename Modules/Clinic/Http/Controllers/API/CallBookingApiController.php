@@ -4,6 +4,7 @@ namespace Modules\Clinic\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Modules\Clinic\Models\Doctor;
 use Modules\Clinic\Models\DoctorCallService;
@@ -31,7 +32,7 @@ class CallBookingApiController extends Controller
             ->whereHas('doctorCallServices', function ($q) {
                 $q->where('status', 1);
             })
-            ->with(['user', 'doctorService', 'doctorclinic', 'doctorReviews', 'doctorCallServices' => function ($q) {
+            ->with(['user.profile', 'doctorService', 'doctorclinic', 'doctorReviews', 'doctorCallServices' => function ($q) {
                 $q->where('status', 1);
             }]);
 
@@ -198,6 +199,7 @@ class CallBookingApiController extends Controller
             ->where('appointment_date', $request->appointment_date)
             ->where('appointment_time', $request->appointment_time)
             ->where('status', '!=', 'cancelled')
+            ->lockForUpdate()
             ->first();
         if ($existingAppointment) {
             return response()->json(['message' => __('frontend.lbl_no_slots_available'), 'status' => false], 422);
@@ -216,6 +218,11 @@ class CallBookingApiController extends Controller
         $data['service_id'] = null;
         $data['call_service_id'] = $request->call_service_id;
         $data['booking_type'] = 'call';
+        $data['booking_slot_key'] = Appointment::buildBookingSlotKey(
+            (int) $data['doctor_id'],
+            $data['appointment_date'],
+            $data['appointment_time'],
+        );
         $data['call_type'] = $service->call_type;
         $data['meeting_link'] = $meetingLink;
         $data['service_price'] = $serviceData['service_price'];
@@ -228,7 +235,15 @@ class CallBookingApiController extends Controller
         $data['start_date_time'] = Carbon::parse($data['appointment_date'] . ' ' . $data['appointment_time'])
             ->format('Y-m-d H:i:s');
 
-        $appointment = Appointment::create($data);
+        try {
+            $appointment = Appointment::create($data);
+        } catch (UniqueConstraintViolationException $e) {
+            if (str_contains($e->getMessage(), 'booking_slot_key')) {
+                return response()->json(['message' => __('frontend.lbl_no_slots_available'), 'status' => false], 422);
+            }
+
+            throw $e;
+        }
 
         AppointmentTransaction::updateOrCreate(
             ['appointment_id' => $appointment->id],

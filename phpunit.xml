@@ -8,17 +8,25 @@
         <testsuite name="Unit">
             <directory suffix="Test.php">./tests/Unit</directory>
             <directory suffix="Test.php">./Modules/**/Tests/Unit</directory>
+            <exclude>./Modules/Clinic/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/DoctorVisit/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/IntensiveCare/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/Offer/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/RadiologyLab/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/RequestNurse/Tests/Unit/BaseTest.php</exclude>
+            <exclude>./Modules/Specialization/Tests/Unit/BaseTest.php</exclude>
         </testsuite>
         <testsuite name="Feature">
             <directory suffix="Test.php">./tests/Feature</directory>
             <directory suffix="Test.php">./Modules/**/Tests/Feature</directory>
+            <exclude>./Modules/Specialization/Tests/Feature/BaseTest.php</exclude>
         </testsuite>
     </testsuites>
-    <coverage processUncoveredFiles="true">
+    <source>
         <include>
             <directory suffix=".php">./app</directory>
         </include>
-    </coverage>
+    </source>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

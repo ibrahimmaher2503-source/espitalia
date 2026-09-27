@@ -26,7 +26,8 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      userDetails: null
+      settingData: {},
+      googleClientId: ''
     }
   },
   mounted() {
@@ -46,17 +47,14 @@ export default {
         localStorage.removeItem('userDetails')
       }
     }
-  },
-  mounted() {
     this.fetchSettingData()
   },
   methods: {
     async fetchSettingData() {
       try {
-        const response = await axios.get(`data-configuration`)        
-        this.settingData = response.data;
-        this.googleClientId = this.settingData.google_clientid;
-        this.googleClientSecret = this.settingData.google_secret_key;    
+      const response = await axios.get(`data-configuration`)
+      this.settingData = response.data;
+      this.googleClientId = this.settingData.google_clientid;
       } catch (error) {
         console.error('Error fetching setting data:', error.response.data)
       }
@@ -74,22 +72,8 @@ export default {
       })
     },
     async sendCodeToBackend(code) {
-      const response = await axios.post('https://oauth2.googleapis.com/token', {
-        code,
-        client_id: this.googleClientId,
-        client_secret: this.googleClientSecret,
-        redirect_uri: 'postmessage',
-        grant_type: 'authorization_code'
-      })
-      const { access_token, expires_in, refresh_token, scope, token_type, id_token } = response.data
-
       await axios.post('store-access-token', {
-        access_token,
-        expires_in,
-        refresh_token,
-        scope,
-        token_type,
-        id_token,
+        code,
         is_telmet: 1
       })
 

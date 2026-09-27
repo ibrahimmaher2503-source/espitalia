@@ -2,21 +2,28 @@
 
 namespace Modules\Pharmacy\Tests\Feature;
 
+use App\Models\User;
 use Modules\Pharmacy\Models\Pharmacy;
 use Modules\Pharmacy\Models\PharmacyCommission;
 use Modules\Pharmacy\Models\PharmacyCommissionEarning;
 use Modules\Pharmacy\Models\PharmacyOrder;
 use Modules\Pharmacy\Services\PharmacyCommissionService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PharmacyCommissionServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected $commissionService;
+
+    protected $patient;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->commissionService = new PharmacyCommissionService;
+        $this->patient = User::factory()->create();
     }
 
     /** @test */
@@ -42,8 +49,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create order with $100 subtotal
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 100.00,
             'delivery_fee' => 5.00,
             'total' => 105.00,
@@ -89,8 +96,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create order with $100 subtotal
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 100.00,
             'delivery_fee' => 5.00,
             'total' => 105.00,
@@ -123,8 +130,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create order
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 100.00,
             'delivery_fee' => 5.00,
             'total' => 105.00,
@@ -162,8 +169,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create order
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 100.00,
             'delivery_fee' => 5.00,
             'total' => 105.00,
@@ -207,8 +214,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create and calculate earning
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 100.00,
             'delivery_fee' => 5.00,
             'total' => 105.00,
@@ -250,8 +257,8 @@ class PharmacyCommissionServiceTest extends TestCase
         // Create order with $0 subtotal
         $order = PharmacyOrder::create([
             'pharmacy_id' => $pharmacy->id,
-            'user_id' => 1,
-            'address_id' => 1,
+            'user_id' => $this->patient->id,
+            'address_id' => null,
             'subtotal' => 0.00,
             'delivery_fee' => 5.00,
             'total' => 5.00,

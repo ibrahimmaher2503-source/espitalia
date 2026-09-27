@@ -35,6 +35,8 @@ class PharmacyOrderDetailResource extends JsonResource
                 'address_line_1' => $this->address->address_line_1,
                 'city' => $this->address->city,
             ] : null,
+            'delivery_address' => $this->delivery_address
+                ?? optional($this->address)->address_line_1,
             'coupon_id' => $this->coupon_id,
             'coupon_discount' => $this->coupon_discount,
             'offer_id' => $this->offer_id,

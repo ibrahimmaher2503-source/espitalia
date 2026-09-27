@@ -136,6 +136,7 @@ return [
     'pharmacy_brands' => 'Brands',
     'pharmacy_product_types' => 'Product Types',
     'pharmacy_products' => 'Products',
+    'pharmacies' => 'Pharmacies',
     'pharmacy_pharmacies' => 'Pharmacies',
     'pharmacy_orders' => 'Orders',
     'pharmacy_inventory' => 'Inventory',

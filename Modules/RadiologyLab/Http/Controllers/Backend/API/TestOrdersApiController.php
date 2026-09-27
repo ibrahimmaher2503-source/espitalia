@@ -27,6 +27,8 @@ class TestOrdersApiController extends Controller
                 $query->where('doctor_id', $user->id);
             } elseif ($user->hasRole('user')) {
                 $query->where('patient_id', $user->id);
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
             // admin/demo_admin see all
 
@@ -57,6 +59,10 @@ class TestOrdersApiController extends Controller
             ]);
 
             $user = auth()->user();
+
+            if (! $user->hasRole(['user', 'doctor', 'admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
+            }
 
             $order = DB::transaction(function () use ($request, $user) {
                 $data = [
@@ -190,6 +196,8 @@ class TestOrdersApiController extends Controller
                 $query->where('lab_technician_id', $user->id);
             } elseif ($user->hasRole('doctor')) {
                 $query->where('doctor_id', $user->id);
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
 
             $order = $query->findOrFail($id);
@@ -217,6 +225,8 @@ class TestOrdersApiController extends Controller
                 $query->where('patient_id', $user->id);
             } elseif ($user->hasRole('doctor')) {
                 $query->where('doctor_id', $user->id);
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
             // admin/demo_admin can cancel any order
 
@@ -271,6 +281,8 @@ class TestOrdersApiController extends Controller
                 $query->where('lab_technician_id', $user->id);
             } elseif ($user->hasRole('doctor')) {
                 $query->where('doctor_id', $user->id);
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
             // admin/demo_admin can download any report
 

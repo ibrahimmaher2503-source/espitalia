@@ -13,7 +13,7 @@ class PharmacyCategoryResource extends JsonResource
             'name' => $this->getNameAttribute(),
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
-            'image' => $this->getFirstMediaUrl('category_image'),
+            'image' => filter_var($this->getFirstMediaUrl('category_image'), FILTER_VALIDATE_URL) ?: null,
             'sort_order' => $this->sort_order,
         ];
     }

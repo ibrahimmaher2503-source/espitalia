@@ -115,6 +115,8 @@ class SpecializationController extends Controller
                 'specializations' => $doctor->specializations->map(fn ($s) => [
                     'id' => $s->id,
                     'name' => $s->name,
+                    'name_ar' => $s->name_ar,
+                    'name_en' => $s->name_en,
                     'slug' => $s->slug,
                 ]),
                 'profile_image' => optional($doctor->user)->profile_image ?? null,
@@ -155,6 +157,8 @@ class SpecializationController extends Controller
                 'specializations' => $nurse->specializations->map(fn ($s) => [
                     'id' => $s->id,
                     'name' => $s->name,
+                    'name_ar' => $s->name_ar,
+                    'name_en' => $s->name_en,
                     'slug' => $s->slug,
                 ]),
                 'experience' => $nurse->experience,

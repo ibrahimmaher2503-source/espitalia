@@ -1,3 +1,5 @@
+@props(['category'])
+
 <div class="category-card text-center rounded">
     @if($category)
     <a href="{{ route('services', ['category_id' => $category->id]) }}" class="d-block">

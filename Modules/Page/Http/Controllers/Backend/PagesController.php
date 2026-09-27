@@ -354,7 +354,7 @@ class PagesController extends Controller
     }
 
     public function get_page($slug){
-        $data = Page::where('slug',$slug)->first();
+        $data = Page::where('slug', $slug)->firstOrFail();
         $module_action = '';
         $module_title = $data->name; 
         return view('page.privacy-policy',compact('data','module_title','module_action'));

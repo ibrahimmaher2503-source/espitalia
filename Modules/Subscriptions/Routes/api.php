@@ -5,7 +5,8 @@ use Modules\Subscriptions\Http\Controllers\Backend\API\PlanLimitationController;
 use Modules\Subscriptions\Http\Controllers\Backend\API\SubscriptionController;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::post('/save-subscription_details', [SubscriptionController::class, 'saveSubscriptionDetails']);
+    Route::post('/save-subscription_details', [SubscriptionController::class, 'saveSubscriptionDetails'])
+        ->middleware('idempotency:subscription');
     Route::get('/user-subscription_histroy', [SubscriptionController::class, 'getUserSubscriptionHistroy']);
     Route::post('/cancle-subscription', [SubscriptionController::class, 'cancelSubscription']);
 

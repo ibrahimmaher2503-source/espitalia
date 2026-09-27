@@ -29,7 +29,7 @@ class FacilityBookingTest extends BaseTest
 
         $this->seedBookingPermissions();
 
-        $this->monday = Carbon::next('Monday')->format('Y-m-d');
+        $this->monday = now()->next('Monday')->format('Y-m-d');
     }
 
     protected function seedBookingPermissions(): void
@@ -313,7 +313,7 @@ class FacilityBookingTest extends BaseTest
         $this->assertDatabaseHas('facility_bookings', [
             'id' => $booking->id,
             'status' => FacilityBooking::STATUS_CANCELLED,
-            'cancelled_by' => 'patient',
+            'cancelled_by' => (string) $patient->id,
         ]);
     }
 
@@ -430,7 +430,7 @@ class FacilityBookingTest extends BaseTest
         $this->assertDatabaseHas('facility_bookings', [
             'id' => $booking->id,
             'status' => FacilityBooking::STATUS_CANCELLED,
-            'cancelled_by' => 'admin',
+            'cancelled_by' => (string) $admin->id,
         ]);
     }
 

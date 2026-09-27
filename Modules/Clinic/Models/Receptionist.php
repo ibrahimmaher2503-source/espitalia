@@ -41,11 +41,11 @@ class Receptionist extends BaseModel
 
     public function scopeCheckMultivendor($query){
         if(multiVendor() == "0") {
-            $query = $query->whereHas('vendor', function ($q){
-                $q->whereIn('user_type', ['admin','demo_admin']);
-            });
-        }else{
-            $query = $query->get();
+            $userIds = User::whereIn('user_type', ['admin','demo_admin'])->pluck('id');
+
+            if ($userIds->isNotEmpty()) {
+                $query->whereIn('vendor_id', $userIds);
+            }
         }
        
     }

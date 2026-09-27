@@ -29,7 +29,8 @@ class ServiceController extends Controller
 
         $clinics = Clinics::checkMultivendor()->with('clinicdoctor', 'specialty', 'clinicdoctor', 'receptionist')->where('status', 1)->get();
         $categories = ClinicsCategory::whereNull('parent_id')->where('status', 1)->get();
-        $service = ClinicsService::with('sub_category', 'doctor_service', 'ClinicServiceMapping', 'systemservice')
+        $service = ClinicsService::CheckMultivendor()
+            ->with('sub_category', 'doctor_service', 'ClinicServiceMapping', 'systemservice')
             ->where('status', 1)
             ->get();
         
@@ -72,16 +73,15 @@ class ServiceController extends Controller
         }
 
         $category_id = $request->query('category_id');
-        if ($category_id && $request->has('filter.category_id') && $request->input('filter.category_id')) {
+        if ($category_id) {
             $service_list = $service_list->where('category_id', $category_id);
         }
 
         $clinic_id = $request->query('clinic_id');
         if ($clinic_id) {
-            $service_list = ClinicsService::with('category', 'ClinicServiceMapping')
-                ->whereHas('ClinicServiceMapping', function ($query) use ($clinic_id) {
-                    $query->where('clinic_id', $clinic_id);
-                });
+            $service_list = $service_list->whereHas('ClinicServiceMapping', function ($query) use ($clinic_id) {
+                $query->where('clinic_id', $clinic_id);
+            });
         }
         if ($request->has('filter.clinic_id') && $request->input('filter.clinic_id') ) {
             $clinicId = $request->input('filter.clinic_id');

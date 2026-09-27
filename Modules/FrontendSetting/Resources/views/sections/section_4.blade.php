@@ -15,10 +15,13 @@
     </div>
 </div>
 <div class="row" id='enable_section_4'>
-    <div class="form-group col-md-6">
-        {{ html()->label(trans('messages.title') . ' <span class="text-danger">*</span>', 'title')->class('form-control-label') }}
-        {{ html()->text('title', old('title'))->id('title')->class('form-control')->placeholder(trans('messages.title')) }}
-        <small class="help-block with-errors text-danger"></small>
+    <div class="col-md-3 form-group">
+        <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-danger-subtle text-danger fw-normal">AR</span> <span class="text-danger">*</span></label>
+        <input type="text" name="title_ar" id="title_ar" class="form-control" dir="rtl" placeholder="العنوان بالعربية">
+    </div>
+    <div class="col-md-3 form-group">
+        <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-primary-subtle text-primary fw-normal">EN</span> <span class="text-danger">*</span></label>
+        <input type="text" name="title_en" id="title_en" class="form-control" placeholder="Title in English">
     </div>
 
     <div class="form-group col-md-6">
@@ -121,9 +124,13 @@
 
         </div>
     </div>
-    <div class="form-group col-md-12">
-        {{ html()->label(__('messages.description'), 'description')->class('form-control-label') }}
-        {{ html()->textarea('description', null)->class('form-control textarea')->rows(2)->placeholder(__('messages.description')) }}
+    <div class="col-md-6 form-group">
+        <label class="form-control-label">{{ __('messages.description') }} <span class="badge bg-danger-subtle text-danger fw-normal">AR</span></label>
+        <textarea name="description_ar" id="description_ar" class="form-control" rows="2" dir="rtl" placeholder="الوصف بالعربية"></textarea>
+    </div>
+    <div class="col-md-6 form-group">
+        <label class="form-control-label">{{ __('messages.description') }} <span class="badge bg-primary-subtle text-primary fw-normal">EN</span></label>
+        <textarea name="description_en" id="description_en" class="form-control" rows="2" placeholder="Description in English"></textarea>
     </div>
 </div>
 
@@ -146,10 +153,12 @@
     function checkSection4(value) {
         if (value == true) {
             $('#enable_section_4').removeClass('d-none');
-            $('#title').prop('required', true);
+            $('#title_ar').prop('required', true);
+            $('#title_en').prop('required', true);
         } else {
             $('#enable_section_4').addClass('d-none');
-            $('#title').prop('required', false);
+            $('#title_ar').prop('required', false);
+            $('#title_en').prop('required', false);
         }
     }
 
@@ -178,19 +187,18 @@
                 _token: _token
             },
             success: function(response) {
-                var obj = '';
-                var section_4 = title = description = '';
+                var obj = null;
 
-                if (response) {
+                if (response && response.data) {
                     if (response.data.key == 'section_4') {
                         obj = JSON.parse(response.data.value);
                     }
                     if (obj !== null) {
-                        var title = obj.title;
-                        var description = obj.description;
+                        $('#title_ar').val(obj.title_ar || obj.title || '');
+                        $('#title_en').val(obj.title_en || '');
+                        $('#description_ar').val(obj.description_ar || obj.description || '');
+                        $('#description_en').val(obj.description_en || '');
                     }
-                    $('#title').val(title);
-                    $('#description').val(description);
                 }
             },
             error: function(error) {

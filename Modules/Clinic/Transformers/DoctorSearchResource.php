@@ -17,6 +17,10 @@ class DoctorSearchResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => trim(optional($this->user)->first_name.' '.optional($this->user)->last_name),
+            'first_name_ar' => optional($this->user)->first_name_ar,
+            'first_name_en' => optional($this->user)->first_name_en,
+            'last_name_ar' => optional($this->user)->last_name_ar,
+            'last_name_en' => optional($this->user)->last_name_en,
             'gender' => optional($this->user)->gender,
             'experience' => $this->experience,
             'profile_image' => optional($this->user)->profile_image,

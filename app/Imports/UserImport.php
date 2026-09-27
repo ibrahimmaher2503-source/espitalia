@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Notifications\UserAccountCreated;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
@@ -102,6 +103,11 @@ class UserImport implements ToModel, WithHeadingRow
             }
         }
 
+        $plainPassword = trim((string) ($row['password'] ?? ''));
+        if ($plainPassword === '') {
+            $plainPassword = Str::random(40);
+        }
+
         $user = User::updateOrCreate(
             ['email' => $row['email']],
             [
@@ -110,7 +116,7 @@ class UserImport implements ToModel, WithHeadingRow
                 'mobile' => $row['mobile'],
                 'gender' => strtolower($row['gender']) ?? null,
                 'date_of_birth' => $dateOfBirth ?? null,
-                'password' => $row['password'] ? Hash::make($row['password']) : Hash::make('12345678'),
+                'password' => Hash::make($plainPassword),
                 'user_type' => 'user',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -125,7 +131,7 @@ class UserImport implements ToModel, WithHeadingRow
             }
                 $this->importedUsers[] = [
                 'user' => $user,
-                'plaintext_password' => $row['password'],
+                'plaintext_password' => $plainPassword,
             ];
         }
 
@@ -137,4 +143,3 @@ class UserImport implements ToModel, WithHeadingRow
         return $this->importedUsers;
     }
 }
-

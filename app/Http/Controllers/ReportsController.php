@@ -132,18 +132,15 @@ class ReportsController extends Controller
             ->addColumn('price', function ($appointment) {
                 return Currency::format($appointment->service_amount);
             })
-            ->addColumn('start_date_time', function ($appointment) {
-                $timezone = Setting::where('name', 'default_time_zone')->value('val') ?? 'UTC';
+            ->addColumn('start_date_time', function ($appointment) use (&$_cachedTimezone, &$_cachedDateFormat, &$_cachedTimeFormat) {
+                if (!isset($_cachedTimezone)) {
+                    $_cachedTimezone = Setting::where('name', 'default_time_zone')->value('val') ?? 'UTC';
+                    $_cachedDateFormat = Setting::where('name', 'date_formate')->value('val') ?? 'Y-m-d';
+                    $_cachedTimeFormat = Setting::where('name', 'time_formate')->value('val') ?? 'h:i A';
+                }
 
-                $dateSetting = Setting::where('name', 'date_formate')->first();
-                $dateformate = $dateSetting ? $dateSetting->val : 'Y-m-d';
-
-                $timeSetting = Setting::where('name', 'time_formate')->first();
-                $timeformate = $timeSetting ? $timeSetting->val : 'h:i A';
-
-                $combinedFormat = $dateformate . ' ' . $timeformate;
-                $date = Carbon::parse($appointment->start_date_time)->timezone($timezone)->format($combinedFormat);
-                // return customDate($appointment->start_date_time);
+                $combinedFormat = $_cachedDateFormat . ' ' . $_cachedTimeFormat;
+                $date = Carbon::parse($appointment->start_date_time)->timezone($_cachedTimezone)->format($combinedFormat);
                 return $date;
             })
             ->addColumn('doctor_pay', function ($appointment) {
@@ -233,18 +230,15 @@ class ReportsController extends Controller
             ->editColumn('total_amount', function ($appointment) {
                 return Currency::format($appointment->total_amount);
             })
-            ->editColumn('start_date_time', function ($appointment) {
-                $timezone = Setting::where('name', 'default_time_zone')->value('val') ?? 'UTC';
+            ->editColumn('start_date_time', function ($appointment) use (&$_cachedTimezone2, &$_cachedDateFormat2, &$_cachedTimeFormat2) {
+                if (!isset($_cachedTimezone2)) {
+                    $_cachedTimezone2 = Setting::where('name', 'default_time_zone')->value('val') ?? 'UTC';
+                    $_cachedDateFormat2 = Setting::where('name', 'date_formate')->value('val') ?? 'Y-m-d';
+                    $_cachedTimeFormat2 = Setting::where('name', 'time_formate')->value('val') ?? 'h:i A';
+                }
 
-                $dateSetting = Setting::where('name', 'date_formate')->first();
-                $dateformate = $dateSetting ? $dateSetting->val : 'Y-m-d';
-
-                $timeSetting = Setting::where('name', 'time_formate')->first();
-                $timeformate = $timeSetting ? $timeSetting->val : 'h:i A';
-
-                $combinedFormat = $dateformate . ' ' . $timeformate;
-                $date = Carbon::parse($appointment->start_date_time)->timezone($timezone)->format($combinedFormat);
-                // return customDate($appointment->start_date_time);
+                $combinedFormat = $_cachedDateFormat2 . ' ' . $_cachedTimeFormat2;
+                $date = Carbon::parse($appointment->start_date_time)->timezone($_cachedTimezone2)->format($combinedFormat);
                 return $date;
             })
             ->editColumn('status', function ($appointment) {

@@ -18,22 +18,23 @@ class DoctorDetailsResource extends JsonResource
      */
     public function toArray($request)
     {
-        $total_services = $this->doctorService->count();
-        $total_reviews = $this->doctorReviews->count();
-        $average_rating = $this->doctorReviews->avg('rating');
-        $doctor_services = $this->doctorService;
+        $total_services = optional($this->doctorService)->count() ?? 0;
+        $total_reviews = optional($this->doctorReviews)->count() ?? 0;
+        $average_rating = optional($this->doctorReviews)->avg('rating') ?? 0;
+        $doctor_services = $this->doctorService ?? collect();
+        $doctorUserId = optional($this->user)->id;
         $services = null;
 
         foreach($doctor_services as $doctor_service){
             $clinic_names = [];
-            $clinics = optional($doctor_service->clinicservice)->ClinicServiceMapping;
+            $clinics = optional($doctor_service->clinicservice)->ClinicServiceMapping ?? collect();
             foreach($clinics as $clinic){
                 $clinic_names[] = optional($clinic->center)->name;
             }
 
             $appointments_count = 0;
-            if ($doctor_service->clinicservice) {
-                $appointments_count = $doctor_service->clinicservice->appointmentService->where('doctor_id', $this->user->id)->count();
+            if ($doctor_service->clinicservice && $doctorUserId) {
+                $appointments_count = $doctor_service->clinicservice->appointmentService->where('doctor_id', $doctorUserId)->count();
             }
 
             if(auth()->user()){
@@ -57,22 +58,30 @@ class DoctorDetailsResource extends JsonResource
             'full_name' =>optional($this->user)->full_name,
             'email' => optional($this->user)->email,
             'mobile' =>optional($this->user)->mobile,
-            'player_id' =>optional($this->user)->player_id,
             'gender' =>optional($this->user)->gender,
             'expert' => optional(optional($this->user)->profile)->expert,
+            'expert_ar' => optional(optional($this->user)->profile)->expert_ar,
+            'expert_en' => optional(optional($this->user)->profile)->expert_en,
             'date_of_birth' =>optional($this->user)->date_of_birth,
-            'email_verified_at' =>optional($this->user)->email_verified_at,
             'status' =>optional($this->user)->status,
-            'is_banned' =>optional($this->user)->is_banned,
-            'is_manager' =>optional($this->user)->is_manager,
+            'is_independent' => (bool) $this->is_independent,
             'about_self' => optional(optional($this->user)->profile)->about_self,
+            'about_self_ar' => optional(optional($this->user)->profile)->about_self_ar,
+            'about_self_en' => optional(optional($this->user)->profile)->about_self_en,
             'facebook_link' => optional(optional($this->user)->profile)->facebook_link,
             'instagram_link' => optional(optional($this->user)->profile)->instagram_link,
             'twitter_link' => optional(optional($this->user)->profile)->twitter_link,
             'dribbble_link' => optional(optional($this->user)->profile)->dribbble_link,
             'description' => $this->description,
+            'description_ar' => $this->description_ar,
+            'description_en' => $this->description_en,
             'signature' => $this->Signature,
             'experience' => $this->experience,
+            'experience_ar' => $this->experience_ar,
+            'experience_en' => $this->experience_en,
+            'title' => $this->title ?? '',
+            'title_ar' => $this->title_ar,
+            'title_en' => $this->title_en,
             'country_id' =>optional($this->user)->country,
             'state_id' => optional($this->user)->state,
             'city_id' =>optional($this->user)->city,
@@ -93,6 +102,13 @@ class DoctorDetailsResource extends JsonResource
             'reviews' => $this->doctorReviews,
             'qualifications' => $this->doctorDocuments,
             'services' => $services,
+            'specializations' => $this->whenLoaded('specializations', fn () => $this->specializations->map(fn ($s) => [
+                'id'   => $s->id,
+                'name' => $s->name,
+                'name_ar' => $s->name_ar,
+                'name_en' => $s->name_en,
+                'slug' => $s->slug,
+            ])),
             'created_by' => $this->created_by,
             'updated_by' => $this->updated_by,
             'deleted_by' => $this->deleted_by,

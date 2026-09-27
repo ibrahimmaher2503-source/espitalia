@@ -110,6 +110,7 @@ return [
     'systemservice_status' => 'System Service Status Updated',
     'systemservice_delete' => 'System Service Deleted Successfully',
     'lbl_image' => 'Image',
+    'lbl_independent_doctor' => 'Independent Doctor (no clinic)',
     'lbl_clinic' => 'Clinic',
     'country' => 'Country',
     'state' => 'State',
@@ -233,4 +234,5 @@ return [
     'lbl_expert_ar' => 'Expertise (Arabic)',
     'lbl_about_self_en' => 'About (English)',
     'lbl_about_self_ar' => 'About (Arabic)',
+    'lbl_doctor' => 'Doctor',
 ];

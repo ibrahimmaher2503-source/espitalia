@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Frontend\View\Components\section;
+namespace Modules\Frontend\View\Components\Section;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class doctor_section extends Component
+class DoctorSection extends Component
 {
     /**
      * Create a new component instance.

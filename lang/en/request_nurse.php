@@ -79,6 +79,7 @@ return [
     'no_nurses_available' => 'No nurses are currently available.',
     'request_already_assigned' => 'This request already has an assigned nurse.',
     'cannot_cancel_completed' => 'Cannot cancel a completed request.',
+    'patient_cancel_not_allowed' => 'A patient can cancel this request only while it is pending. Please contact support for an assigned request.',
     'invalid_status_transition' => 'This status transition is not allowed.',
     'nurse_busy_alert' => 'This nurse is currently attending to another patient and cannot accept new requests at this time.',
     'nurse_off_duty_alert' => 'This nurse is currently off duty and not accepting requests.',

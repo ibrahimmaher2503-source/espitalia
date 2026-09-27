@@ -6,12 +6,9 @@ use App\Models\BaseModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 
 class PharmacyPrescription extends BaseModel implements HasMedia
 {
-    use InteractsWithMedia;
-
     protected $table = 'pharmacy_prescriptions';
 
     protected $fillable = [

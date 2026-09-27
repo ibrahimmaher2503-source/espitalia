@@ -36,13 +36,22 @@ class FrontendController extends Controller
      */
     public function index()
     {
-        $allservice = ClinicsService::with('category')->where('is_enable_advance_payment', 0)->get();
-        $allclinics = Clinics::get();
-        $doctors = Doctor::with('user')->take(7)->get();
+        $allservice = ClinicsService::CheckMultivendor()
+            ->with('category')
+            ->where('status', 1)
+            ->where('is_enable_advance_payment', 0)
+            ->get();
+        $allclinics = Clinics::CheckMultivendor()->get();
+        $doctors = Doctor::CheckMultivendor()->with('user')->take(7)->get();
 
-        $ratings = DoctorRating::with('user', 'doctor')->orderby('rating', 'desc')->take(5)->get();
+        $visibleDoctorUserIds = Doctor::CheckMultivendor()->pluck('doctor_id');
+        $ratings = DoctorRating::with('user', 'doctor')
+            ->whereIn('doctor_id', $visibleDoctorUserIds)
+            ->orderby('rating', 'desc')
+            ->take(5)
+            ->get();
 
-        $sliders = Slider::where('status', 1)->get();
+        $sliders = class_exists(Slider::class) ? Slider::where('status', 1)->get() : collect();
 
         $sectionData = [];
         $sectionKeys = ['section_1', 'section_2', 'section_3', 'section_4', 'section_5', 'section_6', 'section_7', 'section_8', 'section_9'];
@@ -51,6 +60,22 @@ class FrontendController extends Controller
             $section = FrontendSetting::where('key', $key)->first();
             $sectionData[$key] = $section ? json_decode($section->value, true) : null;
         }
+
+        // Resolve locale-aware titles/subtitles/descriptions for each section
+        $locale = app()->getLocale();
+        foreach ($sectionData as $key => &$section) {
+            if (!is_array($section)) continue;
+            if ($locale === 'ar') {
+                $section['title']       = $section['title_ar']       ?? $section['title']       ?? '';
+                $section['subtitle']    = $section['subtitle_ar']    ?? $section['subtitle']    ?? '';
+                $section['description'] = $section['description_ar'] ?? $section['description'] ?? '';
+            } else {
+                $section['title']       = $section['title_en']       ?? $section['title']       ?? '';
+                $section['subtitle']    = $section['subtitle_en']    ?? $section['subtitle']    ?? '';
+                $section['description'] = $section['description_en'] ?? $section['description'] ?? '';
+            }
+        }
+        unset($section);
 
         foreach ($doctors as $doctor) {
             $doctor_id = optional($doctor->user)->id;

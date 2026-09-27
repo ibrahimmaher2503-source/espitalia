@@ -39,6 +39,7 @@ class FacilityBooking extends BaseModel
         'scan_type',
         'booking_date',
         'booking_time',
+        'slot_key',
         'status',
         'notes',
         'admin_notes',
@@ -61,6 +62,33 @@ class FacilityBooking extends BaseModel
                 $booking->booking_number = static::generateBookingNumber();
             }
         });
+
+        static::saving(function ($booking) {
+            if ($booking->status === self::STATUS_CANCELLED) {
+                $booking->slot_key = null;
+                return;
+            }
+
+            $booking->slot_key = static::buildSlotKey($booking);
+        });
+    }
+
+    public static function buildSlotKey(self $booking): string
+    {
+        $facilityId = $booking->type === 'lab'
+            ? $booking->lab_id
+            : $booking->radiology_center_id;
+        $date = $booking->booking_date instanceof Carbon
+            ? $booking->booking_date->format('Y-m-d')
+            : Carbon::parse($booking->booking_date)->format('Y-m-d');
+        $time = Carbon::parse((string) $booking->booking_time)->format('H:i:s');
+
+        return implode('|', [
+            (string) $booking->type,
+            (int) $facilityId,
+            $date,
+            $time,
+        ]);
     }
 
     public static function generateBookingNumber(): string

@@ -1,1 +1,0 @@
-{"message":"The name must be an array. (and 3 more errors)","errors":{"name":["The name must be an array."],"name.en":["Hospital Name messages.field_is_required"],"description":["The description must be an array."],"hospital_type":["Hospital Type messages.field_is_required"]}}

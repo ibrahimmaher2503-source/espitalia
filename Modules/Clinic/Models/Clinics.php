@@ -48,14 +48,14 @@ class Clinics extends BaseModel
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
-        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: $this->attributes['name'] ?? '';
     }
 
     public function getDescriptionAttribute()
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
-        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: $this->attributes['description'] ?? '';
     }
 
     protected static function newFactory(): ClinicFactory
@@ -76,7 +76,6 @@ class Clinics extends BaseModel
 
         static::deleting(function ($clinic) {
             $clinic->clinicsessions()->delete();
-            $clinic->cliniccategory()->delete();
             $clinic->clinicservices()->delete();
             $clinic->clinicgallery()->delete();
             $clinic->clinicappointment()->delete();
@@ -103,7 +102,7 @@ class Clinics extends BaseModel
 
             if (multiVendor() == "0") {
                 
-                $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
                
                 $query=$query->whereIn('vendor_id', $user_ids);
             }
@@ -256,9 +255,12 @@ class Clinics extends BaseModel
 
     public function scopeCheckMultivendor($query){
         if(multiVendor() == "0") {
-            $query = $query->where('status',1)->whereHas('vendor', function ($q){
-                $q->whereIn('user_type', ['admin','demo_admin']);
-            });
+            $userIds = User::whereIn('user_type', ['admin','demo_admin'])->pluck('id');
+            $query = $query->where('status',1);
+
+            if ($userIds->isNotEmpty()) {
+                $query->whereIn('vendor_id', $userIds);
+            }
         }
         else{
             $query = $query->where('status',1);

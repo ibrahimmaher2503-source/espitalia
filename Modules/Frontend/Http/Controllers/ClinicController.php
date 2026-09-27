@@ -18,7 +18,7 @@ class ClinicController extends Controller
     {
         $service_id = $request->query('service_id');
 
-        $services = ClinicsService::where('status', 1)->get();
+        $services = ClinicsService::CheckMultivendor()->active()->get();
 
         return view('frontend::clinics', compact('service_id', 'services'));
     }
@@ -119,7 +119,7 @@ class ClinicController extends Controller
     public function getServicesByClinic(Request $request)
 {
     $clinicId = $request->query('clinic_id');
-    $service_list = ClinicsService::query();
+    $service_list = ClinicsService::CheckMultivendor()->active();
     if ($clinicId) {
         $service_list->whereHas('ClinicServiceMapping', function ($query) use ($clinicId) {
             $query->where('clinic_id', $clinicId);

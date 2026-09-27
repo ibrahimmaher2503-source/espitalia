@@ -37,9 +37,10 @@ class DoctorRequest extends FormRequest
             'confirm_password' => 'required|same:password',
             'mobile' => 'required|string|max:20',
             'profile_image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'is_independent' => 'nullable|boolean',
             'commission_id' => 'required',
-            'clinic_id' => 'required',
-            'service_id' => 'required',
+            'clinic_id' => 'required_unless:is_independent,1|nullable',
+            'service_id' => 'required_unless:is_independent,1|nullable',
         ];
     }
 

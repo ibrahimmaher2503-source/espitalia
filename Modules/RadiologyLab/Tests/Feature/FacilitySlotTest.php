@@ -53,7 +53,7 @@ class FacilitySlotTest extends BaseTest
 
     protected function nextMonday(): string
     {
-        return Carbon::next('Monday')->format('Y-m-d');
+        return now()->next('Monday')->format('Y-m-d');
     }
 
     public function test_slot_generation_returns_correct_intervals(): void

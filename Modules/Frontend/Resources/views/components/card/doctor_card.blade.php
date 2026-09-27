@@ -1,3 +1,5 @@
+@props(['doctor'])
+
 @php
     $rating = $doctor->average_rating ?? 0;
     $ratingInt = (int) round($rating);

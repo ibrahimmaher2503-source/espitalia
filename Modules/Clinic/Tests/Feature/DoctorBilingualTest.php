@@ -6,6 +6,12 @@ use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Clinic\Models\Doctor;
+use Modules\Clinic\Models\DoctorIndependentService;
+use Modules\Clinic\Transformers\DoctorDetailsResource;
+use Modules\Clinic\Transformers\DoctorResource;
+use Modules\Clinic\Transformers\DoctorIndependentServiceResource;
+use Modules\Specialization\Models\Specialization;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class DoctorBilingualTest extends TestCase
@@ -202,5 +208,69 @@ class DoctorBilingualTest extends TestCase
         $user->refresh();
         $this->assertEquals('Jane', $user->getRawOriginal('first_name'));
         $this->assertEquals('Jane', $user->first_name_en);
+    }
+
+    /** @test */
+    public function doctor_resources_keep_raw_bilingual_fields_and_localized_generics()
+    {
+        $user = $this->createDoctorUser();
+        $doctor = $this->createDoctorRecord($user);
+        $this->createUserProfile($user);
+        $doctor->setRelation('user', $user);
+        foreach (['doctorService', 'doctorclinic', 'doctorCommission', 'doctorReviews', 'doctorDocuments'] as $relation) {
+            $doctor->setRelation($relation, collect());
+        }
+
+        $request = Request::create('/api/doctor-detail');
+        app()->setLocale('ar');
+        $details = (new DoctorDetailsResource($doctor))->toArray($request);
+
+        $this->assertSame('متخصص', $details['description']);
+        $this->assertSame('Specialist', $details['description_en']);
+        $this->assertSame('متخصص', $details['description_ar']);
+        $this->assertSame('أمراض القلب', $details['expert']);
+        $this->assertSame('Cardiology', $details['expert_en']);
+
+        $service = new DoctorIndependentService();
+        $service->setRawAttributes([
+            'name' => 'Consultation',
+            'name_ar' => 'كشف',
+            'name_en' => 'Consultation',
+            'description' => 'استشارة',
+            'description_ar' => 'استشارة',
+            'description_en' => 'Consultation',
+        ]);
+        $serviceData = (new DoctorIndependentServiceResource($service))->toArray($request);
+
+        $this->assertSame('كشف', $serviceData['name_ar']);
+        $this->assertSame('Consultation', $serviceData['name_en']);
+        $this->assertSame('استشارة', $serviceData['description_ar']);
+        $this->assertSame('Consultation', $serviceData['description_en']);
+    }
+
+    /** @test */
+    public function doctor_list_resource_preserves_bilingual_specialization_names()
+    {
+        $user = $this->createDoctorUser();
+        $doctor = $this->createDoctorRecord($user);
+        $specialization = Specialization::create([
+            'name_ar' => 'أمراض القلب',
+            'name_en' => 'Cardiology',
+        ]);
+
+        $doctor->setRelation('user', $user);
+        $doctor->setRelation('specializations', collect([$specialization]));
+        foreach (['doctorService', 'doctorclinic', 'doctorCommission'] as $relation) {
+            $doctor->setRelation($relation, collect());
+        }
+        $doctor->setAttribute('total_appointment', 0);
+        $doctor->setAttribute('average_rating', 0);
+        $doctor->setAttribute('total_patient', 0);
+        $doctor->setAttribute('total_reviews', 0);
+
+        $data = (new DoctorResource($doctor))->toArray(Request::create('/api/doctors'));
+
+        $this->assertSame('أمراض القلب', $data['specializations'][0]['name_ar']);
+        $this->assertSame('Cardiology', $data['specializations'][0]['name_en']);
     }
 }

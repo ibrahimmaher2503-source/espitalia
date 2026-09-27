@@ -1,3 +1,0 @@
-[    3480ms] TypeError: window.tooltipInit is not a function
-    at Object.initialize (webpack-internal:///./resources/js/backend-custom.js:601:14)
-    at eval (webpack-internal:///./Modules/Frontend/Resources/assets/js/app.js:216:26)

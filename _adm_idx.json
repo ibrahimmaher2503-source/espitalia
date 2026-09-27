@@ -1,1 +1,0 @@
-{"draw":0,"recordsTotal":0,"recordsFiltered":0,"data":[],"disableOrdering":false,"queries":[{"query":"select count(*) as aggregate from `icu_admission_requests`","bindings":[],"time":0.94},{"query":"select * from `icu_admission_requests`","bindings":[],"time":0.4}],"input":[]}

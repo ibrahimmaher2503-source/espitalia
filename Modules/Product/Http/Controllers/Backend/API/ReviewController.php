@@ -14,9 +14,16 @@ class ReviewController extends Controller
 {
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'product_variation_id' => ['nullable', 'integer', 'exists:product_variations,id'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'review_msg' => ['nullable', 'string', 'max:5000'],
+            'gallery' => ['sometimes', 'array'],
+            'gallery.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
 
-        $data['user_id'] = $request->input('user_id') ?? Auth::id();
+        $data['user_id'] = Auth::id();
 
         $product = Product::where('id', $data['product_id'])->first();
 
@@ -50,7 +57,7 @@ class ReviewController extends Controller
 
     public function getReviewList(Request $request)
     {
-        $perPage = $request->input('per_page', 10); // Get the number of items per page from the request (default: 10)
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
 
         $review = Review::with('gallery');
 
@@ -71,13 +78,19 @@ class ReviewController extends Controller
 
       public function UpdateReview(Request $request)
       {
-          $review_id = $request->review_id;
+          $review_id = (int) $request->review_id;
 
-          $data['user_id'] = $request->input('user_id') ?? Auth::id();
+          $review = Review::whereKey($review_id)->where('user_id', Auth::id())->first();
 
-          $review = Review::where('id', $review_id)->first();
-
-          $data = $request->except('gallery');
+          $data = $request->validate([
+              'review_id' => ['required', 'integer'],
+              'product_variation_id' => ['nullable', 'integer', 'exists:product_variations,id'],
+              'rating' => ['sometimes', 'integer', 'min:1', 'max:5'],
+              'review_msg' => ['nullable', 'string', 'max:5000'],
+              'gallery' => ['sometimes', 'array'],
+              'gallery.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+          ]);
+          unset($data['review_id'], $data['gallery']);
 
           if (! $review) {
               $message = __('product.review_not_found');
@@ -116,9 +129,9 @@ class ReviewController extends Controller
 
       public function removeReview(Request $request)
       {
-          $review_id = $request->review_id;
+          $review_id = (int) $request->review_id;
 
-          $review = Review::where('id', $review_id)->first();
+          $review = Review::whereKey($review_id)->where('user_id', Auth::id())->first();
 
           if (! $review) {
               $message = __('product.review_not_found');

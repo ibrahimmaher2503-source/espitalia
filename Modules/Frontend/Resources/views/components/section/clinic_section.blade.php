@@ -16,9 +16,11 @@
                 @for ($i = 0; $i < 4; $i++)
                     @include('frontend::components.card.shimmer_clinic_card')
                 @endfor
-                @foreach ($sectionData['section_5']['clinic_id'] as $clinic_id)
+                @foreach ($sectionData['section_5']['clinic_id'] ?? [] as $clinic_id)
                     @php
-                        $clinic = \Modules\Clinic\Models\Clinics::where('id', $clinic_id)->first();
+                        $clinic = \Modules\Clinic\Models\Clinics::CheckMultivendor()
+                            ->where('id', $clinic_id)
+                            ->first();
                     @endphp
                     <div class="slick-item d-none cliniccards">
                         @if($clinic)

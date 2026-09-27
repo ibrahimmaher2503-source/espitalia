@@ -14,6 +14,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
 
     // ── Patient-facing routes (US1 + US2) ─────────────────────────
     Route::post('doctor-visit/requests', [DoctorVisitApiController::class, 'store'])
+        ->middleware('idempotency:doctor_visit')
         ->name('api.doctor_visit.store');
 
     Route::get('doctor-visit/requests', [DoctorVisitApiController::class, 'index'])
@@ -21,6 +22,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
 
     Route::get('doctor-visit/requests/{reference}', [DoctorVisitApiController::class, 'show'])
         ->name('api.doctor_visit.show');
+
+    Route::post('doctor-visit/requests/{reference}/cancel', [DoctorVisitApiController::class, 'cancel'])
+        ->middleware('idempotency:doctor_visit_cancellation')
+        ->name('api.doctor_visit.cancel');
 
     // ── Admin/Staff routes (US3) ───────────────────────────────────
     Route::prefix('admin/doctor-visit/requests')->group(function () {

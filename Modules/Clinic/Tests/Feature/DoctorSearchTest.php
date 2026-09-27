@@ -49,6 +49,10 @@ class DoctorSearchTest extends BaseTest
         $user = User::factory()->create([
             'first_name' => 'Ahmad',
             'last_name'  => 'Ali',
+            'first_name_ar' => 'أحمد',
+            'first_name_en' => 'Ahmad EN',
+            'last_name_ar' => 'علي',
+            'last_name_en' => 'Ali EN',
         ]);
 
         Doctor::create([
@@ -81,7 +85,11 @@ class DoctorSearchTest extends BaseTest
                              'current_page' => 1,
                          ],
                      ],
-                 ]);
+                 ])
+                 ->assertJsonPath('data.items.0.first_name_ar', 'أحمد')
+                 ->assertJsonPath('data.items.0.first_name_en', 'Ahmad EN')
+                 ->assertJsonPath('data.items.0.last_name_ar', 'علي')
+                 ->assertJsonPath('data.items.0.last_name_en', 'Ali EN');
     }
 
     public function test_filter_by_governorate_returns_matching_doctors()

@@ -7,6 +7,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Modules\Currency\Models\Currency;
 use App\Models\User;
 use Modules\Language\Models\Language;
@@ -16,6 +17,16 @@ use Modules\Tax\Transformers\TaxResource;
 
 class SettingController extends Controller
 {
+    public function downloadJson()
+    {
+        $jsonFiles = collect(Storage::files('data'))
+            ->filter(fn (string $file) => pathinfo($file, PATHINFO_EXTENSION) === 'json')
+            ->map(fn (string $file) => pathinfo($file, PATHINFO_BASENAME))
+            ->values();
+
+        return response()->json($jsonFiles);
+    }
+
     public function appConfiguraton(Request $request)
     {
         $settings = Setting::all()->pluck('val', 'name');
@@ -23,8 +34,26 @@ class SettingController extends Controller
         $currencies = Currency::all();
         $response = [];
 
-        // Define the specific names you want to include
-        $specificNames = ['app_name', 'footer_text', 'primary', 'razorpay_secretkey', 'razorpay_publickey', 'stripe_secretkey', 'stripe_publickey', 'paystack_secretkey', 'paystack_publickey', 'paypal_secretkey', 'paypal_clientid', 'flutterwave_secretkey', 'flutterwave_publickey', 'onesignal_app_id', 'onesignal_rest_api_key', 'onesignal_channel_id', 'google_maps_key', 'helpline_number', 'copyright', 'inquriy_email', 'site_description', 'patient_app_play_store', 'patient_app_app_store', 'clinicadmin_app_play_store', 'clinicadmin_app_app_store', 'isForceUpdate', 'version_code', 'account_id', 'client_id', 'client_secret', 'airtel_secretkey', 'airtel_clientid', 'phonepay_app_id', 'phonepay_merchant_id', 'phonepay_salt_key', 'phonepay_salt_index', 'midtrans_clientid', 'cinet_siteid', 'cinet_apikey', 'cinet_secretkey', 'sadad_id', 'sadad_key', 'sadad_domain'];
+        // This endpoint is public. Keep the allowlist deliberately limited to
+        // values that are safe to ship to a patient device. Secret keys,
+        // service-account material, webhook credentials and payment signing
+        // keys must never cross this boundary. Online payments remain disabled
+        // until a server-authoritative checkout/webhook flow is enabled.
+        $specificNames = [
+            'app_name',
+            'footer_text',
+            'primary',
+            'helpline_number',
+            'copyright',
+            'inquriy_email',
+            'site_description',
+            'patient_app_play_store',
+            'patient_app_app_store',
+            'clinicadmin_app_play_store',
+            'clinicadmin_app_app_store',
+            'isForceUpdate',
+            'version_code',
+        ];
         foreach ($settings as $name => $value) {
             if (in_array($name, $specificNames)) {
                 if (strpos($name, 'onesignal_') === 0 && $request->is_authenticated == 1) {
@@ -206,7 +235,6 @@ class SettingController extends Controller
         $response['currency'] = $currencyData;
         $response['google_login_status'] = isset($settings['is_google_login']) ? (int)$settings['is_google_login'] : 0;
         $response['apple_login_status'] = 'false';
-        $response['otp_login_status'] = 'false';
         $response['site_description'] = $settings['site_description'] ?? null;
         // Add locale language to the response
         $response['application_language'] = $settings['default_language'] ?? 'en';
@@ -225,7 +253,9 @@ class SettingController extends Controller
         $response['cancellation_charge'] = isset($settings['cancellation_charge']) ? (double)$settings['cancellation_charge'] : 0;
         $response['cancellation_charge_hours'] = isset($settings['cancellation_charge_hours']) ? (int) $settings['cancellation_charge_hours'] : 0;
         $response['is_cancellation_charge'] = isset($settings['is_cancellation_charge']) ? intval($settings['is_cancellation_charge']) : 0;
-        $response['is_dummy_credentials'] = isset($settings['is_dummy_credentials']) ? intval($settings['is_dummy_credentials']) : 0;
+        // Demo credentials are never a production configuration feature.
+        $response['is_dummy_credentials'] = 0;
+        $response['available_payment_methods'] = ['cash', 'wallet'];
         return response()->json($response);
     }
 
@@ -280,7 +310,9 @@ class SettingController extends Controller
 
     public function Configuraton(Request $request)
     {
-        $googleMeetSettings = Setting::whereIn('name', ['google_meet_method', 'google_clientid', 'google_secret_key'])
+        // The browser only needs the OAuth client id. Never expose the client
+        // secret through the authenticated settings endpoint.
+        $googleMeetSettings = Setting::whereIn('name', ['google_meet_method', 'google_clientid'])
             ->pluck('val', 'name');
         $settings = $googleMeetSettings->toArray();
         return $settings;

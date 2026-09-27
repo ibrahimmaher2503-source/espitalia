@@ -25,6 +25,8 @@ class IcuAdmissionRequestsApiController extends Controller
                 $query->whereHas('hospital', function ($q) use ($user) {
                     $q->where('vendor_id', $user->id);
                 });
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
             // admin/demo_admin see all
 
@@ -58,6 +60,10 @@ class IcuAdmissionRequestsApiController extends Controller
     {
         try {
             $user = auth()->user();
+
+            if (! $user->hasRole('user')) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
+            }
 
             $admissionRequest = DB::transaction(function () use ($request, $user) {
                 $data = $request->validated();
@@ -127,6 +133,8 @@ class IcuAdmissionRequestsApiController extends Controller
                 $query->whereHas('hospital', function ($q) use ($user) {
                     $q->where('vendor_id', $user->id);
                 });
+            } elseif (! $user->hasRole(['admin', 'demo_admin'])) {
+                return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
             }
 
             $admissionRequest = $query->findOrFail($id);
@@ -146,23 +154,41 @@ class IcuAdmissionRequestsApiController extends Controller
         try {
             $request->validate([
                 'cancellation_reason' => 'required|string|max:500',
+                'expected_updated_at' => 'nullable|date',
             ]);
 
             $user = auth()->user();
-            $admissionRequest = IcuAdmissionRequest::where('patient_id', $user->id)->findOrFail($id);
+            $admissionRequest = DB::transaction(function () use ($request, $user, $id) {
+                $admissionRequest = IcuAdmissionRequest::query()
+                    ->where('patient_id', $user->id)
+                    ->lockForUpdate()
+                    ->find($id);
 
-            if (! $admissionRequest->canTransitionTo(IcuAdmissionRequest::STATUS_CANCELLED)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => __('intensive_care.cannot_cancel'),
-                ], 403);
-            }
+                if (! $admissionRequest) {
+                    throw new \DomainException('not_found');
+                }
 
-            $admissionRequest->update([
-                'status' => IcuAdmissionRequest::STATUS_CANCELLED,
-                'cancelled_by' => $user->id,
-                'cancellation_reason' => $request->cancellation_reason,
-            ]);
+                if ($request->filled('expected_updated_at')
+                    && ! $admissionRequest->updated_at->equalTo(\Carbon\Carbon::parse($request->input('expected_updated_at')))) {
+                    throw new \DomainException('stale');
+                }
+
+                if ($admissionRequest->status === IcuAdmissionRequest::STATUS_CANCELLED) {
+                    throw new \DomainException('already_cancelled');
+                }
+
+                if (! $admissionRequest->canTransitionTo(IcuAdmissionRequest::STATUS_CANCELLED)) {
+                    throw new \DomainException('state');
+                }
+
+                $admissionRequest->update([
+                    'status' => IcuAdmissionRequest::STATUS_CANCELLED,
+                    'cancelled_by' => $user->id,
+                    'cancellation_reason' => trim($request->cancellation_reason),
+                ]);
+
+                return $admissionRequest->fresh();
+            });
 
             // Send notification
             $notification_data = [
@@ -190,11 +216,22 @@ class IcuAdmissionRequestsApiController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $e->errors(),
             ], 422);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (\DomainException $e) {
+            $status = match ($e->getMessage()) {
+                'not_found' => 403,
+                'stale' => 409,
+                'already_cancelled', 'state' => 422,
+                default => 400,
+            };
+
             return response()->json([
                 'status' => false,
-                'message' => 'You are not authorized to cancel this request',
-            ], 403);
+                'message' => match ($e->getMessage()) {
+                    'already_cancelled' => __('intensive_care.request_already_cancelled'),
+                    'stale' => __('messages.resource_changed'),
+                    default => __('intensive_care.cannot_cancel'),
+                },
+            ], $status);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
 

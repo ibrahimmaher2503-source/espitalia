@@ -13,8 +13,8 @@
 @section('container')
 
 <h6 class="setup-title">Admin Login Credentials</h6>
-<p class="text-center">Email: <b>admin@Espitalia.com</b></p>
-<p class="text-center">Password: <b>12345678</b></p>
+<p class="text-center">The administrator account was created using the credentials supplied during setup.</p>
+<p class="text-center">Store those credentials in an approved password manager before continuing.</p>
 
  <div class="setup-actions">
 

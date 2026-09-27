@@ -1,3 +1,5 @@
+@props(['blog'])
+
 <a href="{{ route('blog-details', ['id' => $blog->id]) }}" class="card-link">
     <div class="blog-card rounded">
         <div class="blog-img d-flex justify-content-center align-items-center" style="height: 250px; overflow: hidden;">

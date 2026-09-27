@@ -49,6 +49,8 @@ class ClinicSearchTest extends BaseTest
 
         Clinics::create([
             'name'           => 'Test Clinic',
+            'name_ar'        => 'عيادة تجريبية',
+            'name_en'        => 'Test Clinic EN',
             'email'          => 'test@clinic.com',
             'slug'           => 'test-clinic',
             'contact_number' => '12345678',
@@ -66,7 +68,9 @@ class ClinicSearchTest extends BaseTest
                          'items',
                          'pagination',
                      ],
-                 ]);
+                 ])
+                 ->assertJsonPath('data.items.0.name_ar', 'عيادة تجريبية')
+                 ->assertJsonPath('data.items.0.name_en', 'Test Clinic EN');
     }
 
     public function test_filter_by_governorate_returns_matching_clinics()

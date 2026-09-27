@@ -11,6 +11,8 @@ class RadiologyCenterResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
+            'name_en' => $this->name_en,
             'scan_type' => $this->scan_type,
             'governorate' => $this->whenLoaded('governorate', function () {
                 return [

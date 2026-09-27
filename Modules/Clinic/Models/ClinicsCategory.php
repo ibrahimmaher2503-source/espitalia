@@ -75,14 +75,14 @@ class ClinicsCategory extends BaseModel
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->name_ar : $this->name_en;
-        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: '';
+        return $localized ?: ($locale === 'ar' ? $this->name_en : $this->name_ar) ?: $this->attributes['name'] ?? '';
     }
 
     public function getDescriptionAttribute()
     {
         $locale = app()->getLocale();
         $localized = $locale === 'ar' ? $this->description_ar : $this->description_en;
-        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: '';
+        return $localized ?: ($locale === 'ar' ? $this->description_en : $this->description_ar) ?: $this->attributes['description'] ?? '';
     }
 
     protected function getFileUrlAttribute()

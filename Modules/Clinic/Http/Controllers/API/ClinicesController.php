@@ -4,6 +4,7 @@ namespace Modules\Clinic\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\Clinic\Models\Clinics;
 use Modules\Clinic\Models\ClinicsCategory;
 use Modules\Clinic\Models\ClinicsService;
@@ -71,7 +72,20 @@ class ClinicesController extends Controller
     }
 
     public function ClinicList(Request $request){
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
+
+        $request->validate([
+            'governorate_id' => ['nullable', 'integer', 'exists:governorates,id'],
+            'city_id' => ['nullable', 'integer', 'exists:governorate_cities,id'],
+            'is_price_min' => ['nullable', 'numeric', 'min:0'],
+            'is_price_max' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        if ($request->filled('is_price_min') && $request->filled('is_price_max') &&
+            (float) $request->is_price_max < (float) $request->is_price_min) {
+            throw ValidationException::withMessages([
+                'is_price_max' => [__('validation.gte.numeric', ['attribute' => 'is_price_max', 'value' => 'is_price_min'])],
+            ]);
+        }
     
         if(auth()->user()){
             $clinic_list = Clinics::CheckMultivendor()->setRole(auth()->user())->with('specialty','countries','states','cities','clinicgallery','clinicsessions','clinicservices');
@@ -126,10 +140,20 @@ class ClinicesController extends Controller
             }
         }
 
-        if($request->filled('service_id')){
-            $ServiceId=$request->service_id;
-            $clinic_list->whereHas('clinicservices', function ($query) use ($ServiceId) {
-                $query->where('service_id',$ServiceId);
+        if ($request->filled('service_id') || $request->filled('is_price_min') || $request->filled('is_price_max')) {
+            $serviceId = $request->input('service_id');
+            $priceMin = $request->input('is_price_min');
+            $priceMax = $request->input('is_price_max');
+            $clinic_list->whereHas('clinicservices.service', function ($query) use ($serviceId, $priceMin, $priceMax) {
+                if ($serviceId) {
+                    $query->whereKey($serviceId);
+                }
+                if ($priceMin !== null) {
+                    $query->where('charges', '>=', $priceMin);
+                }
+                if ($priceMax !== null) {
+                    $query->where('charges', '<=', $priceMax);
+                }
             });
         }
     
@@ -142,6 +166,14 @@ class ClinicesController extends Controller
     
         if($request->filled('vendor_id')){
             $clinic_list->where('vendor_id',$request->vendor_id);
+        }
+
+        if ($request->filled('governorate_id')) {
+            $clinic_list->where('governorate_id', $request->governorate_id);
+        }
+
+        if ($request->filled('city_id')) {
+            $clinic_list->where('city_id', $request->city_id);
         }
     
         if($request->filled('system_service_category')){
@@ -168,64 +200,80 @@ class ClinicesController extends Controller
         }
     
         $clinic_list = $clinic_list->where('status',1);
-        $clinic = $clinic_list->orderBy('updated_at', 'desc');
-    
-        if($perPage=='all'){
-            
-            $clinic = $clinic->get();
 
-        }else{
-
-            $clinic = $clinic->paginate($perPage);
-        }   
-    
-        $responseData = ClinicsResource::collection($clinic);
-    
         if($request->filled('clinic_id')){
 
             $clinic= $clinic_list->where('id',$request->clinic_id)->first();
-        
-            if ($clinic) {
-                
-                $clinic->load('clinicdoctor.doctor.user', 'clinicappointment'); // Load relations only for the specific clinic
 
-                // Calculate manually for this single clinic
-                $total_appointments = optional($clinic->clinicappointment)->where('status', 'checkout')->count();
-                $clinic->total_appointments = $total_appointments;        
-                $total_ratings = 0;
-                $total_reviews = 0;
+            if (!$clinic) {
+                return response()->json([
+                    'status' => false,
+                    'data' => null,
+                    'message' => __('messages.record_not_found'),
+                ], 404);
+            }
         
-                if ($clinic->clinicdoctor) {
-                    foreach ($clinic->clinicdoctor as $clinicDoctor) {
-                        $doctor = $clinicDoctor->doctor;
-                        $doctor_id = optional($doctor->user)->id;
-                        if ($doctor_id) {
-                            $reviews = DoctorRating::where('doctor_id', $doctor_id)->get();
-                            $average_rating = $reviews->avg('rating');
-        
-                            if ($average_rating) {
-                                $total_ratings += $average_rating * $reviews->count();
-                                $total_reviews += $reviews->count();
-                            }
+            $clinic->loadMissing([
+                'specialty',
+                'countries',
+                'states',
+                'cities',
+                'clinicgallery',
+                'clinicsessions',
+                'clinicservices',
+                'clinicdoctor.doctor.user',
+                'clinicappointment',
+                'clinicholiday',
+            ]);
+
+            $total_appointments = optional($clinic->clinicappointment)->where('status', 'checkout')->count();
+            $clinic->total_appointments = $total_appointments;
+            $total_ratings = 0;
+            $total_reviews = 0;
+
+            if ($clinic->clinicdoctor) {
+                foreach ($clinic->clinicdoctor as $clinicDoctor) {
+                    $doctor = $clinicDoctor->doctor;
+                    $doctor_id = optional($doctor->user)->id;
+                    if ($doctor_id) {
+                        $reviews = DoctorRating::where('doctor_id', $doctor_id)->get();
+                        $average_rating = $reviews->avg('rating');
+
+                        if ($average_rating) {
+                            $total_ratings += $average_rating * $reviews->count();
+                            $total_reviews += $reviews->count();
                         }
                     }
                 }
-        
-                $clinic_average_rating = $total_reviews > 0 ? $total_ratings / $total_reviews : 0;
-                $satisfaction_percentage = ($clinic_average_rating / 5) * 100;
-        
-                $clinic->satisfaction_percentage = $satisfaction_percentage;
             }
-        
+
+            $clinic_average_rating = $total_reviews > 0 ? $total_ratings / $total_reviews : 0;
+            $satisfaction_percentage = ($clinic_average_rating / 5) * 100;
+
+            $clinic->satisfaction_percentage = $satisfaction_percentage;
+
             $responseData = new ClinicDetailsResource($clinic);
-        
+
             return response()->json([
                 'status' => true,
                 'data' => $responseData,
                 'message' => __('clinic.clinic_details'),
             ], 200);
         }
-    
+
+        $clinic = $clinic_list->orderBy('updated_at', 'desc');
+
+        if($perPage=='all'){
+
+            $clinic = $clinic->get();
+
+        }else{
+
+            $clinic = $clinic->paginate($perPage);
+        }
+
+        $responseData = ClinicsResource::collection($clinic);
+
         return response()->json([
             'status' => true,
             'data' => $responseData,
@@ -271,8 +319,27 @@ class ClinicesController extends Controller
 
 
     public function ServiceList(Request $request){
+        $request->validate([
+            'per_page' => ['nullable', 'regex:/^(all|[1-9][0-9]*)$/'],
+            'service_id' => ['nullable', 'integer', 'exists:clinics_services,id'],
+            'clinic_id' => ['nullable', 'integer', 'exists:clinic,id'],
+            'category_id' => ['nullable', 'integer', 'exists:clinics_categories,id'],
+            'system_service_id' => ['nullable', 'integer', 'exists:system_service,id'],
+            'governorate_id' => ['nullable', 'integer', 'exists:governorates,id'],
+            'city_id' => ['nullable', 'integer', 'exists:governorate_cities,id'],
+            'is_price_min' => ['nullable', 'numeric', 'min:0'],
+            'is_price_max' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        if ($request->filled('is_price_min') && $request->filled('is_price_max') &&
+            (float) $request->is_price_max < (float) $request->is_price_min) {
+            throw ValidationException::withMessages([
+                'is_price_max' => [__('validation.gte.numeric', ['attribute' => 'is_price_max', 'value' => 'is_price_min'])],
+            ]);
+        }
 
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page') === 'all'
+            ? 'all'
+            : min(max((int) $request->input('per_page', 10), 1), 50);
         $service_list = ClinicsService::CheckMultivendor()->with('category','sub_category','ClinicServiceMapping','doctor_service','systemservice');
 
         if(auth()->user() !== null ){
@@ -311,10 +378,13 @@ class ClinicesController extends Controller
                 });
                  }
             
-          }else{
+        } else {
+            $service_list = $service_list->where('status', 1);
+        }
 
-            $service_list =$service_list->where('status',1);
-         } 
+        if (auth()->user() && ! in_array(auth()->user()->user_type, ['admin', 'demo_admin', 'vendor', 'doctor', 'receptionist'], true)) {
+            $service_list->where('status', 1);
+        }
         
         if($request->filled('is_featured')){
             $isFeatured = $request->is_featured;
@@ -373,12 +443,28 @@ class ClinicesController extends Controller
             $service_list->where('vendor_id',$request->vendor_id);
         }
 
+        if ($request->filled('governorate_id') || $request->filled('city_id')) {
+            $governorateId = $request->input('governorate_id');
+            $cityId = $request->input('city_id');
+            $service_list->whereHas('ClinicServiceMapping.center', function ($query) use ($governorateId, $cityId) {
+                if ($governorateId) {
+                    $query->where('governorate_id', $governorateId);
+                }
+                if ($cityId) {
+                    $query->where('city_id', $cityId);
+                }
+            });
+        }
+
         if($request->filled('type')){
             $service_list->where('type',$request->type);
         }
 
-        if($request->filled('is_price_min') && $request->filled('is_price_max') ){
-            $service_list->whereBetween('charges', [$request->is_price_min, $request->is_price_max]);
+        if ($request->filled('is_price_min')) {
+            $service_list->where('charges', '>=', $request->is_price_min);
+        }
+        if ($request->filled('is_price_max')) {
+            $service_list->where('charges', '<=', $request->is_price_max);
         }
 
         if ($request->filled('search')) {
@@ -411,6 +497,14 @@ class ClinicesController extends Controller
         if($request->filled('service_id')){
            $service_data=$service_list->where('id',$request->service_id)->first();
 
+           if (!$service_data) {
+               return response()->json([
+                   'status' => false,
+                   'data' => null,
+                   'message' => __('messages.record_not_found'),
+               ], 404);
+           }
+
            $responseData =New ServiceDetailsResource($service_data);
 
            return response()->json([
@@ -431,7 +525,7 @@ class ClinicesController extends Controller
     public function DoctorList(Request $request){
 
         $perPage = $request->input('per_page', 10);
-        $doctor_list = Doctor::with('user');
+        $doctor_list = Doctor::with('user.profile');
 
         if(auth()->user() !== null && auth()->user()->hasRole('vendor')){
             
@@ -491,8 +585,12 @@ class ClinicesController extends Controller
     }
 
     public function  ClinicGallery(Request $request){
-
-     $clinic_gallery=ClinicGallery::where('clinic_id',$request->clinic_id)->get();
+     $perPage = $request->integer('per_page', 10);
+     $page = $request->integer('page', 1);
+     $clinic_gallery = ClinicGallery::where('clinic_id', $request->clinic_id)
+         ->orderBy('id')
+         ->forPage($page, $perPage)
+         ->get();
      
         return response()->json([
             'status' => true,

@@ -14,12 +14,19 @@ class OrderRequest extends FormRequest
     public function rules()
     {
         return [
-            'shipping_address_id' => ['required'],
-            'phone' => ['required'],
-            'chosen_logistic_zone_id' => ['required'],
-            'shipping_delivery_type' => ['required'],
-            'payment_method' => ['required'],
-            'payment_status' => ['required'],
+            'location_id' => ['required', 'integer'],
+            'shipping_address_id' => ['required', 'integer', 'exists:addresses,id'],
+            'billing_address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'phone' => ['required', 'string', 'max:50'],
+            'alternative_phone' => ['nullable', 'string', 'max:50'],
+            'chosen_logistic_zone_id' => ['required', 'integer', 'exists:logistic_zones,id'],
+            'shipping_delivery_type' => ['required', 'string', 'max:50'],
+            'payment_method' => ['required', 'in:cash,cash_on_delivery'],
+            // Retained as an optional compatibility field. The API ignores it
+            // and always creates an unpaid order until a verified server-side
+            // payment flow exists.
+            'payment_status' => ['nullable', 'string', 'max:30'],
+            'tips' => ['nullable', 'numeric', 'min:0', 'max:100000'],
         ];
     }
 

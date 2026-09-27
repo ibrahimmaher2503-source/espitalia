@@ -30,9 +30,11 @@ Route::middleware('throttle:120,1')->prefix('v1')->group(function () {
 // Test Orders (authenticated)
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/test-orders', [TestOrdersApiController::class, 'index']);
-    Route::post('/test-orders', [TestOrdersApiController::class, 'store']);
+    Route::post('/test-orders', [TestOrdersApiController::class, 'store'])
+        ->middleware('idempotency:test_order');
     Route::get('/test-orders/{id}', [TestOrdersApiController::class, 'show']);
-    Route::post('/test-orders/{id}/cancel', [TestOrdersApiController::class, 'cancel']);
+    Route::post('/test-orders/{id}/cancel', [TestOrdersApiController::class, 'cancel'])
+        ->middleware('idempotency:test_order_cancellation');
     Route::get('/test-orders/{id}/report/download', [TestOrdersApiController::class, 'downloadReport']);
 });
 
@@ -44,10 +46,12 @@ Route::middleware('throttle:120,1')->prefix('v1')->group(function () {
 
 // Facility Bookings — patient endpoints (authenticated)
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    Route::post('/facility-bookings', [FacilityBookingApiController::class, 'store']);
+    Route::post('/facility-bookings', [FacilityBookingApiController::class, 'store'])
+        ->middleware('idempotency:facility_booking');
     Route::get('/facility-bookings', [FacilityBookingApiController::class, 'index']);
     Route::get('/facility-bookings/{id}', [FacilityBookingApiController::class, 'show']);
-    Route::post('/facility-bookings/{id}/cancel', [FacilityBookingApiController::class, 'cancel']);
+    Route::post('/facility-bookings/{id}/cancel', [FacilityBookingApiController::class, 'cancel'])
+        ->middleware('idempotency:facility_booking_cancellation');
 });
 
 // Facility Bookings — admin endpoints (authenticated + permission)

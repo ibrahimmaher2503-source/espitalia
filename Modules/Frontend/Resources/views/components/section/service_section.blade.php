@@ -16,9 +16,12 @@
                 @endfor
 
 
-                @foreach ($sectionData['section_3']['service_id'] as $service_id)
+                @foreach ($sectionData['section_3']['service_id'] ?? [] as $service_id)
                     @php
-                        $service = \Modules\Clinic\Models\ClinicsService::where('id', $service_id)->first();
+                        $service = \Modules\Clinic\Models\ClinicsService::CheckMultivendor()
+                            ->active()
+                            ->where('id', $service_id)
+                            ->first();
 
 
 

@@ -162,7 +162,7 @@ class ClinicAppointmentController extends Controller
         ];
 
 
-        $patients = User::role('user')
+        $patients = User::whereHas('roles', fn ($query) => $query->where('name', 'user'))
             ->setRolePatients(auth()->user())
             ->where('status', 1)
             ->get();

@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 class SettingController extends Controller
 {
     public function __construct()
@@ -249,26 +250,44 @@ class SettingController extends Controller
         $accessToken = $client->getAccessToken();
 
         // Extract access token and expiration time
-        $token = $accessToken['access_token'];
-        $expiresIn = $accessToken['expires_in'];
+        $expiresIn = (int) ($accessToken['expires_in'] ?? 0);
 
         // Calculate expiration timestamp
-        $expiresAt = Carbon::createFromTimestamp($expiresIn)->toDateTimeString();
+        $expiresAt = Carbon::now()->addSeconds($expiresIn)->toDateTimeString();
 
         // Store the access token and expiration timestamp in the user's table
         $user = Auth::user(); // Assuming you're using Laravel's authentication
-        $user->google_access_token = $token;
+        $user->google_access_token = Crypt::encryptString(json_encode($accessToken, JSON_THROW_ON_ERROR));
         $user->expires_in = $expiresAt;
         $user->save();
 
-        return response()->json($accessToken);
+        return response()->json(['status' => true, 'message' => 'Google authorization completed.']);
     }
 
     public function storeToken(Request $request)
     {
-        $user = auth()->user(); // Assuming the user is authenticated
-        $user->google_access_token = json_encode($request->all()); // Convert array to JSON
-        $user->is_telmet = $request->is_telmet;
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:4096'],
+            'is_telmet' => ['nullable', 'boolean'],
+        ]);
+
+        $googleSettings = Setting::whereIn('name', ['google_clientid', 'google_secret_key'])
+            ->pluck('val', 'name');
+        $client = new Google_Client();
+        $client->setClientId((string) (env('GOOGLE_CLIENT_ID') ?: ($googleSettings['google_clientid'] ?? '')));
+        $client->setClientSecret((string) (env('GOOGLE_CLIENT_SECRET') ?: ($googleSettings['google_secret_key'] ?? '')));
+        $client->setRedirectUri('postmessage');
+        $client->setAccessType('offline');
+        $client->authenticate($validated['code']);
+        $accessToken = $client->getAccessToken();
+        if (! is_array($accessToken) || empty($accessToken['access_token'])) {
+            return response()->json(['status' => false, 'message' => __('messages.invalid_request')], 422);
+        }
+
+        $user = auth()->user();
+        $user->google_access_token = Crypt::encryptString(json_encode($accessToken, JSON_THROW_ON_ERROR));
+        $user->expires_in = Carbon::now()->addSeconds((int) ($accessToken['expires_in'] ?? 0));
+        $user->is_telmet = (int) ($validated['is_telmet'] ?? 1);
         $user->save();
 
         return response()->json(['message' => 'Token stored successfully']);

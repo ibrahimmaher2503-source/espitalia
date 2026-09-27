@@ -252,4 +252,26 @@ return[
     'service_already_booked' => 'Service Already Booked',
     'service_already_booked_msg' => 'This service is already booked. Would you like to book again?',
     'send_push_notification' => 'Send Push Notification',
+
+    // Quick Access section (home page)
+    'our_services'          => 'Our Services',
+    'everything_you_need'   => 'Everything you',
+    'need'                  => 'need',
+    'quick_access_desc'     => 'All our healthcare services, one tap away.',
+    'browse_by_specialty'   => 'Browse by specialty',
+    'all_medical_services'  => 'All medical services',
+    'find_nearby_clinics'   => 'Find nearby clinics',
+    'meet_our_specialists'  => 'Meet our specialists',
+    'home_nursing_care'     => 'Home nursing care',
+    'order_lab_tests'       => 'Order lab tests online',
+    'intensive_care_units'  => 'Intensive care units',
+    'virtual_consultation'  => 'Virtual consultation',
+    'my_account'            => 'My Account',
+
+    // Header & Search page
+    'account_menu'          => 'Account menu',
+    'lbl_newly_added_members' => 'Newly added members',
+    'find_your_care'        => 'Find your',
+    'care'                  => 'Care',
+    'search_subtitle'       => 'Search doctors, clinics, services and more',
 ];

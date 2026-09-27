@@ -14,9 +14,10 @@ class CartRequest extends FormRequest
     public function rules()
     {
         return [
-            'product_id' => ['required'],
-            'product_variation_id' => ['required'],
-            'qty' => ['required'],
+            'cart_id' => ['sometimes', 'integer'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'product_variation_id' => ['required', 'integer', 'exists:product_variations,id'],
+            'qty' => ['required', 'integer', 'min:1'],
         ];
     }
 

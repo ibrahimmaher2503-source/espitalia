@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Frontend\View\Components\card;
+namespace Modules\Frontend\View\Components\Card;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class appointment_card extends Component
+class AppointmentCard extends Component
 {
     /**
      * Create a new component instance.

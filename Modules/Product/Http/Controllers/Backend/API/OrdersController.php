@@ -7,6 +7,9 @@ use Auth;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use App\Models\Address;
+use App\Models\User;
 use Modules\Constant\Models\Constant;
 use Modules\Logistic\Models\LogisticZone;
 use Modules\Product\Http\Requests\OrderRequest;
@@ -53,6 +56,25 @@ class OrdersController extends Controller
     {
         $userId = Auth::id();
 
+        $ownedAddressIds = Address::query()
+            ->whereIn('id', array_filter([
+                $request->integer('shipping_address_id'),
+                $request->input('billing_address_id'),
+            ]))
+            ->where('addressable_id', $userId)
+            ->where('addressable_type', User::class)
+            ->pluck('id')
+            ->all();
+
+        if (! in_array($request->integer('shipping_address_id'), $ownedAddressIds, true)
+            || ($request->filled('billing_address_id')
+                && ! in_array((int) $request->input('billing_address_id'), $ownedAddressIds, true))) {
+            return response()->json([
+                'message' => __('messages.permission_denied'),
+                'status' => false,
+            ], 403);
+        }
+
         $location_id = $request['location_id'];
 
         $carts = Cart::where('user_id', $userId)->where('location_id', $location_id)->get();
@@ -77,7 +99,10 @@ class OrdersController extends Controller
             $orderGroup->phone_no = $request['phone'];
             $orderGroup->alternative_phone_no = $request['alternative_phone'];
             $orderGroup->sub_total_amount = getSubTotal($carts, false, '', false);
-            $orderGroup->payment_details = $request['payment_details'];
+            // Do not persist client-supplied payment evidence. This legacy
+            // endpoint is cash-only until a verified server-side payment flow
+            // is implemented.
+            $orderGroup->payment_details = null;
 
             $tax_data = getTaxamount($orderGroup->sub_total_amount);
 
@@ -101,7 +126,7 @@ class OrdersController extends Controller
             $order->logistic_id = $logisticZone->logistic_id ?? null;
             $order->logistic_name = ($logisticZone->logistic)->name ?? null;
             // $order->shipping_delivery_type          = $request['shipping_delivery_type'];
-            $order->payment_status = $request['payment_status'];
+            $order->payment_status = 'unpaid';
             $order->shipping_cost = $orderGroup->total_shipping_cost; // todo::[update version] calculate for each vendors
             $order->tips_amount = $orderGroup->total_tips_amount; // todo::[update version] calculate for each vendors
 
@@ -150,8 +175,8 @@ class OrdersController extends Controller
 
             $order->save();
             // payment gateway integration & redirection
-            $orderGroup->payment_method = $request['payment_method'];
-            $orderGroup->payment_status = $request['payment_status'];
+            $orderGroup->payment_method = 'cash_on_delivery';
+            $orderGroup->payment_status = 'unpaid';
             $orderGroup->save();
 
             $order_status = [
@@ -185,7 +210,7 @@ class OrdersController extends Controller
 
              $message = __('product.order_palce');
 
-            return response()->json(['message' => $message, 'product' => $order, 'status' => true], 200);
+            return response()->json(['message' => $message, 'product' => null, 'status' => true], 200);
         } else {
             $message = __('product.empty_cart');
 
@@ -238,22 +263,41 @@ class OrdersController extends Controller
         $userId = Auth::id();
 
         if ($request->has('id') && $request->id != '') {
-            $order = Order::where('id', $request->id)->first();
+            $order = DB::transaction(function () use ($request, $userId) {
+                $order = Order::query()
+                    ->where('id', $request->id)
+                    ->where('user_id', $userId)
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($order) {
+                if (! $order) {
+                    return null;
+                }
+
+                if (! in_array($order->delivery_status, [null, '', 'pending', 'order_placed'], true)) {
+                    return false;
+                }
+
                 $order->delivery_status = 'cancelled';
-
                 $order->save();
 
-                $order_status = [
-
+                OrderUpdate::create([
                     'order_id' => $order->id,
                     'user_id' => $userId,
                     'note' => 'Your Order has been Canclled.',
+                ]);
 
-                ];
+                return $order->fresh();
+            });
 
-                OrderUpdate::create($order_status);
+            if ($order === false) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('product.order_canclled'),
+                ], 422);
+            }
+
+            if ($order) {
 
                 $notify_type = 'order_cancelled';
 
@@ -293,9 +337,17 @@ class OrdersController extends Controller
     {
         $orderId = $request->order_id;
 
-        $orderQuery = Order::where('id', $orderId)->with('orderItems', 'orderGroup')->first();
+        $orderQuery = Order::where('id', $orderId)
+            ->where('user_id', Auth::id())
+            ->with('orderItems', 'orderGroup')
+            ->first();
 
-        $orderQuery = Order::where('id', $orderId)->with('orderItems', 'orderGroup')->first();
+        if (! $orderQuery) {
+            return response()->json([
+                'status' => false,
+                'message' => __('product.order_not_found'),
+            ], 404);
+        }
 
         $orderCollection = new OrderDetailsResource($orderQuery);
 

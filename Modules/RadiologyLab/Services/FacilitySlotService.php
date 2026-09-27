@@ -58,7 +58,7 @@ class FacilitySlotService
         // Get booked times for this facility+date (exclude cancelled)
         $bookedTimes = FacilityBooking::where('type', $facilityType)
             ->where($facilityType === 'lab' ? 'lab_id' : 'radiology_center_id', $facilityId)
-            ->where('booking_date', $date)
+            ->whereDate('booking_date', $carbon->toDateString())
             ->where('status', '!=', FacilityBooking::STATUS_CANCELLED)
             ->pluck('booking_time')
             ->map(fn ($t) => Carbon::parse($t)->format('H:i'))

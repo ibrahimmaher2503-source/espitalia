@@ -61,6 +61,10 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         'deleted_at',
         'date_of_birth',
         'email_verified_at',
+        'google_access_token',
+        'expires_in',
+        'player_id',
+        'web_player_id',
     ];
 
     /**
@@ -71,7 +75,6 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'google2fa_secret'
     ];
 
     protected $casts = [
@@ -344,7 +347,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
             if (multiVendor() == 0) {
 
 
-                $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
 
                 $query = $query->whereHas('receptionist', function ($qry) use ($user_ids) {
                     $qry->whereIn('vendor_id', $user_ids);
@@ -491,7 +494,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
             if (multiVendor() == "0") {
 
 
-                $user_ids = User::role(['admin', 'demo_admin'])->pluck('id');
+                $user_ids = User::whereHas('roles', fn ($query) => $query->whereIn('name', ['admin', 'demo_admin']))->pluck('id');
 
                 $query = $query->whereHas('doctor', function ($qry) use ($user_ids) {
                     $qry->whereIn('vendor_id', $user_ids);

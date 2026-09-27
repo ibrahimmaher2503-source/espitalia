@@ -23,9 +23,11 @@ Route::prefix('v1')->group(function () {
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // ICU Admission Requests
     Route::get('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'index']);
-    Route::post('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'store']);
+    Route::post('/icu-admission-requests', [IcuAdmissionRequestsApiController::class, 'store'])
+        ->middleware('idempotency:icu_admission');
     Route::get('/icu-admission-requests/{id}', [IcuAdmissionRequestsApiController::class, 'show']);
-    Route::post('/icu-admission-requests/{id}/cancel', [IcuAdmissionRequestsApiController::class, 'cancel']);
+    Route::post('/icu-admission-requests/{id}/cancel', [IcuAdmissionRequestsApiController::class, 'cancel'])
+        ->middleware('idempotency:icu_admission_cancellation');
 
     // ICU Commissions (admin only)
     Route::get('/icu-commissions', [IcuCommissionsApiController::class, 'index']);

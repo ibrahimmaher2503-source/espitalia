@@ -80,7 +80,7 @@ class GenerateModuleTests extends Command
     private function generateTestForMethod($method, $controllerCode)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer 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',
+            'Authorization' => 'Bearer '.config('services.openai.key'),
         ])->post('https://api.openai.com/v1/chat/completions', [
             'model' => 'gpt-4',
             'messages' => [

@@ -57,6 +57,8 @@ return [
 
     // Payment methods
     'payment_cash_on_delivery' => 'الدفع عند الاستقبال',
+    'msg_address_required' => 'عنوان التوصيل مطلوب.',
+    'msg_payment_method_unavailable' => 'طريقة الدفع هذه غير متاحة حاليًا.',
 
     // Messages
     'msg_category_created' => 'تم إنشاء الفئة بنجاح.',

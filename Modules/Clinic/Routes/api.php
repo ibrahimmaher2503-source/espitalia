@@ -99,10 +99,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Independent Doctor Booking (authenticated)
     Route::post('independent-doctors/{id}/slots', [IndependentBookingApiController::class, 'slots']);
-    Route::post('independent-booking', [IndependentBookingApiController::class, 'store']);
+    Route::post('independent-booking', [IndependentBookingApiController::class, 'store'])
+        ->middleware('idempotency:independent_booking');
 
     // Call Booking (authenticated)
     Route::post('call-doctors/{id}/slots', [CallBookingApiController::class, 'slots']);
-    Route::post('call-booking', [CallBookingApiController::class, 'store']);
+    Route::post('call-booking', [CallBookingApiController::class, 'store'])
+        ->middleware('idempotency:call_booking');
 
 });

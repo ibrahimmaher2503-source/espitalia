@@ -32,7 +32,10 @@ return [
 
     // Messages
     'request_submitted_success'  => 'تم تقديم طلب الزيارة بنجاح.',
+    'request_cancelled_success'  => 'تم إلغاء طلب الزيارة بنجاح.',
     'request_not_found'          => 'لم يتم العثور على طلب الزيارة.',
+    'request_already_cancelled'  => 'تم إلغاء طلب الزيارة هذا بالفعل.',
+    'patient_cancel_not_allowed' => 'يمكن للمريض إلغاء الطلب فقط أثناء بقائه قيد الانتظار. يرجى التواصل مع الدعم للزيارة المُسندة.',
     'status_updated_success'     => 'تم تحديث حالة الطلب بنجاح.',
     'doctor_assigned_success'    => 'تم تعيين الطبيب بنجاح.',
     'notes_updated_success'      => 'تم تحديث الملاحظات بنجاح.',

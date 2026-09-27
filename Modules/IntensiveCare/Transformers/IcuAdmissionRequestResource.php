@@ -18,12 +18,16 @@ class IcuAdmissionRequestResource extends JsonResource
                 return [
                     'id' => $this->hospital->id,
                     'name' => $this->hospital->name,
+                    'name_ar' => $this->hospital->name_ar,
+                    'name_en' => $this->hospital->name_en,
                 ];
             }),
             'department' => $this->when($this->relationLoaded('icuDepartment') && $this->icuDepartment, function () {
                 return [
                     'id' => $this->icuDepartment->id,
                     'name' => $this->icuDepartment->name,
+                    'name_ar' => $this->icuDepartment->name_ar,
+                    'name_en' => $this->icuDepartment->name_en,
                     'specialty_type' => $this->icuDepartment->specialty_type,
                 ];
             }),

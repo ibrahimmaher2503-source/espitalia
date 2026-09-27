@@ -13,7 +13,7 @@ class DoctorVisitRequestResource extends JsonResource
             'reference_number'     => $this->reference_number,
             'visit_type'           => $this->visit_type,
             'visit_reason'         => $this->visit_reason,
-            'preferred_date'       => $this->preferred_date,
+            'preferred_date'       => $this->preferred_date?->format('Y-m-d'),
             'contact_phone'        => $this->contact_phone,
             'additional_notes'     => $this->additional_notes,
             'status'               => $this->status,

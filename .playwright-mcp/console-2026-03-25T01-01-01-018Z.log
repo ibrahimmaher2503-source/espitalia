@@ -1,7 +1,0 @@
-[   66608ms] TypeError: Cannot read properties of null (reading 'addEventListener')
-    at eval (webpack-internal:///./Modules/Frontend/Resources/assets/js/auth.js:43:16)
-    at ./Modules/Frontend/Resources/assets/js/auth.js (http://127.0.0.1:8000/js/auth.min.js:19:1)
-    at __webpack_require__ (http://127.0.0.1:8000/js/auth.min.js:108:42)
-    at http://127.0.0.1:8000/js/auth.min.js:165:37
-    at http://127.0.0.1:8000/js/auth.min.js:167:12
-[11189015ms] [ERROR] Failed to load resource: the server responded with a status of 419 (unknown status) @ http://127.0.0.1:8000/2fa:0

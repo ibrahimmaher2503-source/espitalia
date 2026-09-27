@@ -332,7 +332,7 @@ class OfferEligibilityService
 
     protected function checkCustomerScope(Offer $offer, array $context): array
     {
-        if ($offer->customer_scope === Offer::SCOPE_ALL) {
+        if (($offer->customer_scope ?? Offer::SCOPE_ALL) === Offer::SCOPE_ALL) {
             return ['valid' => true, 'reason' => null];
         }
 

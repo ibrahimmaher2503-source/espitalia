@@ -157,6 +157,7 @@ return [
     'request_cancel_success' => 'Admission request cancelled successfully.',
     'request_delete_success' => 'Admission request deleted successfully.',
     'cannot_cancel' => 'Cannot cancel this admission request.',
+    'request_already_cancelled' => 'This admission request has already been cancelled.',
     'status_update_success' => 'Status updated successfully.',
     'invalid_status_transition' => 'This status transition is not allowed.',
     'hospital_save_success' => 'Hospital created successfully.',

@@ -25,11 +25,15 @@ class OrderApiController extends Controller
     public function store(PharmacyOrderRequest $request)
     {
         try {
-            // Verify address belongs to user
-            $address = \App\Models\Address::where('id', $request->address_id)
-                ->where('addressable_id', auth()->id())
-                ->where('addressable_type', 'App\Models\User')
-                ->firstOrFail();
+            // A saved address is optional because the app also supports a
+            // one-time delivery-address snapshot. If supplied, it must belong
+            // to the authenticated patient.
+            if ($request->filled('address_id')) {
+                \App\Models\Address::where('id', $request->address_id)
+                    ->where('addressable_id', auth()->id())
+                    ->where('addressable_type', 'App\Models\User')
+                    ->firstOrFail();
+            }
 
             $order = $this->orderService->placeOrder(
                 auth()->id(),
@@ -39,7 +43,8 @@ class OrderApiController extends Controller
                 $request->input('delivery_type', 'delivery'),
                 $request->delivery_notes,
                 $request->coupon_code,
-                $request->prescription_id
+                $request->prescription_id,
+                $request->input('delivery_address'),
             );
 
             return response()->json([

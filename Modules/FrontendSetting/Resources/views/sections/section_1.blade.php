@@ -21,12 +21,15 @@
                     </div>
 
                     <div class="row" id='enable_section_1'>
-                        <div class="form-group">
-                            <label for="title" class="form-control-label">Title<span
-                                    class="text-danger">*</span></label>
-                            <input type="text" name="title" id="title" value="{{ old('title') }}"
-                                placeholder="{{ trans('messages.title') }}" class="form-control">
-                            <small class="help-block with-errors text-danger"></small>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6 form-group">
+                                <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-danger-subtle text-danger fw-normal">AR</span> <span class="text-danger">*</span></label>
+                                <input type="text" name="title_ar" id="title_ar" class="form-control" dir="rtl" placeholder="العنوان بالعربية">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-primary-subtle text-primary fw-normal">EN</span> <span class="text-danger">*</span></label>
+                                <input type="text" name="title_en" id="title_en" class="form-control" placeholder="Title in English">
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -88,10 +91,12 @@
     function checkSection1(value) {
         if (value == true) {
             $('#enable_section_1').removeClass('d-none');
-            $('#title').prop('required', true);
+            $('#title_ar').prop('required', true);
+            $('#title_en').prop('required', true);
         } else {
             $('#enable_section_1').addClass('d-none');
-            $('#title').prop('required', false);
+            $('#title_ar').prop('required', false);
+            $('#title_en').prop('required', false);
         }
     }
 
@@ -117,29 +122,23 @@
                 _token: _token
             },
             success: function(response) {
-                var obj = '';
-                var section_1 = title = enable_search = enable_quick_booking = '';
-                var instant_link = [];
+                var obj = null;
 
-                if (response) {
+                if (response && response.data) {
                     if (response.data.key == 'section_1') {
                         obj = JSON.parse(response.data.value);
                     }
                     if (obj !== null) {
-                        var title = obj.title;
-                        var enable_search = obj.enable_search;
-                        var instant_link = obj.instant_link;
-                        var enable_quick_booking = obj.enable_quick_booking;
-                        console.log(instant_link);
+                        $('#title_ar').val(obj.title_ar || obj.title || '');
+                        $('#title_en').val(obj.title_en || '');
+                        $('#enable_search').prop('checked', obj.enable_search == 'on');
+                        $('#enable_quick_booking').prop('checked', obj.enable_quick_booking == 'on');
+                        if (obj.instant_link && Array.isArray(obj.instant_link)) {
+                            $('#instant_link').val(obj.instant_link).trigger('change');
+                        }
+                        $('#instant_link').select2();
+                        $('#instant_link').trigger('change');
                     }
-                    $('#title').val(title)
-                    $('#enable_search').prop('checked', enable_search == 'on');
-                    if (instant_link && Array.isArray(instant_link)) {
-                        $('#instant_link').val(instant_link).trigger('change');
-                    }
-                    $('#enable_quick_booking').prop('checked', enable_quick_booking == 'on');
-                    $('#instant_link').select2();
-                    $('#instant_link').trigger('change');
                 }
             },
             error: function(error) {

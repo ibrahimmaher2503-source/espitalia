@@ -56,11 +56,13 @@ class DoctorClinicMapping extends BaseModel
     
     public function scopeCheckMultivendor($query){
         if(multiVendor() == "0") {
-            $query = $query->whereHas('clinics', function ($q){
-                $q->whereHas('vendor', function ($que){
-                    $que->whereIn('user_type', ['admin','demo_admin']);
+            $userIds = User::whereIn('user_type', ['admin','demo_admin'])->pluck('id');
+
+            if ($userIds->isNotEmpty()) {
+                $query->whereHas('clinics', function ($q) use ($userIds) {
+                    $q->whereIn('vendor_id', $userIds);
                 });
-            });
+            }
         }
     }
     

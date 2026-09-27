@@ -116,6 +116,92 @@ class DoctorVisitApiTest extends BaseTest
         ]);
     }
 
+    public function test_patient_can_cancel_pending_request_with_reason(): void
+    {
+        $request = $this->createVisitRequest($this->patient, ['status' => DoctorVisitRequest::STATUS_PENDING]);
+
+        $this->actingAs($this->patient)
+            ->postJson("/api/v1/doctor-visit/requests/{$request->reference_number}/cancel", [
+                'cancellation_reason' => 'My schedule changed',
+            ])
+            ->assertOk()
+            ->assertJsonPath('status', true)
+            ->assertJsonPath('data.status', DoctorVisitRequest::STATUS_CANCELLED);
+
+        $this->assertDatabaseHas('doctor_visit_requests', [
+            'id' => $request->id,
+            'status' => DoctorVisitRequest::STATUS_CANCELLED,
+            'cancellation_reason' => 'My schedule changed',
+        ]);
+        $this->assertDatabaseHas('doctor_visit_status_histories', [
+            'visit_request_id' => $request->id,
+            'old_status' => DoctorVisitRequest::STATUS_PENDING,
+            'new_status' => DoctorVisitRequest::STATUS_CANCELLED,
+            'changed_by' => $this->patient->id,
+        ]);
+    }
+
+    public function test_patient_cannot_cancel_another_patients_request(): void
+    {
+        $request = $this->createVisitRequest($this->patient);
+
+        $this->actingAs($this->anotherPatient)
+            ->postJson("/api/v1/doctor-visit/requests/{$request->reference_number}/cancel", [
+                'cancellation_reason' => 'Unauthorized attempt',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('doctor_visit_requests', [
+            'id' => $request->id,
+            'status' => DoctorVisitRequest::STATUS_PENDING,
+        ]);
+    }
+
+    public function test_patient_cannot_cancel_confirmed_or_completed_request(): void
+    {
+        foreach ([DoctorVisitRequest::STATUS_CONFIRMED, DoctorVisitRequest::STATUS_COMPLETED] as $status) {
+            $request = $this->createVisitRequest($this->patient, ['status' => $status]);
+
+            $this->actingAs($this->patient)
+                ->postJson("/api/v1/doctor-visit/requests/{$request->reference_number}/cancel", [
+                    'cancellation_reason' => 'Too late',
+                ])
+                ->assertStatus(422)
+                ->assertJsonPath('status', false);
+        }
+    }
+
+    public function test_repeated_cancellation_returns_already_cancelled_without_a_second_history_entry(): void
+    {
+        $request = $this->createVisitRequest($this->patient);
+        $endpoint = "/api/v1/doctor-visit/requests/{$request->reference_number}/cancel";
+        $payload = ['cancellation_reason' => 'No longer needed'];
+
+        $this->actingAs($this->patient)->postJson($endpoint, $payload)->assertOk();
+        $this->actingAs($this->patient)
+            ->postJson($endpoint, $payload)
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('doctor_visit.request_already_cancelled'));
+
+        $this->assertSame(1, DoctorVisitStatusHistory::where('visit_request_id', $request->id)
+            ->where('new_status', DoctorVisitRequest::STATUS_CANCELLED)
+            ->count());
+    }
+
+    public function test_stale_patient_cancellation_is_rejected(): void
+    {
+        $request = $this->createVisitRequest($this->patient);
+        $staleUpdatedAt = $request->updated_at->copy()->subSecond()->toISOString();
+
+        $this->actingAs($this->patient)
+            ->postJson("/api/v1/doctor-visit/requests/{$request->reference_number}/cancel", [
+                'cancellation_reason' => 'Stale request',
+                'expected_updated_at' => $staleUpdatedAt,
+            ])
+            ->assertStatus(409)
+            ->assertJsonPath('status', false);
+    }
+
     public function test_unauthenticated_request_returns_401(): void
     {
         $this->postJson('/api/v1/doctor-visit/requests', $this->validPayload())
@@ -239,7 +325,19 @@ class DoctorVisitApiTest extends BaseTest
             ->assertStatus(200)
             ->assertJsonPath('status', true)
             ->assertJsonPath('data.reference_number', $request->reference_number)
-            ->assertJsonPath('data.admin_notes', 'Internal note from admin');
+            // Internal staff notes must not be exposed to the patient.
+            ->assertJsonPath('data.admin_notes', null);
+    }
+
+    public function test_staff_can_read_internal_notes(): void
+    {
+        $request = $this->createVisitRequest($this->patient);
+        $request->update(['admin_notes' => 'Internal note from admin']);
+
+        $this->actingAs($this->admin)
+            ->getJson('/api/v1/admin/doctor-visit/requests')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.admin_notes', 'Internal note from admin');
     }
 
     public function test_show_returns_403_for_another_patients_request(): void

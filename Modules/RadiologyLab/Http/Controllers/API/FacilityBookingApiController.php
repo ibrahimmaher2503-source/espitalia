@@ -4,6 +4,9 @@ namespace Modules\RadiologyLab\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\RadiologyLab\Http\Requests\FacilityBookingRequest;
@@ -84,7 +87,8 @@ class FacilityBookingApiController extends Controller
                 $type = $request->input('type');
                 $facilityId = $type === 'lab' ? $request->input('lab_id') : $request->input('radiology_center_id');
                 $date = $request->input('booking_date');
-                $time = $request->input('booking_time');
+                $time = Carbon::createFromFormat('H:i', $request->input('booking_time'))
+                    ->format('H:i:s');
 
                 // Double-booking check inside transaction (pessimistic lock)
                 $existing = FacilityBooking::where('type', $type)
@@ -113,6 +117,25 @@ class FacilityBookingApiController extends Controller
                     'notes' => $request->input('notes'),
                 ]);
             });
+        } catch (UniqueConstraintViolationException $e) {
+            if (str_contains($e->getMessage(), 'slot_key')) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('radiology_lab.slot_unavailable'),
+                ], 422);
+            }
+
+            throw $e;
+        } catch (QueryException $e) {
+            if (str_contains($e->getMessage(), 'facility_bookings_slot_key_unique')
+                || str_contains($e->getMessage(), 'slot_key')) {
+                return response()->json([
+                    'status' => false,
+                    'message' => __('radiology_lab.slot_unavailable'),
+                ], 422);
+            }
+
+            throw $e;
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'double_booking') {
                 return response()->json([
@@ -202,25 +225,39 @@ class FacilityBookingApiController extends Controller
             'cancellation_reason' => 'required|string|max:500',
         ]);
 
-        $booking = FacilityBooking::findOrFail($id);
+        try {
+            $booking = DB::transaction(function () use ($request, $id) {
+                $booking = FacilityBooking::query()->lockForUpdate()->findOrFail($id);
 
-        if ($booking->patient_id !== auth()->id()) {
-            return response()->json(['status' => false, 'message' => __('messages.no_permission')], 403);
-        }
+                if ($booking->patient_id !== auth()->id()) {
+                    throw new \DomainException('forbidden');
+                }
 
-        if (! $booking->canTransitionTo(FacilityBooking::STATUS_CANCELLED)) {
+                if (! $booking->canTransitionTo(FacilityBooking::STATUS_CANCELLED)) {
+                    throw new \DomainException('state');
+                }
+
+                $booking->update([
+                    'status' => FacilityBooking::STATUS_CANCELLED,
+                    'cancellation_reason' => trim($request->input('cancellation_reason')),
+                    'cancelled_by' => auth()->id(),
+                ]);
+
+                return $booking->fresh();
+            });
+        } catch (ModelNotFoundException) {
             return response()->json([
                 'status' => false,
-                'message' => __('radiology_lab.booking_not_cancellable'),
-            ], 422);
+                'message' => __('messages.not_found'),
+            ], 404);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage() === 'forbidden'
+                    ? __('messages.no_permission')
+                    : __('radiology_lab.booking_not_cancellable'),
+            ], $e->getMessage() === 'forbidden' ? 403 : 422);
         }
-
-        // FN-16: store user id (int) consistently across code paths; role is inferable
-        $booking->update([
-            'status' => FacilityBooking::STATUS_CANCELLED,
-            'cancellation_reason' => $request->input('cancellation_reason'),
-            'cancelled_by' => auth()->id(),
-        ]);
 
         return response()->json([
             'status' => true,

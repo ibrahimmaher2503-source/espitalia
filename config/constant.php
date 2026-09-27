@@ -225,6 +225,76 @@ return [
             'module_name' => 'Branch',
             'is_custom_permission' => 0,
         ],
+
+        // Pharmacy modules
+        ['module_name' => 'Pharmacy Categories', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Brands', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Product Types', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Products', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacies', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Inventory', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Orders', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Staff', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Batches', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Delivery Zones', 'is_custom_permission' => 0],
+        ['module_name' => 'Pharmacy Coupons', 'is_custom_permission' => 0],
+        [
+            'module_name' => 'Pharmacy Prescriptions',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_pharmacy_prescriptions', 'label' => 'View'],
+                ['name' => 'review_pharmacy_prescriptions', 'label' => 'Review'],
+            ],
+        ],
+        [
+            'module_name' => 'Pharmacy Refunds',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_pharmacy_refunds', 'label' => 'View'],
+                ['name' => 'process_pharmacy_refunds', 'label' => 'Process'],
+            ],
+        ],
+        [
+            'module_name' => 'Pharmacy Reports',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_pharmacy_reports', 'label' => 'View'],
+            ],
+        ],
+        [
+            'module_name' => 'Pharmacy Notifications',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_pharmacy_notifications', 'label' => 'View'],
+            ],
+        ],
+        [
+            'module_name' => 'Pharmacy Audit',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_pharmacy_audit', 'label' => 'View'],
+            ],
+        ],
+
+        // RadiologyLab modules (missing from config)
+        ['module_name' => 'Labs', 'is_custom_permission' => 0],
+        ['module_name' => 'Radiology Centers', 'is_custom_permission' => 0],
+        ['module_name' => 'Facility Sessions', 'is_custom_permission' => 0],
+        [
+            'module_name' => 'Facility Bookings',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'view_facility_bookings', 'label' => 'View'],
+                ['name' => 'manage_facility_bookings', 'label' => 'Manage'],
+            ],
+        ],
+        [
+            'module_name' => 'Test Results',
+            'is_custom_permission' => 1,
+            'custom_permissions' => [
+                ['name' => 'manage_test_results', 'label' => 'Manage'],
+            ],
+        ],
     ],
     'TIMEZONE' => array(
         '(UTC-11:00) Midway Island' => 'Pacific/Midway',

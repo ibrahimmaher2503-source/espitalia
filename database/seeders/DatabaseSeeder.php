@@ -16,6 +16,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        if (app()->environment('production') || ! app()->environment(['local', 'testing'])) {
+            $this->command?->warn('Database seeding is disabled outside local and testing environments.');
+            return;
+        }
+
         \Artisan::call('cache:clear');
         \Artisan::call('config:clear');
         Schema::disableForeignKeyConstraints();
@@ -25,7 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SettingSeeder::class);
         $this->call(BodychartSettingSeeder::class);
         $this->call(IncidenceSeeder::class);
-        $this->call(\Modules\Tax\database\seeders\TaxDatabaseSeeder::class);
+        // The Tax module is not present in this installation.
         $this->call(\Modules\Constant\database\seeders\ConstantDatabaseSeeder::class);
         $this->call(\Modules\Service\database\seeders\SystemServiceCategorySeeder::class);
         $this->call(\Modules\Clinic\database\seeders\ClinicDatabaseSeeder::class);
@@ -54,6 +59,7 @@ class DatabaseSeeder extends Seeder
         $this->call(\Modules\RequestNurse\database\seeders\RequestNursePermissionSeeder::class);
         $this->call(\Modules\RequestNurse\database\seeders\RequestNurseDatabaseSeeder::class);
         $this->call(\Modules\Pharmacy\Database\Seeders\PharmacyDatabaseSeeder::class);
+        $this->call(\Modules\Offer\Database\Seeders\OfferDatabaseSeeder::class);
 
         Schema::enableForeignKeyConstraints();
 

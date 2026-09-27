@@ -11,15 +11,17 @@ class IncidenceSeeder extends Seeder
 {
     public function run()
     {
-        Schema::disableForeignKeyConstraints();
-        Incidence::truncate();
-
-
-        if (env('IS_DUMMY_DATA') == false) {
-
-            Schema::enableForeignKeyConstraints();
+        if (app()->environment('production') || ! app()->environment(['local', 'testing'])) {
+            $this->command?->warn('Incidence fixtures are disabled outside local and testing environments.');
             return;
         }
+
+        if (env('IS_DUMMY_DATA') == false) {
+            return;
+        }
+
+        Schema::disableForeignKeyConstraints();
+        Incidence::truncate();
 
         $now = Carbon::now();
 

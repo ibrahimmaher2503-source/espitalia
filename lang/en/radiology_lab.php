@@ -246,6 +246,8 @@ return [
     'lbl_city' => 'City',
     'lbl_select_governorate' => 'Select Governorate',
     'lbl_select_city' => 'Select City',
+    'lbl_branch' => 'Branch',
+    'lbl_select_branch' => 'Select Branch',
     'lab_save_success' => 'Lab created successfully.',
     'lab_update_success' => 'Lab updated successfully.',
     'lab_delete_success' => 'Lab deleted successfully.',

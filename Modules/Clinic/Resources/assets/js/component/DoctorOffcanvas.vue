@@ -105,7 +105,17 @@
               <span class="text-danger">{{ errors.vendor_id }}</span>
             </div>
           </div>
-          <div class="col-md-6">
+          <!-- Independent Doctor Toggle -->
+          <div class="col-md-12">
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="is_independent" v-model="is_independent" />
+              <label class="form-check-label" for="is_independent">
+                {{ $t('clinic.lbl_independent_doctor') }}
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-6" v-if="!is_independent">
             <div class="form-group">
               <label class="form-label" for="clinic_center">{{ $t('clinic.lbl_select_clinic_center') }}</label>
               <span class="text-danger">*</span>
@@ -119,7 +129,7 @@
               <span class="text-danger">{{ errors.clinic_id }}</span>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" v-if="!is_independent">
             <div class="form-group">
               <label class="form-label" for="service">{{ $t('clinic.lbl_select_service') }}</label
               ><span class="text-danger">*</span>
@@ -192,11 +202,11 @@
             </div>
           </div>
           <div class="col-md-4">
-            <label class="form-label" for="address">{{ $t('clinic.lbl_lat') }}</label>
+            <label class="form-label" for="address">{{ $t('clinic.lbl_lat') }} <span class="text-danger">*</span></label>
             <InputField :label="$t('clinic.lbl_lat')" :placeholder="$t('clinic.lbl_lat')" v-model="latitude" :error-message="errors['latitude']" :error-messages="errorMessages['latitude']" @keypress="preventInvalidLatLong"> </InputField>
           </div>
           <div class="col-md-4">
-            <label class="form-label" for="address">{{ $t('clinic.lbl_long') }}</label>
+            <label class="form-label" for="address">{{ $t('clinic.lbl_long') }} <span class="text-danger">*</span></label>
             <InputField :label="$t('clinic.lbl_long')" :placeholder="$t('clinic.lbl_long')" v-model="longitude" :error-message="errors['longitude']" :error-messages="errorMessages['longitude']" @keypress="preventInvalidLatLong"></InputField>
           </div>
 
@@ -294,6 +304,7 @@ import { useModuleId, useRequest, useOnOffcanvasHide } from '@/helpers/hooks/use
 import * as yup from 'yup'
 
 import { readFile, buildMultiSelectObject } from '@/helpers/utilities'
+import { localField } from '@/utils/localField'
 import { useSelect } from '@/helpers/hooks/useSelect'
 
 import FormHeader from '@/vue/components/form-elements/FormHeader.vue'
@@ -447,7 +458,7 @@ const currentId = useModuleId(() => {
         clinicCenterSelect(res.data.clinic_id)
         if (res.data.specializations_list) {
           specializations.value = {
-            options: res.data.specializations_list.map(s => ({ value: s.id, label: s.name_en || s.name_ar || s.name })),
+            options: res.data.specializations_list.map(s => ({ value: s.id, label: localField(s, 'name') })),
             list: res.data.specializations_list
           }
         }
@@ -612,6 +623,7 @@ const defaultData = () => {
   errorMessages.value = {}
   return {
     id: '',
+    is_independent: false,
     first_name: { en: '', ar: '' },
     last_name: { en: '', ar: '' },
     email: '',
@@ -654,6 +666,7 @@ const setFormData = (data) => {
   resetForm({
     values: {
       id: data.id,
+      is_independent: data.is_independent ?? false,
       first_name: typeof data.first_name === 'object' ? data.first_name : { en: data.first_name || '', ar: '' },
       last_name: typeof data.last_name === 'object' ? data.last_name : { en: data.last_name || '', ar: '' },
       email: data.email,
@@ -754,16 +767,12 @@ const validationSchema = yup.object({
     return true
   }),
   clinic_id: yup.array().test('clinic_id', 'Clinic Center is a required field', function (value) {
-    if (value.length == 0) {
-      return false
-    }
-    return true
+    if (this.parent.is_independent) return true
+    return value && value.length > 0
   }),
   service_id: yup.array().test('service_id', 'Service is a required field', function (value) {
-    if (value.length == 0) {
-      return false
-    }
-    return true
+    if (this.parent.is_independent) return true
+    return value && value.length > 0
   }),
   latitude: yup
     .string()
@@ -818,6 +827,7 @@ const { value: longitude } = useField('longitude')
 const { value: experience } = useField('experience')
 const { value: description } = useField('description')
 const { value: specialization_ids } = useField('specialization_ids')
+const { value: is_independent } = useField('is_independent')
 
 watch([clinic_id], ([newClinics], [oldClinics]) => {
   selectAllClinics.value = newClinics.length === clinicCenter.value.options.length

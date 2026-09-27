@@ -77,7 +77,6 @@ return [
     'sub_list' => 'قائمة الاشتراكات',
     'Plan_List' => 'قائمة الخطط',
     'plan_limitation' => 'قيود الخطة',
-    'Backups' => 'النسخ الاحتياطي',
     'vendors' => 'البائعين',
     'receptionist' => 'موظف الاستقبال',
     'location' => 'المواقع',
@@ -109,12 +108,16 @@ return [
     'nurse_requests' => 'طلبات التمريض',
     'nurses' => 'الممرضون',
 
+    'doctor_visit' => 'زيارات الطبيب',
+
     'diagnostics' => 'التشخيصات',
     'test_orders' => 'طلبات الفحوصات',
     'test_catalog' => 'دليل الفحوصات',
     'test_categories' => 'فئات الفحوصات',
     'labs' => 'المختبرات',
     'radiology_centers' => 'مراكز الأشعة',
+    'facility_sessions' => 'جلسات المنشأة',
+    'facility_bookings' => 'حجوزات المنشأة',
 
     'independent_services' => 'الخدمات المستقلة',
     'independent_sessions' => 'الجلسات المستقلة',
@@ -127,6 +130,10 @@ return [
     'hospitals' => 'المستشفيات',
     'icu_departments' => 'أقسام العناية المركزة',
 
+    'offers' => 'العروض',
+    'offer_analytics' => 'تحليلات العروض',
+    'offer_logs' => 'سجلات العروض',
+
     'pharmacy_marketplace' => 'الصيدليات',
     'my_pharmacy' => 'صيدليتي',
     'pharmacy_categories' => 'الفئات',
@@ -138,6 +145,16 @@ return [
     'pharmacy_inventory' => 'المخزون',
     'pharmacy_commissions' => 'العمولات',
     'pharmacy_earnings' => 'أرباح الصيدليات',
+    'pharmacy_staff' => 'الموظفون',
+    'pharmacy_batches' => 'الدفعات',
+    'pharmacy_prescriptions' => 'الوصفات الطبية',
+    'pharmacy_delivery_zones' => 'مناطق التوصيل',
+    'pharmacy_coupons' => 'كوبونات الخصم',
+    'pharmacy_refunds' => 'المبالغ المستردة',
+    'pharmacy_alerts' => 'التنبيهات',
+    'pharmacy_reports' => 'تقارير الصيدلية',
+    'pharmacy_audit' => 'سجل المراجعة',
+    'pharmacy_dashboard' => 'لوحة التحكم',
 
     'icu_commissions' => 'عمولات العناية المركزة',
     'icu_earnings' => 'أرباح العناية المركزة',
@@ -146,4 +163,12 @@ return [
     'home_healthcare_services' => 'خدمات الرعاية الصحية',
     'governorates' => 'المحافظات',
     'governorate_cities' => 'المدن',
+
+    // Doctor Independent Practice
+    'my_services' => 'خدماتي',
+    'my_availability' => 'توفري',
+    'my_call_services' => 'خدمات الاتصال الخاصة بي',
+    'my_call_availability' => 'توفر الاتصال',
+
+    'lbl_specializations' => 'التخصصات',
 ];

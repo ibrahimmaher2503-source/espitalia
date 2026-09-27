@@ -31,9 +31,11 @@ class walletcontroller extends Controller
 
     public function getWalletHistory(Request $request)
     {
-        $perPage = $request->input('per_page', 10); 
-        
-        $user_id = $request->user_id ?? auth()->user()->id;
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
+
+        // Wallet history is private financial data. The bearer token is the
+        // authority; a caller cannot select another wallet owner.
+        $user_id = auth()->id();
 
         $wallet_history = WalletHistory::with('wallet')->where('user_id', $user_id);
         

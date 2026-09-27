@@ -3,19 +3,14 @@
 namespace Modules\Frontend\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Models\User;
 use Auth;
 use Hash;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Requests\Auth\LoginRequest;
 use Modules\Wallet\Models\WalletHistory;
 use Modules\Wallet\Transformers\WalletHistoryResource;
-use App\Http\Resources\LoginResource;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Validation\Rules;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Password;
@@ -23,17 +18,14 @@ use Illuminate\Validation\Rule;
 use Modules\World\Models\Country;
 use Str;
 use Yajra\DataTables\DataTables;
-use Illuminate\Support\Facades\Auth as FacadesAuth;
-use Laracasts\Flash\Flash;
-use App\Mail\sendLoginOtp;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 
 
 class UserController extends Controller
 {
     public function login(Request $request)
     {
-        $redirect_to = $request->google2fa == 1 ? route('multi-factor-auth') : route('multi-factor-auth', ['google_authentication_type' => 'email']);
+        $redirect_to = route('frontend.index');
 
         return view('frontend::auth.login', ['redirect_to' => $redirect_to]);
     }
@@ -258,8 +250,6 @@ class UserController extends Controller
                 'message' => __('messages.already_delete'),
             ], 200);
         }
-        $request->session()->put('otp_sent', '');
-        $request->session()->put('loginEmail', '');
         if ($user == null) {
             return response()->json(['status' => false, 'message' => __('messages.register_before_login')]);
         }
@@ -274,195 +264,22 @@ class UserController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (Auth::validate($credentials)) {
-            $user = User::where('email', $request->email)->first();
-
-            // $user = Auth::user();
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('view:clear');
-            Artisan::call('config:cache');
-            Artisan::call('route:clear');
+        $request->ensureIsNotRateLimited();
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::clear($request->throttleKey());
+            $user = Auth::user();
 
             if ($user->is_banned == 1 || $user->status == 0) {
+                Auth::logout();
                 return response()->json(['status' => false, 'message' => __('messages.login_error')]);
             }
 
-            // $user->player_id = $request->input('player_id'); // Store the player_id
-            // Save the user
-            $user->save();
-            // $user['api_token'] = $user->createToken(setting('app_name'))->plainTextToken;
+            $request->session()->regenerate();
 
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('view:clear');
-            Artisan::call('config:cache');
-            Artisan::call('route:clear');
-
-            $request->session()->put('loginEmail', $user->email);
-            // $loginResource = new LoginResource($user);
-            $loginResource = "";
-            $message = __('messages.user_login');
-
-            return $this->sendResponse($loginResource, $message);
+            return $this->sendResponse('', __('messages.user_login'));
         } else {
+            RateLimiter::hit($request->throttleKey(), 60);
             return $this->sendError(__('messages.not_matched'), ['error' => __('messages.unauthorised')], 200);
-        }
-    }
-
-    /**
-     * generate google authenticator qr code
-     * @param $userData
-     */
-    public function multiFactorAuth(Request $request, $id = NULL)
-    {
-        $email = $request->session()->get('loginEmail');
-
-        if (!empty($id)) {
-            $userId = $id;
-        } elseif ($email) {
-            $userId = User::where('email', $email)->first()->id;
-        } else {
-            return redirect('/login');
-        }
-
-        $userData = User::where('id', $userId)->first();
-        $is_demo = 0;
-
-        if (request()->get('qr_scan') == 1) {
-            self::destroy(request());
-            return view('frontend::auth.login_multi_auth', [
-                'secret' => $userData->google2fa_secret,
-                'user_id' => $userData->id,
-                'AlreadyExist' => 1,
-                'google_authentication_type' => 'qr_scan',
-                'is_demo' => $is_demo,
-            ]);
-        }
-
-        if (request()->get('google_authentication_type') == 'email') {
-
-            // Only generate and send OTP if not already set in session for this login attempt
-            if (!$request->session()->has('otp_sent') || $request->session()->get('otp_sent') !== $userData->email) {
-
-                $otp = rand(100000, 999999);
-
-                if ($email == 'john@gmail.com') {
-                    $is_demo = 1;
-                    $otp = 123456;
-                }
-
-                $userData->update(['otp' => $otp]);
-                $bodyData = ['body' => 'Your OTP To Login is : ' . $otp];
-                if ($email != 'john@gmail.com') {
-
-                    Mail::to($userData->email)->send(new sendLoginOtp($bodyData));
-                }
-
-                $request->session()->put('otp_sent', $userData->email);
-            }
-            return view('frontend::auth.login_multi_auth', [
-                'secret' => $userData->google2fa_secret,
-                'user_id' => $userData->id,
-                'AlreadyExist' => 1,
-                'google_authentication_type' => 'email',
-                'is_demo' => $is_demo,
-
-            ]);
-        }
-
-        if ($userData->is_google_authentication == 0) {
-            $google2fa = app('pragmarx.google2fa');
-            $google2fa_secret = $google2fa->generateSecretKey();
-
-            $QR_Image = $google2fa->getQRCodeInline(
-                config('app.name'),
-                $userData->email,
-                $google2fa_secret
-            );
-
-            User::where('id', $userId)->update([
-                'google2fa_secret' => $google2fa_secret
-            ]);
-
-            self::destroy(request());
-            return view('frontend::auth.login_multi_auth', [
-                'QR_Image' => $QR_Image,
-                'secret' => $google2fa_secret,
-                'user_id' => $userData->id,
-                'AlreadyExist' => 0,
-                'is_demo' => $is_demo,
-            ]);
-        }
-
-        self::destroy(request());
-        return view('frontend::auth.login_multi_auth', [
-            'secret' => $userData->google2fa_secret,
-            'user_id' => $userData->id,
-            'AlreadyExist' => 1,
-            'is_demo' => $is_demo,
-        ]);
-    }
-
-
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
-    public function completeRegistration(Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'one_time_password' => 'required',
-        ]);
-
-        $user = User::where('id', $request->user_id)->first();
-        $post = $request->all();
-
-        if ($request->has('google_authentication_type') && $request->get('google_authentication_type') == 'email') {
-            if ($user->otp == $request->input('one_time_password')) {
-
-                $success['user'] = $user;
-                Auth::login($user);
-                $request->session()->put('otp_sent', '');
-
-                $request->session()->put('loginEmail', '');
-                // ✅ Redirect to homepage with authenticated session
-                return redirect()->route('frontend.index');
-            } else {
-                // $errors['one_time_password'] = 'Invalid One Time Password';
-                // return redirect()->back()->withErrors($errors);
-
-                return redirect()
-                    ->back()
-                    ->with('error', 'Invalid One Time Password');
-            }
-        } elseif (empty($user->google2fa_secret)) {
-            // If the user does not have a google2fa_secret, redirect to the multi-factor auth page
-            return redirect()
-                ->back()
-                ->with('error', 'Invalid One Time Password');
-        }
-
-        $google2fa = app('pragmarx.google2fa');
-        $expectedCode = $google2fa->getCurrentOtp($user->google2fa_secret);
-        \Log::info($expectedCode);
-        $valid = $google2fa->verifyKey($user->google2fa_secret, $post['one_time_password']);
-
-        if ($valid) {
-
-            $user->is_google_authentication = 1; // Set the user as authenticated
-            $user->google_authentication_type = 'google2fa';
-            $user->save();
-            Auth::login($user);
-
-            // ✅ Redirect to homepage with authenticated session
-            return redirect()->route('frontend.index');
-        } else {
-            self::destroy($request);
-            Flash::error('invalid OTP please try again.!');
-            return redirect('multi-factor-auth/' . $request->user_id . '');
         }
     }
 

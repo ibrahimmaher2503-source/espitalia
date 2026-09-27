@@ -14,16 +14,25 @@
     </div>
 </div>
 <div id='enable_section_2'>
-    <div class="form-group">
-        {{ html()->label(trans('messages.title') . ' <span class="text-danger">*</span>', 'title')->class('form-control-label') }}
-        {{ html()->text('title', old('title'))->id('title')->placeholder(trans('messages.title'))->class('form-control') }}
-        <small class="help-block with-errors text-danger"></small>
+    <div class="row g-2 mb-3">
+        <div class="col-md-6 form-group">
+            <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-danger-subtle text-danger fw-normal">AR</span> <span class="text-danger">*</span></label>
+            <input type="text" name="title_ar" id="title_ar" class="form-control" dir="rtl" placeholder="العنوان بالعربية">
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-control-label">{{ trans('messages.title') }} <span class="badge bg-primary-subtle text-primary fw-normal">EN</span> <span class="text-danger">*</span></label>
+            <input type="text" name="title_en" id="title_en" class="form-control" placeholder="Title in English">
+        </div>
     </div>
-
-    <div class="form-group">
-        {{ html()->label(trans('messages.subtitle') . ' <span class="text-danger">*</span>', 'subtitle')->class('form-control-label')->attribute('for', 'subtitle') }}
-        {{ html()->text('subtitle', old('subtitle'))->id('subtitle')->placeholder(trans('messages.subtitle'))->class('form-control') }}
-        <small class="help-block with-errors text-danger"></small>
+    <div class="row g-2 mb-3">
+        <div class="col-md-6 form-group">
+            <label class="form-control-label">{{ trans('messages.subtitle') }} <span class="badge bg-danger-subtle text-danger fw-normal">AR</span></label>
+            <input type="text" name="subtitle_ar" id="subtitle_ar" class="form-control" dir="rtl" placeholder="العنوان الفرعي بالعربية">
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-control-label">{{ trans('messages.subtitle') }} <span class="badge bg-primary-subtle text-primary fw-normal">EN</span></label>
+            <input type="text" name="subtitle_en" id="subtitle_en" class="form-control" placeholder="Subtitle in English">
+        </div>
     </div>
 
     <div class="form-group" id='enable_select_category'>
@@ -49,13 +58,13 @@
     function checkSection2(value) {
         if (value == true) {
             $('#enable_section_2').removeClass('d-none');
-            $('#title').prop('required', true);
-            $('#subtitle').prop('required', true);
+            $('#title_ar').prop('required', true);
+            $('#title_en').prop('required', true);
             $('#category_id').prop('required', true).trigger('change.select2');
         } else {
             $('#enable_section_2').addClass('d-none');
-            $('#title').prop('required', false);
-            $('#subtitle').prop('required', false);
+            $('#title_ar').prop('required', false);
+            $('#title_en').prop('required', false);
             $('#category_id').prop('required', false).trigger('change.select2');
         }
     }
@@ -100,21 +109,20 @@
                 _token: _token
             },
             success: function(response) {
-                var obj = '';
-                var section_2 = title = subtitle = category_ids = '';
+                var obj = null;
+                var category_ids = null;
 
-                if (response) {
+                if (response && response.data) {
                     if (response.data.key == 'section_2') {
                         obj = JSON.parse(response.data.value);
                     }
                     if (obj !== null) {
-                        var title = obj.title;
-                        var subtitle = obj.subtitle;
-                        var category_ids = obj.category_id;
-                        console.log(category_ids);
+                        category_ids = obj.category_id;
+                        $('#title_ar').val(obj.title_ar || obj.title || '');
+                        $('#title_en').val(obj.title_en || '');
+                        $('#subtitle_ar').val(obj.subtitle_ar || obj.subtitle || '');
+                        $('#subtitle_en').val(obj.subtitle_en || '');
                     }
-                    $('#title').val(title)
-                    $('#subtitle').val(subtitle);
                     if (category_ids && category_ids.length > 0) {
                         loadCategory(category_ids);
                     }

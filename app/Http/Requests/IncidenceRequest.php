@@ -29,10 +29,11 @@ class IncidenceRequest extends FormRequest
             case 'post':
                 return [
                     'title' => 'required|string|max:255',
-                    'description' => 'required|string',
-                    'country_code' => 'required|string',
-                    'phone' => 'required|string',
-                    'email' => 'required|email:filter'                    
+                    'description' => 'required|string|max:5000',
+                    'country_code' => ['required', 'string', 'max:8', 'regex:/^\\+?[0-9]+$/'],
+                    'phone' => ['required', 'string', 'max:32', 'regex:/^[0-9][0-9 .()-]+$/'],
+                    'email' => 'required|email:filter|max:255',
+                    'file_url' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
                 ];
                 break;
             case 'put':
@@ -40,10 +41,11 @@ class IncidenceRequest extends FormRequest
 
                 return [
                     'title' => 'required|string|max:255',
-                    'description' => 'required|string',
-                    'country_code' => 'required|string',
-                    'phone' => 'required|string',
-                    'email' => 'required|email:filter'
+                    'description' => 'required|string|max:5000',
+                    'country_code' => ['required', 'string', 'max:8', 'regex:/^\\+?[0-9]+$/'],
+                    'phone' => ['required', 'string', 'max:32', 'regex:/^[0-9][0-9 .()-]+$/'],
+                    'email' => 'required|email:filter|max:255',
+                    'file_url' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
                 ];
                 break;
 

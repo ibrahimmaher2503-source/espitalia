@@ -38,7 +38,7 @@ class DashboardController extends Controller
 
      public function DashboardDetail(Request $request)
      {
-        $user = User::where('id', $request->user_id)->first();
+        $user = $request->user();
          $data = $request->all();
  
           $clincs = Clinics::with('specialty','countries','states','cities',)->where('status', 1)->orderBy('updated_at','desc')->take(6)->get();
@@ -55,9 +55,9 @@ class DashboardController extends Controller
 
             $appointment=[];
 
-            if($request->has('user_id') && $request->user_id){
+            if($user && $user->id){
 
-                $appointment = Appointment::where('user_id',$request->user_id)->with('user', 'doctor', 'clinicservice')->where('status', 'pending')->where('start_date_time', '>', now()->startOfDay())->orderBy('updated_at','desc')->take(6)->get();
+                $appointment = Appointment::where('user_id',$user->id)->with('user', 'doctor', 'clinicservice')->where('status', 'pending')->where('start_date_time', '>', now()->startOfDay())->orderBy('updated_at','desc')->take(6)->get();
 
             }
         $all_unread_count = isset($user->unreadNotifications) ? $user->unreadNotifications->count() : 0;  
@@ -69,6 +69,16 @@ class DashboardController extends Controller
             $section = FrontendSetting::where('key', $key)->first();
             $sectionData[$key] = $section ? json_decode($section->value, true) : null;
         }
+
+        $locale = app()->getLocale();
+        foreach ($sectionData as &$section) {
+            if (!is_array($section)) {
+                continue;
+            }
+
+            $section = $this->localizeSection($section, $locale);
+        }
+        unset($section);
 
         $sectionOne = $sectionData['section_1'] ?? [];
         $sectionOneData=[];
@@ -202,6 +212,18 @@ class DashboardController extends Controller
              'message' => __('messages.dashboard_detail'),
          ], 200);
      }
+
+    private function localizeSection(array $section, string $locale): array
+    {
+        $section['title'] = $locale === 'ar'
+            ? ($section['title_ar'] ?? $section['title'] ?? '')
+            : ($section['title_en'] ?? $section['title'] ?? '');
+        $section['subtitle'] = $locale === 'ar'
+            ? ($section['subtitle_ar'] ?? $section['subtitle'] ?? '')
+            : ($section['subtitle_en'] ?? $section['subtitle'] ?? '');
+
+        return $section;
+    }
 
 
     public function VendorDashboardDetail(Request $request)

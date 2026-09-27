@@ -85,13 +85,16 @@ class FacilityBookingRequest extends FormRequest
                 // Time format errors are already caught by date_format rule
             }
 
-            // Check slot availability
+            // Validate that the requested time belongs to the facility's
+            // schedule. Whether it is already booked is checked again inside
+            // the controller transaction so duplicate attempts receive the
+            // API's stable {status:false} response and cannot race.
             $slotService = app(FacilitySlotService::class);
             $slots = $slotService->getAvailableSlots($type, (int) $facilityId, $date);
 
-            $available = collect($slots)->first(fn ($s) => $s['time'] === $time && $s['available'] === true);
+            $scheduled = collect($slots)->first(fn ($s) => $s['time'] === $time);
 
-            if (! $available) {
+            if (! $scheduled) {
                 $v->errors()->add('booking_time', __('radiology_lab.slot_unavailable'));
             }
         });

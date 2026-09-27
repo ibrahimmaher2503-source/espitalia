@@ -34,7 +34,9 @@ class ServiceDetailsResource extends JsonResource
 
         $clinics = [];
         foreach($this->ClinicServiceMapping as $service){
-            $clinics[] = $service->center;
+            if ($service->center) {
+                $clinics[] = $service->center;
+            }
         }
         $inclusive_tax_data = $this->calculate_inclusive_tax($this->charges-$discount_amount,$this->inclusive_tax);
         return [
@@ -42,7 +44,7 @@ class ServiceDetailsResource extends JsonResource
             'name' => $this->name,
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
-            'system_service_id'=>$this->id,
+            'system_service_id'=>$this->system_service_id,
             'slug' => $this->slug,
             'description' => $this->description,
             'description_ar' => $this->description_ar,

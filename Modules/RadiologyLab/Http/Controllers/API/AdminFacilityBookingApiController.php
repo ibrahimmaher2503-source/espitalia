@@ -4,6 +4,7 @@ namespace Modules\RadiologyLab\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\RadiologyLab\Models\FacilityBooking;
 use Modules\RadiologyLab\Transformers\FacilityBookingResource;
 
@@ -113,22 +114,30 @@ class AdminFacilityBookingApiController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
-        $booking = FacilityBooking::findOrFail($id);
+        try {
+            $booking = DB::transaction(function () use ($request, $id) {
+                $booking = FacilityBooking::query()->lockForUpdate()->findOrFail($id);
 
-        if (! $booking->canTransitionTo(FacilityBooking::STATUS_CANCELLED)) {
+                if (! $booking->canTransitionTo(FacilityBooking::STATUS_CANCELLED)) {
+                    throw new \DomainException('not_cancellable');
+                }
+
+                // FN-16: store user id (int) consistently across code paths.
+                $booking->update([
+                    'status' => FacilityBooking::STATUS_CANCELLED,
+                    'cancellation_reason' => trim($request->input('cancellation_reason')),
+                    'cancelled_by' => auth()->id(),
+                    'admin_notes' => $request->input('admin_notes'),
+                ]);
+
+                return $booking->fresh();
+            });
+        } catch (\DomainException $e) {
             return response()->json([
                 'status' => false,
                 'message' => __('radiology_lab.booking_not_cancellable'),
             ], 422);
         }
-
-        // FN-16: store user id (int) consistently across code paths
-        $booking->update([
-            'status' => FacilityBooking::STATUS_CANCELLED,
-            'cancellation_reason' => $request->input('cancellation_reason'),
-            'cancelled_by' => auth()->id(),
-            'admin_notes' => $request->input('admin_notes'),
-        ]);
 
         try {
             if (function_exists('sendNotificationOnBookingUpdate')) {

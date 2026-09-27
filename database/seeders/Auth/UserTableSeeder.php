@@ -23,6 +23,11 @@ class UserTableSeeder extends Seeder
      */
     public function run()
     {
+        if (app()->environment('production') || ! app()->environment(['local', 'testing'])) {
+            $this->command?->warn('Demo and fixture users are disabled outside local and testing environments.');
+            return;
+        }
+
         Schema::disableForeignKeyConstraints();
 
         // Add the master administrator, user id of 1
@@ -42,7 +47,7 @@ class UserTableSeeder extends Seeder
                 'state' => 3812,
                 'city' => 41432,
                 'pincode' => '12345',
-                'profile_image' => public_path(' /dummy-images/profile/admin/super_admin.png'),
+                'profile_image' => public_path('/dummy-images/profile/admin/super_admin.png'),
                 'avatar' => $avatarPath . 'male.webp',
                 'gender' => 'male',
                 'email_verified_at' => Carbon::now(),
@@ -386,7 +391,7 @@ class UserTableSeeder extends Seeder
             }
             $featureImage = $user_data['profile_image'] ?? null;
             $userData = Arr::except($user_data, ['profile_image', 'address']);
-            $user = User::create($userData);
+            $user = User::updateOrCreate(['email' => $userData['email']], $userData);
 
             if (isset($user_data['address'])) {
                 $addresses = $user_data['address'];

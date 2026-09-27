@@ -19,6 +19,8 @@ use Google\Client;
 use App\Models\Setting;
 use App\Mail\AppointmentConfirmation;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Google\Service\Calendar;
 use Google\Client as GoogleClient;
 use Modules\Customer\Models\OtherPatient;;
@@ -27,6 +29,7 @@ use Modules\Clinic\Models\ClinicServiceMapping;
 use Modules\Clinic\Models\Clinics;
 use Modules\Clinic\Models\ClinicsService;
 use Modules\Clinic\Models\Doctor;
+use Modules\Clinic\Models\DoctorServiceMapping;
 use Modules\Commission\Models\CommissionEarning;
 use Modules\Constant\Models\Constant;
 use Modules\Appointment\Trait\EncounterTrait;
@@ -192,14 +195,76 @@ class AppointmentsController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        if (!empty($data['otherpatient_id'])) {
-            $data['otherpatient_id'] = (int) $data['otherpatient_id'];
-        } else {
-            $data['otherpatient_id'] = null;
+        $request->validate([
+            'clinic_id' => ['required', 'integer', 'exists:clinic,id'],
+            'service_id' => ['required', 'integer', 'exists:clinics_services,id'],
+            'doctor_id' => ['required', 'integer'],
+            'appointment_date' => ['required', 'date_format:Y-m-d'],
+            'appointment_time' => ['required', 'date_format:H:i,H:i:s'],
+            'otherpatient_id' => ['nullable', 'integer'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'coupon_code' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $userId = (int) auth()->id();
+        $data = $request->only([
+            'clinic_id',
+            'service_id',
+            'doctor_id',
+            'appointment_date',
+            'appointment_time',
+            'description',
+            'otherpatient_id',
+        ]);
+        $data['user_id'] = $userId;
+        $data['otherpatient_id'] = ! empty($data['otherpatient_id']) ? (int) $data['otherpatient_id'] : null;
+
+        if ($data['otherpatient_id'] !== null
+            && ! OtherPatient::where('id', $data['otherpatient_id'])->where('user_id', $userId)->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'otherpatient_id' => __('messages.permission_denied'),
+            ]);
         }
 
-        $data['start_date_time'] = Carbon::createFromFormat('Y-m-d H:i', $data['appointment_date'] . ' ' . $data['appointment_time'], setting('default_time_zone'));
+        $service = ClinicsService::query()->where('id', $data['service_id'])->where('status', 1)->first();
+        $hasClinicService = ClinicServiceMapping::where('clinic_id', $data['clinic_id'])
+            ->where('service_id', $data['service_id'])
+            ->exists();
+        $hasDoctorService = DoctorServiceMapping::where('doctor_id', $data['doctor_id'])
+            ->where('service_id', $data['service_id'])
+            ->exists();
+
+        if (! $service || ! $hasClinicService || ! $hasDoctorService) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'service_id' => __('messages.invalid_request'),
+            ]);
+        }
+
+        $appointmentTime = strlen($data['appointment_time']) === 8
+            ? substr($data['appointment_time'], 0, 5)
+            : $data['appointment_time'];
+        $data['appointment_time'] = $appointmentTime;
+        $data['start_date_time'] = Carbon::createFromFormat('Y-m-d H:i', $data['appointment_date'] . ' ' . $appointmentTime, setting('default_time_zone'));
+        $data['booking_slot_key'] = Appointment::buildBookingSlotKey(
+            (int) $data['doctor_id'],
+            $data['appointment_date'],
+            $data['appointment_time'],
+        );
+
+        $existingAppointment = Appointment::query()
+            ->where('doctor_id', $data['doctor_id'])
+            ->whereDate('appointment_date', $data['appointment_date'])
+            ->whereTime('appointment_time', $data['appointment_time'])
+            ->whereNotIn('status', ['cancelled', 'canceled'])
+            ->lockForUpdate()
+            ->first();
+
+        if ($existingAppointment) {
+            return response()->json([
+                'message' => __('frontend.lbl_no_slots_available'),
+                'status' => false,
+            ], 422);
+        }
 
         $serviceData = $this->getServiceAmount($data['service_id'], $data['doctor_id'], $data['clinic_id']);
 
@@ -214,9 +279,10 @@ class AppointmentsController extends Controller
         $data['service_amount'] = $serviceData['service_amount'];
         $data['total_amount'] = $serviceData['total_amount'];
         $data['duration'] = $serviceData['duration'];
-        $data['status'] = $data['status'] ? $data['status'] : 'confirmed';
+        // Appointment status is a server decision; the patient cannot create
+        // an already-completed/cancelled booking by posting a status field.
+        $data['status'] = 'confirmed';
 
-        $service = ClinicsService::where('id', $data['service_id'])->first();
         if ($service->is_enable_advance_payment == 1) {
             $data['advance_payment_amount'] = $service->advance_payment_amount;
         }
@@ -225,7 +291,7 @@ class AppointmentsController extends Controller
         // Apply offer/coupon discount if Offer module is active
         $offerResult = $this->applyOfferDiscount(
             (float) $data['service_amount'],
-            (int) $data['user_id'],
+            $userId,
             (int) $data['service_id'],
             null,
             (int) $data['clinic_id'],
@@ -241,7 +307,18 @@ class AppointmentsController extends Controller
             $data['total_amount'] = $offerResult['final_amount'] + ($data['total_amount'] - $serviceData['service_amount']);
         }
 
-        $data = Appointment::create($data);
+        try {
+            $data = Appointment::create($data);
+        } catch (UniqueConstraintViolationException $e) {
+            if (str_contains($e->getMessage(), 'booking_slot_key')) {
+                return response()->json([
+                    'message' => __('frontend.lbl_no_slots_available'),
+                    'status' => false,
+                ], 422);
+            }
+
+            throw $e;
+        }
 
         // Record offer usage
         if (! empty($offerResult['offer_id']) && class_exists(\Modules\Offer\Services\OfferEligibilityService::class)) {
@@ -650,144 +727,139 @@ class AppointmentsController extends Controller
 
     public function savePayment(Request $request)
     {
+        $validated = $request->validate([
+            'id' => ['required', 'integer', 'exists:appointments,id'],
+            'transaction_type' => ['required', 'string', 'in:cash,wallet'],
+        ]);
 
-        $data = $request->all();
-        $data['tip_amount'] = $data['tip'] ?? 0;
-        $appointment = Appointment::findOrFail($data['id']);
-        $serviceDetails = ClinicsService::where('id', $appointment->service_id)->with('vendor')->first();
-        $vendor = $serviceDetails->vendor ?? null;
-        $serviceData = $this->getServiceAmount($appointment->service_id, $appointment->doctor_id, $appointment->clinic_id);
-
-        $tax = $data['tax_percentage'] ?? Tax::active()->whereNull('module_type')->orWhere('module_type', 'services')->where('tax_type', 'exclusive')->where('status', 1)->get();
-        $servicePrice = $serviceData['service_price'];
-        $serviceAmount = $serviceData['service_price'];
-
-        $data['service_price'] = $serviceAmount;
-
-        $inclusiveTaxAmount = 0;
-        $tax = collect($tax);
-        // Filter taxes and calculate cumulative inclusive tax
-        $filteredTaxes = $tax->filter(function ($taxItem) use ($servicePrice, &$inclusiveTaxAmount) {
-            if (
-                (isset($taxItem->tax_type) && $taxItem->tax_type === 'inclusive') ||
-                (isset($taxItem->tax_scope) && $taxItem->tax_scope === 'inclusive')
-            ) {
-                $currentTaxAmount = 0;
-
-                if (isset($taxItem->type) && $taxItem->type === 'percent') {
-                    $currentTaxAmount = ($servicePrice * $taxItem->value) / 100;
-                } else {
-                    $currentTaxAmount = $taxItem->value;
-                }
-
-                if ($currentTaxAmount > $servicePrice) {
-                    return false;
-                }
-
-                $inclusiveTaxAmount += $currentTaxAmount;
-                return true;
-            }
-            return true;
-        });
-        $tax = $filteredTaxes;
-        $data['service_price'] = $serviceAmount;
-        $transactionData = [
-            'appointment_id' => $appointment->id,
-            'transaction_type' => $data['transaction_type'] ?? 'cash',
-            'total_amount' => $serviceData['total_amount'],
-            'payment_status' => $data['payment_status'] ?? 0,
-            'discount_value' => $serviceData['discount_value'] ?? 0,
-            'discount_type' => $serviceData['discount_type'] ?? null,
-            'discount_amount' => $serviceData['discount_amount'] ?? 0,
-            'external_transaction_id' => $data['external_transaction_id'] ?? null,
-            'tax_percentage' => json_encode($tax),
-            'inclusive_tax' => $serviceData['service_inclusive_tax'],
-            'inclusive_tax_price' => $serviceData['total_inclusive_tax']
-        ];
-
-
-        if ($request->transaction_type == 'wallet') {
-            $wallet = Wallet::where('user_id', $appointment->user_id)->first();
-            $paid_amount = 0;
-
-            if ($wallet !== null) {
-                $wallet_amount = $wallet->amount;
-
-                if ($request->advance_payment_status == 1 && $request->remaining_payment_amount == 0) {
-                    if ($wallet_amount >= $request->advance_payment_amount) {
-                        if ($request->advance_payment_status == 1) {
-                            $wallet->amount = $wallet->amount - $request->advance_payment_amount;
-                            $wallet->update();
-
-                            $transactionData['total_amount'] = $request->advance_payment_amount;
-                            $paid_amount = $request->advance_payment_amount;
-                        }
-                    } else {
-                        $message = __('messages.wallet_balance_error');
-                        return response()->json(['message' => $message], 400);
-                    }
-                } else if ($request->payment_status == 1 && $request->remaining_payment_amount > 0) {
-                    if ($wallet_amount >= $request->remaining_payment_amount) {
-                        $wallet->amount = $wallet->amount - $request->remaining_payment_amount;
-                        $wallet->update();
-
-                        $transactionData['total_amount'] = $request->remaining_payment_amount;
-                        $paid_amount = $request->remaining_payment_amount;
-                    } else {
-                        $message = __('messages.wallet_balance_error');
-                        return response()->json(['message' => $message], 400);
-                    }
-                } else if ($request->payment_status == 1) {
-                    if ($request->payment_status == 1 && $wallet_amount >= $serviceData['total_amount']) {
-                        $wallet->amount = $wallet->amount - $serviceData['total_amount'];
-                        $wallet->update();
-
-                        $transactionData['total_amount'] = $serviceData['total_amount'];
-                        $paid_amount = $serviceData['total_amount'];
-                    } else {
-                        $message = __('messages.wallet_balance_error');
-                        return response()->json(['message' => $message], 400);
-                    }
-                }
-
-
-                $wallethistory = new WalletHistory;
-                $wallethistory->user_id = $wallet->user_id;
-                $wallethistory->datetime = Carbon::now();
-                $wallethistory->activity_type = 'paid_for_appointment';
-                $wallethistory->activity_message = trans('messages.paid_for_appointment', ['value' => $appointment->id]);
-
-                $activity_data = [
-                    'title' => $wallet->title,
-                    'user_id' => $wallet->user_id,
-                    'amount' => $wallet->amount,
-                    'credit_debit_amount' => $paid_amount,
-                    'transaction_type' => __('messages.debit'),
-                    'appointment_id' => $appointment->id,
-                ];
-
-                $wallethistory->activity_data = json_encode($activity_data);
-                $wallethistory->save();
-            }
+        $appointment = Appointment::whereKey($validated['id'])->firstOrFail();
+        if (auth()->user()?->user_type === 'user' && (int) $appointment->user_id !== (int) auth()->id()) {
+            abort(403, __('messages.access_denied_role'));
         }
 
-        $payment = AppointmentTransaction::updateOrCreate(
-            ['appointment_id' => $appointment->id],
-            $transactionData
+        $service = ClinicsService::findOrFail($appointment->service_id);
+        $serviceData = $this->getServiceAmount(
+            $appointment->service_id,
+            $appointment->doctor_id,
+            $appointment->clinic_id
         );
+        $totalAmount = round(max((float) ($serviceData['total_amount'] ?? 0), 0), 2);
+        $taxes = Tax::active()
+            ->where(function ($query) {
+                $query->whereNull('module_type')->orWhere('module_type', 'services');
+            })
+            ->where('tax_type', 'exclusive')
+            ->where('status', 1)
+            ->get();
+        $transactionType = strtolower($validated['transaction_type']);
 
-        if (!empty($payment) && $request->advance_payment_status == 1) {
-            $appointment->advance_paid_amount = $request->advance_payment_amount;
-            $appointment->save();
+        $payment = DB::transaction(function () use ($appointment, $service, $serviceData, $taxes, $transactionType, $totalAmount) {
+            $lockedAppointment = Appointment::whereKey($appointment->id)->lockForUpdate()->firstOrFail();
+            if (auth()->user()?->user_type === 'user' && (int) $lockedAppointment->user_id !== (int) auth()->id()) {
+                abort(403, __('messages.access_denied_role'));
+            }
 
-            $payment->advance_payment_status = $request->advance_payment_status;
-            $payment->total_amount = $request->advance_payment_amount;
+            $existing = AppointmentTransaction::where('appointment_id', $lockedAppointment->id)
+                ->lockForUpdate()
+                ->first();
+
+            // A second key cannot charge an appointment that is already paid.
+            if ($existing && (int) $existing->payment_status === 1) {
+                return $existing;
+            }
+
+            // Cash is a pending settlement. Do not create another pending row
+            // for a retry or silently convert an advance into cash.
+            if ($existing && $transactionType === 'cash') {
+                return $existing;
+            }
+
+            $advancePayment = false;
+            $paymentStatus = $transactionType === 'wallet' ? 1 : 0;
+            $amountToCharge = $totalAmount;
+
+            if ($transactionType === 'wallet') {
+                $isRemainingPayment = $existing
+                    && (int) $existing->advance_payment_status === 1
+                    && (int) $existing->payment_status === 0;
+
+                if ($isRemainingPayment) {
+                    $amountToCharge = round(max($totalAmount - (float) $existing->total_amount, 0), 2);
+                } elseif ((int) $service->is_enable_advance_payment === 1) {
+                    $percentage = min(max((float) $service->advance_payment_amount, 0), 100);
+                    $amountToCharge = round(($totalAmount * $percentage) / 100, 2);
+                    $advancePayment = true;
+                    $paymentStatus = 0;
+                }
+
+                if ($amountToCharge <= 0) {
+                    return $existing;
+                }
+
+                $wallet = Wallet::where('user_id', $lockedAppointment->user_id)
+                    ->lockForUpdate()
+                    ->first();
+                if ($wallet === null || (float) $wallet->amount < $amountToCharge) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => __('messages.wallet_balance_error'),
+                    ], 400);
+                }
+
+                $wallet->decrement('amount', $amountToCharge);
+                $wallet->refresh();
+                WalletHistory::create([
+                    'user_id' => $wallet->user_id,
+                    'datetime' => now(),
+                    'activity_type' => 'paid_for_appointment',
+                    'activity_message' => trans('messages.paid_for_appointment', ['value' => $lockedAppointment->id]),
+                    'activity_data' => json_encode([
+                        'title' => $wallet->title,
+                        'user_id' => $wallet->user_id,
+                        'amount' => $wallet->amount,
+                        'credit_debit_amount' => $amountToCharge,
+                        'transaction_type' => __('messages.debit'),
+                        'appointment_id' => $lockedAppointment->id,
+                    ]),
+                ]);
+            }
+
+            $payment = AppointmentTransaction::updateOrCreate(
+                ['appointment_id' => $lockedAppointment->id],
+                [
+                    'transaction_type' => $transactionType,
+                    'total_amount' => $amountToCharge,
+                    'payment_status' => $paymentStatus,
+                    'discount_value' => $serviceData['discount_value'] ?? 0,
+                    'discount_type' => $serviceData['discount_type'] ?? null,
+                    'discount_amount' => $serviceData['discount_amount'] ?? 0,
+                    'external_transaction_id' => null,
+                    'tax_percentage' => $taxes->values()->toArray(),
+                    'inclusive_tax' => $serviceData['service_inclusive_tax'] ?? 0,
+                    'inclusive_tax_price' => $serviceData['total_inclusive_tax'] ?? 0,
+                    'paid_at' => $transactionType === 'wallet' ? now() : null,
+                ]
+            );
+
+            $payment->advance_payment_status = $advancePayment ? 1 : 0;
             $payment->save();
+            if ($advancePayment) {
+                $lockedAppointment->advance_paid_amount = $amountToCharge;
+                $lockedAppointment->save();
+            }
+
+            return $payment;
+        });
+
+        if ($payment instanceof \Illuminate\Http\JsonResponse) {
+            return $payment;
         }
 
-
-        $message = __('appointment.save_appointment');
-        return response()->json(['message' => $message, 'data' => $payment, 'status' => true], 200);
+        return response()->json([
+            'message' => __('appointment.save_appointment'),
+            'data' => $payment,
+            'status' => true,
+        ], 200);
     }
     public function joinGoogleMeet(Request $request)
     {
@@ -808,7 +880,14 @@ class AppointmentsController extends Controller
     {
         $employee = User::find($data['doctor_id']);
         if ($employee) {
-            $googleAccessToken = json_decode($employee->google_access_token, true);
+            $storedToken = $employee->google_access_token;
+            try {
+                $storedToken = decrypt($storedToken);
+            } catch (\Throwable) {
+                // Support legacy plaintext JSON while it is rotated by the
+                // authenticated Google authorization flow.
+            }
+            $googleAccessToken = is_string($storedToken) ? json_decode($storedToken, true) : [];
             $accessToken = $googleAccessToken['access_token'] ?? null;
             $refreshToken = $googleAccessToken['refresh_token'] ?? null;
             $googleMeetSettings = Setting::whereIn('name', ['google_meet_method', 'google_clientid', 'google_secret_key'])
@@ -829,7 +908,9 @@ class AppointmentsController extends Controller
                 if ($refreshToken) {
                     $client->refreshToken($refreshToken);
                     $newAccessToken = $client->getAccessToken();
-                    User::where('id', $data['doctor_id'])->update(['google_access_token' => json_encode($newAccessToken)]);
+                    User::where('id', $data['doctor_id'])->update([
+                        'google_access_token' => encrypt(json_encode($newAccessToken, JSON_THROW_ON_ERROR)),
+                    ]);
 
                     $request->session()->put('google_access_token', json_encode($newAccessToken));
                 } else {

@@ -28,7 +28,7 @@ class CheckHeaderMenuSettings
             'clinics' => 'clinics',
             'doctors' => 'doctors',
             'appointment-list' => 'appointments',
-            'icu-hospital' => 'icu_hospitals',
+            'icu-hospital' => 'icu',
             'book-call' => 'book_call',
         ];
 

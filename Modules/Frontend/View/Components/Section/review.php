@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Frontend\View\Components\section;
+namespace Modules\Frontend\View\Components\Section;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class review extends Component
+class Review extends Component
 {
     /**
      * Create a new component instance.

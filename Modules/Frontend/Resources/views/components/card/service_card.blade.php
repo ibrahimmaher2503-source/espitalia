@@ -1,3 +1,5 @@
+@props(['service'])
+
 <div class="services-card p-3 rounded">
     <div class="position-relative">
         <a href="{{ route('service-details', ['id' => $service->id]) }}" class="services-img">

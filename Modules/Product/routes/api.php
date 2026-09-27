@@ -34,7 +34,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('remove-review', [ReviewController::class, 'removeReview']);
     Route::post('update-review', [ReviewController::class, 'UpdateReview']);
 
-    Route::post('place-order', [OrdersController::class, 'store']);
+    Route::post('place-order', [OrdersController::class, 'store'])
+        ->middleware('idempotency:product_order');
 
     Route::get('get-order-list', [OrdersController::class, 'orderList']);
     Route::get('cancle-order', [OrdersController::class, 'cancleOrder']);

@@ -21,7 +21,7 @@ class DoctorController extends Controller
         $clinic_id = $request->query('clinic_id');
         $clinics = Clinics::checkMultivendor()->with('clinicdoctor', 'specialty', 'clinicdoctor', 'receptionist')->where('status', 1)->get();
 
-        $services = ClinicsService::active()->get();
+        $services = ClinicsService::CheckMultivendor()->active()->get();
 
         $specializations = \Modules\Specialization\Models\Specialization::active()->orderBy('name_en')->get(['id', 'name_ar', 'name_en']);
 
@@ -129,7 +129,13 @@ class DoctorController extends Controller
             'doctorDocuments',
             'doctorReviews.user',
             'doctorReviews.clinic_service',
-        ])->where('id', $id)->where('status', 1)->first();
+        ])->where(function ($q) use ($id) {
+            $q->where('id', $id)->orWhere('doctor_id', $id);
+        })->where('status', 1)->first();
+
+        if (! $doctor) {
+            abort(404);
+        }
 
         $doctor_id = optional($doctor->user)->id;
 

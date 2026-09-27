@@ -22,6 +22,8 @@ class OtherRequest extends FormRequest
             'relation' => 'nullable|string|max:255',
             'contactNumber' => 'required|string|max:15',
             'subtitle' => 'nullable|string|max:255',
+            'id' => 'sometimes|integer',
+            'profile_image' => 'sometimes|file|image|mimes:jpg,jpeg,png,webp|max:5120',
         ];
     }
 

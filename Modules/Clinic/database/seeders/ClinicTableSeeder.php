@@ -132,6 +132,18 @@ class ClinicTableSeeder extends Seeder
                 $originalSlug = $val['slug'];
                 $clinicArray = Arr::except($val, [ 'file_url']);
                 $clinicArray['system_service_category'] = $system_service_category->id;
+
+                if (is_array($clinicArray['name'] ?? null)) {
+                    $clinicArray['name_ar'] = $clinicArray['name']['ar'] ?? '';
+                    $clinicArray['name_en'] = $clinicArray['name']['en'] ?? '';
+                    $clinicArray['name'] = $clinicArray['name_en'];
+                }
+                if (is_array($clinicArray['description'] ?? null)) {
+                    $clinicArray['description_ar'] = $clinicArray['description']['ar'] ?? '';
+                    $clinicArray['description_en'] = $clinicArray['description']['en'] ?? '';
+                    $clinicArray['description'] = $clinicArray['description_en'];
+                }
+
                 $clinicData = Clinics::create($clinicArray);
                 // Restore slug that may have been overwritten by HasSlug trait
                 $clinicData->slug = $originalSlug;

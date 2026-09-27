@@ -15,9 +15,8 @@ class CartController extends Controller
 {
     public function getCartList(Request $request)
     {
-        $user_id = $request->input('user_id') ?? Auth::id();
-
-        $perPage = $request->input('per_page', 10);
+        $user_id = Auth::id();
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
 
         $cart = Cart::where('user_id', $user_id)
         ->with('product', 'product_variation')
@@ -59,9 +58,9 @@ class CartController extends Controller
 
     public function store(CartRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
 
-        $product = Product::where('id', $data['product_id'])->first();
+        $product = Product::whereKey($data['product_id'])->first();
 
         if (! $product) {
             $message = __('product.product_not_found');
@@ -69,7 +68,20 @@ class CartController extends Controller
             return response()->json(['message' => $message, 'status' => true], 200);
         }
 
-        $data['user_id'] = $request->input('user_id') ?? Auth::id();
+        $variation = ProductVariation::whereKey($data['product_variation_id'])
+            ->where('product_id', $product->id)
+            ->first();
+
+        if (! $variation) {
+            return response()->json(['message' => __('product.product_not_found'), 'status' => false], 422);
+        }
+
+        $data = [
+            'user_id' => Auth::id(),
+            'product_id' => $product->id,
+            'product_variation_id' => $variation->id,
+            'qty' => $data['qty'],
+        ];
 
         $cart = Cart::Create($data);
 
@@ -84,7 +96,7 @@ class CartController extends Controller
     {
         $cart_id = $request->cart_id;
 
-        $cart = Cart::where('id', $cart_id)->first();
+        $cart = Cart::whereKey($cart_id)->where('user_id', Auth::id())->first();
 
         if (! $cart) {
             $message = __('product.cart_not_found');
@@ -101,26 +113,36 @@ class CartController extends Controller
 
     public function UpdateCart(CartRequest $request)
     {
-        $cart_id = $request->cart_id;
-        $product_variation_id = $request->product_variation_id;
-        $qty = $request->qty;
+        $validated = $request->validated();
+        $cart_id = (int) $validated['cart_id'];
+        $product_variation_id = (int) $validated['product_variation_id'];
+        $qty = (int) $validated['qty'];
 
-        $product_variation = ProductVariation::where('id', $product_variation_id)->first();
+        $cart = Cart::whereKey($cart_id)->where('user_id', Auth::id())->first();
+        if (! $cart) {
+            return response()->json(['message' => __('product.cart_not_found'), 'status' => false], 404);
+        }
+
+        $product_variation = ProductVariation::whereKey($product_variation_id)
+            ->where('product_id', $cart->product_id)
+            ->first();
 
         if ($product_variation) {
             $get_total_stock = $product_variation->product_variation_stock->stock_qty;
 
-            if ($qty >= $get_total_stock) {
+            if ($qty > $get_total_stock) {
                 $message = 'Only '.$get_total_stock.' Quantity is available';
 
                 return response()->json(['message' => $message, 'status' => true], 200);
             } elseif ($qty < $get_total_stock) {
-                Cart::where('id', $cart_id)->update(['qty' => $qty]);
+                $cart->update(['qty' => $qty]);
 
                 $message = 'Quantity Added';
 
                 return response()->json(['message' => $message, 'status' => true], 200);
             }
         }
+
+        return response()->json(['message' => __('product.product_not_found'), 'status' => false], 422);
     }
 }

@@ -40,7 +40,10 @@ return [
 
     // Messages
     'request_submitted_success'  => 'Your visit request has been submitted successfully.',
+    'request_cancelled_success'  => 'Your visit request has been cancelled successfully.',
     'request_not_found'          => 'Visit request not found.',
+    'request_already_cancelled'  => 'This visit request is already cancelled.',
+    'patient_cancel_not_allowed' => 'A patient can cancel this request only while it is pending. Contact support for an assigned visit.',
     'status_updated_success'     => 'Request status updated successfully.',
     'doctor_assigned_success'    => 'Doctor assigned successfully.',
     'notes_updated_success'      => 'Notes updated successfully.',

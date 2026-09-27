@@ -37,9 +37,14 @@ class OrderService
         string $deliveryType = 'delivery',
         ?string $deliveryNotes = null,
         ?string $couponCode = null,
-        ?int $prescriptionId = null
+        ?int $prescriptionId = null,
+        ?string $deliveryAddress = null,
     ) {
-        return DB::transaction(function () use ($userId, $pharmacyId, $addressId, $paymentMethod, $deliveryType, $deliveryNotes, $couponCode, $prescriptionId) {
+        return DB::transaction(function () use ($userId, $pharmacyId, $addressId, $paymentMethod, $deliveryType, $deliveryNotes, $couponCode, $prescriptionId, $deliveryAddress) {
+            if ($paymentMethod !== 'cash_on_delivery') {
+                throw new \Exception(__('pharmacy.msg_payment_method_unavailable'));
+            }
+
             // 1. Get cart items
             $cartItems = PharmacyCartItem::where('user_id', $userId)->with('product')->get();
 
@@ -167,6 +172,7 @@ class OrderService
                 'user_id' => $userId,
                 'pharmacy_id' => $pharmacyId,
                 'address_id' => $addressId,
+                'delivery_address' => $deliveryAddress ? trim($deliveryAddress) : null,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
                 'total' => $total,

@@ -336,7 +336,7 @@ class DoctorDataSeeder extends Seeder
 
                 $image = $employee_data['file_url'] ?? null;
                 $empData = Arr::except($employee_data, [ 'file_url','about_self','expert','vendor_id','experience','degree','university','year' ,'clinic','service']);
-                $emp = User::create($empData);
+                $emp = User::updateOrCreate(['email' => $empData['email']], $empData);
                 $emp->assignRole($emp->user_type);
 
                 if (isset($image)) {

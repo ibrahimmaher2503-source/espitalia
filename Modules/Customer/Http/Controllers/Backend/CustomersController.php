@@ -346,6 +346,11 @@ class CustomersController extends Controller
             ->toJson();
     }
 
+    public function create()
+    {
+        return redirect()->route('backend.customers.index');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -783,11 +788,11 @@ class CustomersController extends Controller
             {
                 return [
                     ['first_name', 'last_name', 'email', 'mobile', 'gender', 'date_of_birth', 'password'],
-                    ['demo1', 'demo1', 'demo1@example.com', '1234567890', 'Male', '1990-01-01', 'password1'],
-                    ['demo2', 'demo2', 'demo2@example.com', '0987654321', 'Female', '1992-02-02', 'password2'],
-                    ['demo3', 'demo3', 'demo3@example.com', '1122334455', 'Male', '1994-03-03', 'password3'],
-                    ['demo4', 'demo4', 'demo4@example.com', '2233445566', 'Female', '1996-04-04', 'password4'],
-                    ['demo5', 'demo5', 'demo5@example.com', '3344556677', 'Male', '1998-05-05', 'password5'],
+                    ['sample1', 'sample1', 'sample1@example.com', '1234567890', 'Male', '1990-01-01', 'SET_PASSWORD_ON_IMPORT'],
+                    ['sample2', 'sample2', 'sample2@example.com', '0987654321', 'Female', '1992-02-02', 'SET_PASSWORD_ON_IMPORT'],
+                    ['sample3', 'sample3', 'sample3@example.com', '1122334455', 'Male', '1994-03-03', 'SET_PASSWORD_ON_IMPORT'],
+                    ['sample4', 'sample4', 'sample4@example.com', '2233445566', 'Female', '1996-04-04', 'SET_PASSWORD_ON_IMPORT'],
+                    ['sample5', 'sample5', 'sample5@example.com', '3344556677', 'Male', '1998-05-05', 'SET_PASSWORD_ON_IMPORT'],
                 ];
             }
         };

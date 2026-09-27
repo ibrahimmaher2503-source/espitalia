@@ -242,7 +242,7 @@ class DoctorSessionController extends Controller
             ->editColumn('day', function ($data) {
                 $allDays = DoctorSession::where('doctor_id', $data->doctor_id)
                 ->where('clinic_id', $data->clinic_id)
-                ->where('is_holiday', '===','0')
+                ->where('is_holiday', '!=', 1)
                 ->pluck('day')
                 ->toArray();
 
@@ -275,7 +275,21 @@ class DoctorSessionController extends Controller
      */
     public function create()
     {
-        return view('clinic::create');
+        $module_action = 'Create';
+        $pageTitle = __('messages.add') . ' ' . __($this->module_title);
+        $data = null;
+        $doctors = [];
+        $clinics = [];
+
+        if (auth()->user()->hasAnyRole(['admin', 'demo_admin'])) {
+            $doctors = User::role('doctor')->where('status', 1)->get();
+            $clinics = Clinics::where('status', 1)->get();
+        }
+
+        $weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        return view('clinic::backend.doctor_session.create',
+            compact('module_action', 'pageTitle', 'data', 'doctors', 'clinics', 'weekDays'));
     }
 
     /**
@@ -283,19 +297,24 @@ class DoctorSessionController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'doctor_id' => 'required|integer',
+            'clinic_id' => 'required|integer',
+            'weekdays'  => 'required|array',
+        ]);
+
         $data = $request->all();
 
         $doctor_id = $data['doctor_id'];
         $clinic_id = $data['clinic_id'];
         $weekdays = $data['weekdays'];
 
-
-        $doctorClinicMapping = DoctorClinicMapping::updateOrCreate(
+        DoctorClinicMapping::updateOrCreate(
             ['clinic_id' => $clinic_id, 'doctor_id' => $doctor_id],
         );
 
         // Delete existing sessions for the doctor in the specified clinic
-            DoctorSession::where('clinic_id', $clinic_id)
+        DoctorSession::where('clinic_id', $clinic_id)
             ->where('doctor_id', $doctor_id)
             ->delete();
 
@@ -303,13 +322,16 @@ class DoctorSessionController extends Controller
         foreach ($weekdays as $key => $value) {
             $value['clinic_id'] = $clinic_id;
             $value['doctor_id'] = $doctor_id;
-
             DoctorSession::create($value);
         }
 
         $message = __('clinic.doctor_session_added');
 
-        return response()->json(['message' => $message, 'data' => $data,  'status' => true], 200);
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message, 'data' => $data, 'status' => true], 200);
+        }
+        return redirect()->route('backend.doctor-session.index')
+            ->with('success', $message);
     }
 
     /**

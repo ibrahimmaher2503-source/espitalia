@@ -21,6 +21,8 @@ class SpecializationResource extends JsonResource
             'parent' => $this->whenLoaded('parent', fn () => [
                 'id' => $this->parent->id,
                 'name' => $this->parent->name,
+                'name_ar' => $this->parent->name_ar,
+                'name_en' => $this->parent->name_en,
                 'slug' => $this->parent->slug,
             ]),
             'icon' => $this->icon,
@@ -33,6 +35,8 @@ class SpecializationResource extends JsonResource
             'children' => $this->whenLoaded('children', fn () => $this->children->map(fn ($child) => [
                 'id' => $child->id,
                 'name' => $child->name,
+                'name_ar' => $child->name_ar,
+                'name_en' => $child->name_en,
                 'slug' => $child->slug,
                 'doctors_count' => $child->doctors_count ?? null,
                 'nurses_count' => $child->nurses_count ?? null,

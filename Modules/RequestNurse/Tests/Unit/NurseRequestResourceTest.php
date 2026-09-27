@@ -49,6 +49,11 @@ class NurseRequestResourceTest extends BaseTest
         foreach ($expectedKeys as $key) {
             $this->assertArrayHasKey($key, $array);
         }
+
+        $this->assertSame('NR-'.str_pad((string) $request->id, 6, '0', STR_PAD_LEFT), $array['reference_number']);
+        $this->assertSame($request->service_description_en, $array['service_description_en']);
+        $this->assertSame($request->address_line_1, $array['address_line_1']);
+        $this->assertSame($request->contact_number, $array['contact_phone']);
     }
 
     public function test_patient_nested_object_structure()
@@ -147,14 +152,13 @@ class NurseRequestResourceTest extends BaseTest
         $this->assertEquals('2026-03-15', $array['preferred_date']);
     }
 
-    public function test_payment_status_is_boolean()
+    public function test_payment_status_is_a_mobile_status_string()
     {
         $request = NurseRequest::factory()->create(['payment_status' => 1]);
 
         $resource = new NurseRequestResource($request);
         $array = $resource->toArray(request());
 
-        $this->assertIsBool($array['payment_status']);
-        $this->assertTrue($array['payment_status']);
+        $this->assertSame('paid', $array['payment_status']);
     }
 }

@@ -7,10 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    protected $commands = [
-
-        'Modules\Subscriptions\Console\Commands\CheckSubscription',
-    ];
+    protected $commands = [];
 
     /**
      * Define the application's command schedule.
@@ -21,9 +18,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('queue:work --tries=3 --stop-when-empty')->withoutOverlapping();
 
-        $schedule->command('migrate:fresh --seed')->hourlyAt(2);
-
         $schedule->command('db:backup')->dailyAt('05:00');
+
+        $schedule->command('idempotency:prune')->dailyAt('04:30');
     }
 
     /**

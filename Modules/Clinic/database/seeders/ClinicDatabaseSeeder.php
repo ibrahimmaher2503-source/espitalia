@@ -15,6 +15,7 @@ class ClinicDatabaseSeeder extends Seeder
         //$this->call(ClinicServiceTableSeeder::class);
         $this->call(SystemServiceTableSeeder::class);
         $this->call(DoctorDataSeeder::class);
+        $this->call(IndependentDoctorSeeder::class);
         $this->call(ReceptionistSeeder::class);
         $this->call(IndependentServicePermissionSeeder::class);
     }

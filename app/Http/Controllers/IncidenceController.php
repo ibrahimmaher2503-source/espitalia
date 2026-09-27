@@ -8,6 +8,7 @@ use App\Models\Incidence;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Modules\Appointment\Trait\AppointmentTrait;
@@ -21,8 +22,9 @@ class IncidenceController extends Controller
      */
     public function index(Request $request)
     {
-        // print_r(Auth::user()->profile_image);
-        $user_id = $request->user_id ?? Auth::user()->id;
+        $user = Auth::user();
+        $canViewAll = $user->hasRole(['admin', 'demo_admin', 'receptionist']);
+        $user_id = $canViewAll ? ($request->user_id ?? $user->id) : $user->id;
         $perPage = isset(request()->per_page) ? request()->per_page : 25;
         $data = Incidence::selectRaw('incidences.*,CONCAT(first_name," ",last_name) as name')
             ->leftJoin('users', 'users.id', '=', 'incidences.user_id')->where('incidences.user_id', $user_id)
@@ -38,21 +40,37 @@ class IncidenceController extends Controller
      */
     public function store(IncidenceRequest $request)
     {
-        $reqdata = $request->all();
-        $reqdata['user_id'] = Auth::user()->id;
-        $reqdata['profile_image'] = Auth::user()->profile_image;
-        $reqdata['created_by'] = Auth::user()->id;
-        $reqdata['incident_date'] = date('Y-m-d');
+        $user = Auth::user();
+        $validated = $request->validated();
+        $data = DB::transaction(function () use ($request, $validated, $user) {
+            $data = Incidence::create([
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'country_code' => $validated['country_code'],
+                'phone' => $validated['country_code'] . $validated['phone'],
+                'email' => $validated['email'],
+                'user_id' => $user->id,
+                'profile_image' => $user->profile_image,
+                'created_by' => $user->id,
+                'incident_date' => now()->toDateString(),
+            ]);
 
-        $reqdata['phone'] = $reqdata['country_code'] . $reqdata['phone'];
-        $data = Incidence::create($reqdata);
-        if ($request->hasFile('file_url')) {
-            storeMediaFile($data, $request->file('file_url'));
+            if ($request->hasFile('file_url')) {
+                storeMediaFile($data, $request->file('file_url'));
+            }
+
+            return $data->fresh();
+        });
+
+        // Notification failure must not turn a committed clinical report into
+        // an ambiguous retry. The idempotency middleware replays this result.
+        try {
+            self::sendNotificationOnIncidence($data);
+        } catch (\Throwable $exception) {
+            report($exception);
         }
 
-        self::sendNotificationOnIncidence($data);
-
-        return response()->json(['status' => true, 'message' => 'Successfully created!']);
+        return response()->json(['status' => true, 'message' => __('messages.create_form', ['form' => __('messages.incidence_title')])]);
     }
 
     public function sendNotificationOnIncidence($data)
@@ -94,17 +112,20 @@ class IncidenceController extends Controller
      */
     public function update(IncidenceRequest $request, $id)
     {
-        $reqdata = $request->all();
-        $data = Incidence::find($id);
+        $data = $this->ownedIncident($id, allowStaff: true);
         if (!$data) {
             return response()->json(['message' => 'Invalid incidence referance!', 'status' => false]);
         }
-        $reqdata['user_id'] = Auth::user()->id;
-        $reqdata['updated_by'] = Auth::user()->id;
-        $reqdata['profile_image'] = Auth::user()->profile_image;
-        $reqdata['phone'] = $reqdata['country_code'] . $reqdata['phone'];
-
-        $data->update($reqdata);
+        $validated = $request->validated();
+        $data->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'country_code' => $validated['country_code'],
+            'phone' => $validated['country_code'] . $validated['phone'],
+            'email' => $validated['email'],
+            'updated_by' => Auth::user()->id,
+            'profile_image' => Auth::user()->profile_image,
+        ]);
         return response()->json(['message' => 'Successfully updated!', 'status' => true]);
     }
 
@@ -113,7 +134,7 @@ class IncidenceController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $data = Incidence::find($id);
+        $data = $this->ownedIncident($id, allowStaff: true);
         if (!$data) {
             return response()->json(['message' => 'Invalid incidence referance!', 'status' => false]);
         }
@@ -127,6 +148,7 @@ class IncidenceController extends Controller
      */
     public function changeStatus(Request $request, $id)
     {
+        abort_unless(Auth::user()->hasRole(['admin', 'demo_admin', 'receptionist']), 403);
         $reqdata = $request->all();
         // $validator = Validator::make($reqdata, [
         //     'status' => [
@@ -161,6 +183,7 @@ class IncidenceController extends Controller
 
     public function updateIncidentStatus(Request $request, $id)
     {
+        abort_unless(Auth::user()->hasRole(['admin', 'demo_admin', 'receptionist']), 403);
         $reqdata = $request->all();
 
         $data = Incidence::find($id);
@@ -182,5 +205,18 @@ class IncidenceController extends Controller
         $data->save();
 
         return response()->json(['message' => 'Successfully updated!', 'status' => true]);
+    }
+
+    private function ownedIncident(int|string $id, bool $allowStaff = false): ?Incidence
+    {
+        $user = Auth::user();
+        $query = Incidence::query()->whereKey($id);
+        if (! $allowStaff || ! $user->hasRole(['admin', 'demo_admin', 'receptionist'])) {
+            $query->where(function ($scope) use ($user) {
+                $scope->where('user_id', $user->id)->orWhere('created_by', $user->id);
+            });
+        }
+
+        return $query->first();
     }
 }

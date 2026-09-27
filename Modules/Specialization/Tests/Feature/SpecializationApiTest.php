@@ -84,6 +84,35 @@ class SpecializationApiTest extends BaseTest
             ->assertJsonPath('data.name_en', 'Cardiology');
     }
 
+    public function test_show_preserves_bilingual_names_in_parent_and_children(): void
+    {
+        $this->authenticatedUser();
+
+        $parent = Specialization::create([
+            'name_ar' => 'القلب',
+            'name_en' => 'Cardiology',
+            'status' => 1,
+        ]);
+        $child = Specialization::create([
+            'name_ar' => 'قلب أطفال',
+            'name_en' => 'Pediatric Cardiology',
+            'parent_id' => $parent->id,
+            'status' => 1,
+        ]);
+
+        $response = $this->getJson(route('api.specializations.show', $child->id));
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.parent.name', 'Cardiology')
+            ->assertJsonPath('data.parent.name_ar', 'القلب')
+            ->assertJsonPath('data.parent.name_en', 'Cardiology');
+
+        $parentResponse = $this->getJson(route('api.specializations.show', $parent->id));
+        $parentResponse->assertJsonPath('data.children.0.name', 'Pediatric Cardiology')
+            ->assertJsonPath('data.children.0.name_ar', 'قلب أطفال')
+            ->assertJsonPath('data.children.0.name_en', 'Pediatric Cardiology');
+    }
+
     public function test_show_returns_404_for_nonexistent(): void
     {
         $this->authenticatedUser();
@@ -126,5 +155,34 @@ class SpecializationApiTest extends BaseTest
         $response->assertStatus(200);
         $data = $response->json('data');
         $this->assertNotEmpty($data);
+        $this->assertSame('Cardiology', $data[0]['specializations'][0]['name']);
+        $this->assertArrayHasKey('name_ar', $data[0]['specializations'][0]);
+        $this->assertArrayHasKey('name_en', $data[0]['specializations'][0]);
+    }
+
+    public function test_nurses_endpoint_returns_bilingual_specializations(): void
+    {
+        $this->authenticatedUser();
+
+        $spec = Specialization::create([
+            'name_ar' => 'تمريض القلب',
+            'name_en' => 'Cardiac Nursing',
+            'status' => 1,
+        ]);
+        $nurseUser = User::create([
+            'first_name' => 'Nurse',
+            'last_name' => 'Heart',
+            'email' => 'nurse@test.com',
+            'password' => bcrypt('password'),
+            'user_type' => 'nurse',
+        ]);
+        $nurse = \Modules\RequestNurse\Models\Nurse::create(['nurse_id' => $nurseUser->id]);
+        $nurse->specializations()->sync([$spec->id]);
+
+        $response = $this->getJson(route('api.specializations.nurses', $spec->id));
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.0.specializations.0.name_ar', 'تمريض القلب')
+            ->assertJsonPath('data.0.specializations.0.name_en', 'Cardiac Nursing');
     }
 }

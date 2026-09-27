@@ -1,6 +1,0 @@
-[    6285ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/admin/img/logo/mini_logo.webp:0
-[   37526ms] [ERROR] Pattern attribute value [a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$ is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/v: Invalid character in character class @ http://127.0.0.1:8000/admin/login:0
-[   46241ms] [ERROR] Pattern attribute value [a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$ is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/v: Invalid character in character class @ http://127.0.0.1:8000/admin/login:0
-[   49471ms] TypeError: Cannot read properties of null (reading 'options')
-    at getSelectedOption (http://127.0.0.1:8000/admin/login:166:48)
-    at window.onload (http://127.0.0.1:8000/admin/login:151:13)

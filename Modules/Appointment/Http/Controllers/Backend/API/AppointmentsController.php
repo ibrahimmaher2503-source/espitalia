@@ -19,18 +19,20 @@ class AppointmentsController extends Controller
     use AppointmentTrait;
 
     public function appointmentList(Request $request){
-        $perPage = $request->input('per_page', 10); 
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 50);
+        $isPatient = auth()->user()->user_type === 'user' || auth()->user()->hasRole('user');
 
         $user_id = $request->has('user_id') ? $request->user_id : auth()->id();
   
-        $appointment = Appointment::CheckMultivendor()->with('appointmenttransaction','cliniccenter','clinicservice','user','doctor','otherPatient');
+        $appointment = Appointment::CheckMultivendor()->with('appointmenttransaction','cliniccenter','clinicservice','independentService','user','doctor','otherPatient');
 
 
         if(auth()->user() !== null ){
 
             if(auth()->user()->hasRole('vendor')){
 
-                $vendor_id=$request->has('vendor_id') ? $request->vendor_id : Auth::id();
+                // Vendors can only inspect their own tenant.
+                $vendor_id = Auth::id();
 
                $appointment->whereHas('cliniccenter', function ($query) use ($vendor_id) {
                     $query->where('vendor_id', $vendor_id);
@@ -38,14 +40,17 @@ class AppointmentsController extends Controller
 
             }elseif(auth()->user()->hasRole('doctor')){
 
-                $doctor_id=$request->has('doctor_id') ? $request->doctor_id : Auth::id();
+                // Doctors can only inspect their own appointments.
+                $doctor_id = Auth::id();
 
                 $appointment->where('doctor_id',$doctor_id);
          
 
-            }elseif(auth()->user()->hasRole('user')){
+            }elseif($isPatient){
 
-                $user_id=$request->has('user_id') ? $request->user_id : Auth::id();
+                // A patient may only see their own appointments. Never let a
+                // request query parameter override this ownership boundary.
+                $user_id = Auth::id();
 
                 $appointment->where('user_id',$user_id);
 
@@ -92,7 +97,7 @@ class AppointmentsController extends Controller
             $appointment->where('service_id',$request->service_id);
           }
 
-        if($request->has('user_id') && ($request->user_id !='')){
+        if($request->has('user_id') && ($request->user_id !='') && ! $isPatient){
           
             $appointment->where('user_id',$request->user_id);
          }
@@ -143,7 +148,15 @@ class AppointmentsController extends Controller
     public function appointmentDetails(Request $request){
 
         $appointmentId = $request->appointment_id;  
-        $appointment = Appointment::with('appointmenttransaction', 'clinicservice', 'serviceRating', 'patientEncounter' ,'cliniccenter','bodyChart')->where('id',$appointmentId)->first();
+        $viewer = auth()->user();
+        $appointmentQuery = Appointment::SetRole($viewer)->with('appointmenttransaction', 'clinicservice', 'independentService', 'serviceRating', 'patientEncounter' ,'cliniccenter','bodyChart', 'user', 'doctor', 'otherPatient')
+            ->where('id', $appointmentId);
+        if ($viewer->user_type === 'user' && ! $viewer->hasRole('user')) {
+            $appointmentQuery->where('user_id', $viewer->id);
+        } elseif (! $viewer->hasAnyRole(['admin', 'demo_admin', 'vendor', 'doctor', 'receptionist', 'user'])) {
+            $appointmentQuery->whereRaw('1 = 0');
+        }
+        $appointment = $appointmentQuery->first();
 
         $appointmentDetail=null;
 
@@ -152,10 +165,20 @@ class AppointmentsController extends Controller
             $appointmentDetail =new AppointmentDetailResource($appointment);
 
         }
+        if (! $appointment) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.not_found'),
+            ], 404);
+        }
         if($request->has('notification_id')){
-            $notification = \App\Models\Notification::where('id', $request->notification_id)->first();
-            $notification->read_at = Carbon::now();
-            $notification->save();
+            $notification = \App\Models\Notification::where('id', $request->notification_id)
+                ->where('notifiable_id', auth()->id())
+                ->first();
+            if ($notification) {
+                $notification->read_at = Carbon::now();
+                $notification->save();
+            }
         }
         return response()->json([
             'status' => true,
@@ -165,13 +188,28 @@ class AppointmentsController extends Controller
     }
 
     public function rescheduleBooking(Request $request){
-        
-        $appointment_id = $request->appointment_id;  
-        $appointment = Appointment::with('user','doctor','clinicservice')->findOrFail($appointment_id);
+        $data = $request->validate([
+            'appointment_id' => ['required', 'integer', 'exists:appointments,id'],
+            'appointment_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'appointment_time' => ['required', 'date_format:H:i'],
+        ]);
 
-        $appointment->appointment_date = $request->appointment_date;
-        $appointment->appointment_time = $request->appointment_time;
-        $appointment->start_date_time = Carbon::createFromFormat('Y-m-d H:i', $request->appointment_date . ' ' . $request->appointment_time, setting('default_time_zone'))->setTimezone('UTC');
+        $appointment = Appointment::with('user','doctor','clinicservice','independentService')
+            ->findOrFail($data['appointment_id']);
+        $user = auth()->user();
+        if (($user->user_type === 'user' || $user->hasRole('user')) && $appointment->user_id !== $user->id) {
+            return response()->json(['status' => false, 'message' => __('messages.permission_denied')], 403);
+        }
+        if (!in_array(strtolower((string) $appointment->status), ['pending', 'confirmed'], true)) {
+            return response()->json(['status' => false, 'message' => 'This appointment cannot be rescheduled in its current status.'], 422);
+        }
+        if (Carbon::parse($data['appointment_date'].' '.$data['appointment_time'], setting('default_time_zone'))->isPast()) {
+            return response()->json(['status' => false, 'message' => 'The selected date and time must be in the future.'], 422);
+        }
+        
+        $appointment->appointment_date = $data['appointment_date'];
+        $appointment->appointment_time = $data['appointment_time'];
+        $appointment->start_date_time = Carbon::createFromFormat('Y-m-d H:i', $data['appointment_date'] . ' ' . $data['appointment_time'], setting('default_time_zone'))->setTimezone('UTC');
         $appointment->save();   
         
         $notification_data = [
@@ -200,8 +238,14 @@ class AppointmentsController extends Controller
 
     public function getRevenuechartData(Request $request)
     {
- 
+
         $user = auth()->user();
+        if ($user->user_type === 'user' || $user->hasRole('user')) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.permission_denied'),
+            ], 403);
+        }
         $userid = $user->id;
 
         $currentMonth = Carbon::now()->month;

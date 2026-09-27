@@ -14,7 +14,6 @@ use Spatie\WebhookServer\WebhookCall;
 use App\Broadcasting\FcmChannel;
 use Benwilkins\FCM\Message;
 use Google\Client as Google_Client;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use Twilio\Rest\Client;
@@ -224,39 +223,28 @@ class CommonNotification extends Notification implements ShouldQueue
 
     public function toFcm($notifiable)
     {
-
-        $msg = isset($this->data['notification_msg']) && $this->data['notification_msg'] !== null
-            ? $this->data['notification_msg']
-            : $this->data['notification_message'];
-        if (!isset($msg) && $msg == '') {
-            $msg =  $this->subject;
-        }
-        $type = 'booking';
-        if (isset($this->data['type']) && $this->data['type'] !== '') {
-            $type = $this->data['type'];
-        }
+        $type = (string) ($this->data['type'] ?? 'booking');
         $heading = $this->type;
-        $additionalData = json_encode($this->data);
+        // Never put names, free-form medical text, amounts, or template data
+        // into a lock-screen notification. The authenticated notification
+        // center remains the source for full details.
+        $safeData = self::safeFcmData($this->data);
+        $additionalData = json_encode($safeData, JSON_THROW_ON_ERROR);
 
         return $this->fcm([
             "message" => [
                 "topic" => 'user_' . $notifiable->id,
                 "notification" => [
                     "title" => $heading,
-                    "body" => $msg,
+                    "body" => "You have a new notification. Open Espitalia to view details.",
                 ],
                 "data" => [
                     "sound" => "default",
-                    "story_id" => "story_12345",
                     "type" => $type,
                     "additional_data" => $additionalData,
-                    "click_action" => "FLUTTER_NOTIFICATION_CLICK",
                 ],
                 "android" => [
                     "priority" => "high",
-                    "notification" => [
-                        "click_action" => "FLUTTER_NOTIFICATION_CLICK",
-                    ],
                 ],
                 "apns" => [
                     "payload" => [
@@ -269,13 +257,52 @@ class CommonNotification extends Notification implements ShouldQueue
         ]);
     }
 
+    /**
+     * Keep only non-sensitive routing fields in FCM data payloads.
+     */
+    public static function safeFcmData(array $data): array
+    {
+        $allowed = [
+            'type',
+            'id',
+            'request_id',
+            'admission_request_id',
+            'order_id',
+            'test_order_id',
+            'encounter_id',
+            'patient_encounter_id',
+            'reference_number',
+            'visit_reference',
+            'request_reference',
+        ];
+
+        $safe = [];
+        foreach ($allowed as $key) {
+            if (!array_key_exists($key, $data) || is_array($data[$key]) || is_object($data[$key])) {
+                continue;
+            }
+            $value = trim((string) $data[$key]);
+            if ($value !== '') {
+                $safe[$key] = $value;
+            }
+        }
+
+        return $safe;
+    }
+
     function fcm($fields)
     {
-        $otherSetting = \App\Models\Setting::where('name', 'firebase_project_id')->first();
-
-        $projectID = $otherSetting->val ?? null;
+        $projectID = (string) config('services.firebase.project_id');
+        if ($projectID === '' || ! preg_match('/^[a-z0-9-]+$/', $projectID)) {
+            Log::warning('FCM delivery skipped because FIREBASE_PROJECT_ID is not configured.');
+            return false;
+        }
 
         $access_token = $this->getAccessToken();
+        if ($access_token === null || $access_token === '') {
+            Log::warning('FCM delivery skipped because Firebase credentials are not configured.');
+            return false;
+        }
 
         $headers = [
             'Authorization: Bearer ' . $access_token,
@@ -286,26 +313,40 @@ class CommonNotification extends Notification implements ShouldQueue
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
         $response = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($response === false || $httpCode < 200 || $httpCode >= 300) {
+            Log::warning('FCM delivery failed at the transport layer.', [
+                'http_status' => $httpCode,
+            ]);
+        }
 
         curl_close($ch);
+        return $response !== false && $httpCode >= 200 && $httpCode < 300;
     }
     function getAccessToken()
     {
-        $directory = storage_path('app/data');
-        $credentialsFiles = File::glob($directory . '/*.json');
-        // if (empty($credentialsFiles)) {
-        //     throw new Exception('No JSON credentials found in the specified directory.');
-        // } 
-        if (!empty($credentialsFiles)) {
+        $credentialsPath = config('services.firebase.credentials');
+        if (! is_string($credentialsPath) || $credentialsPath === '' || ! is_file($credentialsPath)) {
+            return null;
+        }
+
+        try {
             $client = new Google_Client();
-            $client->setAuthConfig($credentialsFiles[0]);
+            $client->setAuthConfig($credentialsPath);
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
 
             $token = $client->fetchAccessTokenWithAssertion();
-
-            return $token['access_token'];
+            return is_array($token) ? ($token['access_token'] ?? null) : null;
+        } catch (\Throwable $exception) {
+            Log::warning('FCM access token could not be created.', [
+                'error_type' => get_class($exception),
+            ]);
+            return null;
         }
     }
 
